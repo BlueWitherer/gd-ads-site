@@ -1,35 +1,57 @@
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import './App.css';
+import Home from './components/Home';
+import Dashboard from './components/Dashboard';
+
+function DashboardWrapper() {
+  const [user, setUser] = useState(null);
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const userParam = params.get('user');
+
+    if (userParam) {
+      try {
+        const userData = JSON.parse(decodeURIComponent(userParam));
+        setUser(userData);
+        // Store in sessionStorage for persistence
+        sessionStorage.setItem('discordUser', JSON.stringify(userData));
+        // Clean up URL
+        navigate('/dashboard', { replace: true });
+      } catch (error) {
+        console.error('Failed to parse user data:', error);
+      }
+    } else {
+      // Try to load from sessionStorage
+      const storedUser = sessionStorage.getItem('discordUser');
+      if (storedUser) {
+        setUser(JSON.parse(storedUser));
+      } else {
+        // No user data, redirect to home
+        navigate('/');
+      }
+    }
+  }, [location, navigate]);
+
+  const handleLogout = () => {
+    setUser(null);
+    sessionStorage.removeItem('discordUser');
+  };
+
+  return <Dashboard user={user} onLogout={handleLogout} />;
+}
 
 function App() {
-  const publicUrl = process.env.PUBLIC_URL || '';
-  const appStyle = {
-    backgroundImage: `url('${publicUrl}/resources/background.png')`,
-    backgroundRepeat: 'repeat-x',
-    backgroundSize: 'auto 100%'
-  };
-
-  const squareStyle = {
-    borderImageSource: `url('${publicUrl}/resources/squareBg.png')`
-  };
-
-  const buttonStyle = {
-    borderImageSource: `url('${publicUrl}/resources/button05.png')`
-  };
-
   return (
-    // shows the websites output i think lol
-    <div className="App" style={appStyle}>
-      <div className="center-square" style={squareStyle}>
-        <button
-          className="center-button"
-          style={buttonStyle}
-          onClick={() => console.log('Center button clicked')}
-          aria-label="Login to Discord"
-        >
-          Login via Discord
-        </button>
-      </div>
-    </div>
+    <Router>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/dashboard" element={<DashboardWrapper />} />
+      </Routes>
+    </Router>
   );
 }
 
