@@ -1,23 +1,13 @@
-import logo from './logo.svg';
 import './App.css';
 
 function App() {
+  const publicUrl = process.env.PUBLIC_URL || '';
+  const backgroundStyle = {
+    backgroundImage: `linear-gradient(rgba(15,22,61,0.65), rgba(15,22,61,0.65)), url('${publicUrl}/background.png')`
+  };
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className="App" style={backgroundStyle}>
     </div>
   );
 }
