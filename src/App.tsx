@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import './App.css'
+import './Log.mjs'
 
 function App() {
   console.log('App rendered');

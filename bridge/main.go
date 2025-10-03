@@ -3,7 +3,9 @@ package main
 import (
 	"net/http"
 
+	_ "bridge/ads"
 	"bridge/log"
+	_ "bridge/stats"
 )
 
 func main() {

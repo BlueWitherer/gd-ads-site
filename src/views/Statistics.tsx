@@ -1,4 +1,5 @@
 import '../App.css'
+import '../Log.mts';
 
 export default async function Statistics() {
   // replace with real data later via backend
@@ -20,7 +21,7 @@ export default async function Statistics() {
   return (
     <>
       <h1 className="text-2xl font-bold mb-6">Your Statistics</h1>
-      
+
       {/* Total Views */}
       <div className="stat-box mb-6">
         <h2 className="text-xl font-bold mb-2">Total Views</h2>

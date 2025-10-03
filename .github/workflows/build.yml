@@ -70,18 +70,20 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: frontend-dist
+          path: frontend-dist
 
       - name: Download bridge artifact
         uses: actions/download-artifact@v4
         with:
           name: bridge-binary
+          path: bridge-binary
 
       - name: Create release bundle
         run: |
           set -euo pipefail
           rm -rf release
           mkdir -p release
-          # Expect downloads to extract into frontend-dist/ and bridge-binary/
+
           if [ -d frontend-dist/dist ]; then
             cp -r frontend-dist/dist release/dist
           else

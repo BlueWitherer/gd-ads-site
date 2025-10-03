@@ -1,10 +1,13 @@
 import { useNavigate } from 'react-router-dom'
 import './App.css'
+import './Log.mjs'
 
 export default function NotFound() {
+    console.error("404 - Page Not Found");
     const navigate = useNavigate();
 
     const onBack = () => {
+        console.info("Navigating back to home page");
         navigate('/');
     };
 
