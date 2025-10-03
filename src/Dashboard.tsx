@@ -5,7 +5,7 @@ import Statistics from "./views/Statistics";
 import Create from "./views/Create";
 import Leaderboard from "./views/Leaderboard";
 
-function Dashboard() {
+export default function Dashboard() {
   const navigate = useNavigate();
   const [selectedView, setSelectedView] = useState<
     "statistics" | "create" | "leaderboard"
@@ -80,5 +80,3 @@ function Dashboard() {
     </>
   );
 }
-
-export default Dashboard;

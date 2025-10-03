@@ -1,6 +1,6 @@
 import '../App.css'
 
-async function Statistics() {
+export default async function Statistics() {
   // replace with real data later via backend
   let totalViews = 420;
   let totalClicks = 69;
@@ -35,5 +35,3 @@ async function Statistics() {
     </>
   )
 }
-
-export default Statistics

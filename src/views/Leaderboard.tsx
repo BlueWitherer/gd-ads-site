@@ -1,6 +1,6 @@
 import '../App.css'
 
-function Leaderboard() {
+export default function Leaderboard() {
   return (
     <>
       <h2 className="text-2xl font-bold mb-4">Leaderboard</h2>
@@ -8,5 +8,3 @@ function Leaderboard() {
     </>
   )
 }
-
-export default Leaderboard

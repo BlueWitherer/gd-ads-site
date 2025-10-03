@@ -1,6 +1,6 @@
 import '../App.css'
 
-function Create() {
+export default function Create() {
   return (
     <>
       <h1 className="text-2xl font-bold mb-4">Create Advertisement</h1>
@@ -8,5 +8,3 @@ function Create() {
     </>
   )
 }
-
-export default Create
