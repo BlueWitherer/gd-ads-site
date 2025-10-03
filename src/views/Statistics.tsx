@@ -1,9 +1,21 @@
 import '../App.css'
 
-function Statistics() {
+async function Statistics() {
   // replace with real data later via backend
-  const totalViews = 420;
-  const totalClicks = 69;
+  let totalViews = 420;
+  let totalClicks = 69;
+
+  console.debug("Rendering Statistics component...");
+
+  // get the views count
+  const resViews = await fetch('/api/stats/views');
+  totalViews = parseInt(await resViews.text());
+
+  // get the clicks count
+  const resClicks = await fetch('/api/stats/clicks');
+  totalClicks = parseInt(await resClicks.text());
+
+  console.info("Returning Statistics component");
 
   return (
     <>

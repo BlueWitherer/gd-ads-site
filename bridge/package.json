@@ -1,0 +1,10 @@
+{
+  "name": "@gd-ads-site/bridge",
+  "version": "0.0.0",
+  "description": "Performant bridge between the frontend and external backend of the site.",
+  "author": "Cheeseworks",
+  "scripts": {
+    "build": "go build -o ../build/bridge",
+    "dev": "go run ./"
+  }
+}
