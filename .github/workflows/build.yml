@@ -66,11 +66,57 @@ jobs:
 
       - name: Create release bundle
         run: |
-          set -e
+          set -euo pipefail
           rm -rf release
           mkdir -p release
-          if [ -d dist ]; then cp -r dist release/; else echo 'dist not found' >&2; exit 1; fi
-          if [ -f build/bridge ]; then cp build/bridge release/; else echo 'bridge binary not found' >&2; exit 1; fi
+          echo "Workspace contents after artifact download:"
+          ls -la || true
+
+          if [ -d dist ]; then
+            echo "Found dist/ at workspace root"
+            cp -r dist release/
+          elif [ -d frontend-dist ]; then
+            echo "Found frontend-dist/ (artifact extracted into folder)"
+            if [ -d frontend-dist/dist ]; then
+              cp -r frontend-dist/dist release/
+            else
+              mkdir -p release/dist
+              cp -r frontend-dist/* release/dist/ || true
+            fi
+          else
+            echo "dist/ not found in expected locations; searching..."
+            found_index=$(find . -maxdepth 4 -type f -name index.html -print -quit || true)
+            if [ -n "$found_index" ]; then
+              dist_dir=$(dirname "$found_index")
+              echo "Found index.html in $dist_dir, copying to release/dist"
+              mkdir -p release/dist
+              cp -r "$dist_dir"/* release/dist/
+            else
+              echo 'dist not found' >&2
+              exit 1
+            fi
+          fi
+
+          if [ -f build/bridge ]; then
+            echo "Found build/bridge"
+            cp build/bridge release/
+          elif [ -f bridge ]; then
+            echo "Found bridge at workspace root"
+            cp bridge release/
+          elif [ -f bridge-binary ]; then
+            echo "Found bridge-binary file (artifact extracted as bridge-binary)"
+            cp bridge-binary release/
+          else
+            echo "Bridge binary not found in build/bridge; searching..."
+            found_bridge=$(find . -maxdepth 4 -type f \( -name 'bridge' -o -name 'bridge.exe' \) -print -quit || true)
+            if [ -n "$found_bridge" ]; then
+              echo "Found bridge binary at $found_bridge"
+              cp "$found_bridge" release/
+            else
+              echo 'bridge binary not found' >&2
+              exit 1
+            fi
+          fi
 
       - name: Upload final release artifact
         uses: actions/upload-artifact@v4
