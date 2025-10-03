@@ -1,181 +1,44 @@
-.App {
+@import "tailwindcss";
+
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
   text-align: center;
-  min-height: 100vh;
-  position: relative;
-  overflow: hidden;
-  z-index: 0;
-  background-repeat: repeat-x;
-  background-size: auto 100%;
-  background-position: 0 0;
-  will-change: background-position;
-  animation: scrollBg 40s linear infinite;
 }
 
-.App-link {
-  color: #61dafb;
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #61dafbaa);
 }
 
-/* mimic what CCScale9Sprite does for 9-slice scaling */
-.center-square {
-  position: fixed;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  min-width: 300px;
-  min-height: 200px;
-  width: 100vw;
-  height: 100vh;
-  max-width: 1200px;
-  max-height: 800px;
-  /* enable interactions so the centered button can be clicked */
-  pointer-events: auto;
-  z-index: 1;
-  border-style: solid;
-  border-width: 50px;
-  border-image-slice: 50 fill;
-  border-image-repeat: stretch;
-  border-color: transparent;
-  box-sizing: border-box;
-}
-
-.center-square::after {
-  content: "Advertiment Manager";
-  position: absolute;
-  top: 10px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-family: 'Righteous', sans-serif;
-  font-size: 46px;
-  color: white;
-  -webkit-text-fill-color: rgb(255, 255, 255);
-  text-align: center;
-  z-index: 3;
-  pointer-events: none;
-  font-weight: 700;
-
-  text-shadow:
-    6px 6px 0px rgba(0,0,0,0.5);
-}
-
-/* centered button inside the square */
-.center-button {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 4;
-  pointer-events: auto;
-  font-family: 'Righteous', sans-serif;
-  font-size: 20px;
-  font-weight: 700;
-  color: #ffffff;
-  background: transparent;
-  border-style: solid;
-  border-width: 20px;
-  border-color: transparent;
-  border-image-slice: 20 fill;
-  border-image-repeat: stretch;
-  padding: 10px 28px;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: transform 150ms ease, box-shadow 150ms ease, opacity 150ms ease;
-}
-
-.center-button:hover {
-  transform: translate(-50%, -50%) scale(1.03);
-}
-
-.center-button:active {
-  transform: translate(-50%, -50%) scale(0.99);
-}
-
-.App::after {
-  content: "";
-  position: fixed;
-  inset: 0;
-  background: linear-gradient(rgba(15,22,61,0.65), rgba(15,22,61,0.65));
-  z-index: -1;
-  pointer-events: none;
-}
-
-@keyframes scrollBg {
-  from { background-position: 0 0; }
-  to   { background-position: -1920px 0; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .App::before {
-    animation: none;
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
   }
 }
 
-.dashboard-content {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 20px;
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
 }
 
-.dashboard-title {
-  font-family: 'Righteous', sans-serif;
-  font-size: 46px;
-  color: white;
-  text-align: center;
-  margin: 0;
-  padding-top: 60px;
-  text-shadow: 6px 6px 0px rgba(0,0,0,0.5);
+.card {
+  padding: 2em;
 }
 
-.dashboard-welcome {
-  font-family: 'Righteous', sans-serif;
-  font-size: 22px;
-  color: white;
-  text-align: center;
-  margin: 0;
-  text-shadow: 3px 3px 0px rgba(0,0,0,0.5);
-}
-
-.discord-user-container {
-  position: absolute;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  z-index: 5;
-}
-
-.discord-user-info {
-  font-family: 'Righteous', sans-serif;
-  font-size: 18px;
-  color: white;
-  text-align: center;
-  pointer-events: none;
-  text-shadow: 3px 3px 0px rgba(0,0,0,0.5);
-  padding: 8px 16px;
-  background: rgba(0, 0, 0, 0.3);
-  border-radius: 8px;
-  white-space: nowrap;
-}
-
-.logout-button {
-  position: static !important;
-  transform: none !important;
-  font-size: 16px;
-  padding: 8px 20px;
-  border-width: 15px;
-  border-image-slice: 15 fill;
-}
-
-.logout-button:hover {
-  transform: scale(1.03) !important;
-}
-
-.logout-button:active {
-  transform: scale(0.99) !important;
+.read-the-docs {
+  color: #888;
 }
