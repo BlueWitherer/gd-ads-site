@@ -7,7 +7,8 @@
     "dev": "concurrently \"vite --host\" \"cd ./bridge && npm run dev\"",
     "build": "tsc -b && vite build && cd ./bridge && npm run build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "start": "npm run build && cd ./bridge && npm run start"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.14",

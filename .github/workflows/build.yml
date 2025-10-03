@@ -1,0 +1,79 @@
+name: Build
+# mainly for testing purposes
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+
+jobs:
+  build:
+    name: Build site
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: "1.25"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install Node dependencies
+        run: npm ci
+
+      - name: Build project (tsc, vite, bridge)
+        run: npm run build
+
+      - name: Ensure bridge binary is executable
+        run: |
+          if [ -f build/bridge ]; then chmod +x build/bridge; fi
+
+      - name: Upload frontend artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: dist
+
+      - name: Upload bridge binary artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: bridge-binary
+          path: build/bridge
+
+  package:
+    name: Package release
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Download frontend artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-dist
+
+      - name: Download bridge artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: bridge-binary
+
+      - name: Create release bundle
+        run: |
+          set -e
+          rm -rf release
+          mkdir -p release
+          if [ -d dist ]; then cp -r dist release/; else echo 'dist not found' >&2; exit 1; fi
+          if [ -f build/bridge ]; then cp build/bridge release/; else echo 'bridge binary not found' >&2; exit 1; fi
+
+      - name: Upload final release artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: release
+          path: release

@@ -4,7 +4,8 @@
   "description": "Performant bridge between the frontend and external backend of the site.",
   "author": "Cheeseworks",
   "scripts": {
-    "build": "go build -o ../build/bridge",
-    "dev": "go run ./"
+    "build": "go build -o ../build/",
+    "dev": "go run ./",
+    "start": "cd ../build && bridge.exe"
   }
 }

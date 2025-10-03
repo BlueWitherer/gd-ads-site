@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import './App.css'
 
 function App() {
+  console.log('App rendered');
   const navigate = useNavigate();
 
   const handleLogin = () => {
