@@ -18,6 +18,9 @@ func main() {
 	log.Debug("Starting handlers")
 	http.HandleFunc("/api", func(w http.ResponseWriter, r *http.Request) {
 		log.Info("Server pinged!")
+
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("pong!"))
 	})
 

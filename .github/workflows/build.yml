@@ -1,4 +1,4 @@
-name: Build
+name: GD Ads Site
 # mainly for testing purposes
 
 on:
@@ -9,7 +9,7 @@ on:
 
 jobs:
   build:
-    name: Build site
+    name: Build site source
     runs-on: ubuntu-latest
 
     steps:

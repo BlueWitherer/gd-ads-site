@@ -1,22 +1,28 @@
+import { useEffect, useState } from 'react';
 import '../App.css'
-import '../Log.mts';
+import '../Log.mjs';
 
-export default async function Statistics() {
-  // replace with real data later via backend
-  let totalViews = 420;
-  let totalClicks = 69;
-
+export default function Statistics() {
   console.debug("Rendering Statistics component...");
 
-  // get the views count
-  const resViews = await fetch('/api/stats/views');
-  totalViews = parseInt(await resViews.text());
+  const [views, setViews] = useState<number | null>(null);
+  const [clicks, setClicks] = useState<number | null>(null);
 
-  // get the clicks count
-  const resClicks = await fetch('/api/stats/clicks');
-  totalClicks = parseInt(await resClicks.text());
+  useEffect(() => {
+    async function fetchStats(endpoint: string): Promise<number> {
+      try {
+        const res = await fetch(`/api/stats/${endpoint}`);
+        if (res.ok) return parseInt(await res.text());
+        return 420;
+      } catch (err) {
+        console.error("Error fetching stats:", err);
+        return 69;
+      }
+    }
 
-  console.info("Returning Statistics component");
+    fetchStats("views").then(setViews);
+    fetchStats("clicks").then(setClicks);
+  }, []);
 
   return (
     <>
@@ -25,13 +31,13 @@ export default async function Statistics() {
       {/* Total Views */}
       <div className="stat-box mb-6">
         <h2 className="text-xl font-bold mb-2">Total Views</h2>
-        <p className="text-4xl font-bold">{totalViews.toLocaleString()}</p>
+        <p className="text-4xl font-bold">{views !== null ? views.toLocaleString() : "Loading..."}</p>
       </div>
 
       {/* Total Clicks */}
       <div className="stat-box mb-6">
         <h2 className="text-xl font-bold mb-2">Total Clicks</h2>
-        <p className="text-4xl font-bold">{totalClicks.toLocaleString()}</p>
+        <p className="text-4xl font-bold">{clicks !== null ? clicks.toLocaleString() : "Loading..."}</p>
       </div>
     </>
   )
