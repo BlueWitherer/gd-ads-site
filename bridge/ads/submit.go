@@ -1,23 +1,52 @@
 package ads
 
 import (
+	"io"
 	"net/http"
+	"os"
+	"path/filepath"
 
 	"bridge/log"
 )
 
 func init() {
 	http.HandleFunc("/api/ads/submit", func(w http.ResponseWriter, r *http.Request) {
-		log.Debug("Attempting to submit ad...")
-		log.Warn("This feature has not been implemented yet!")
-		header := w.Header()
+		if r.Method == http.MethodPost {
+			// Parse form with 10MB limit
+			r.ParseMultipartForm(10 << 20)
 
-		header.Set("Access-Control-Allow-Origin", "*")
-		header.Set("Access-Control-Allow-Methods", "POST")
-		header.Set("Access-Control-Allow-Headers", "Content-Type")
-		header.Set("Content-Type", "application/json")
+			// Get image file
+			file, handler, err := r.FormFile("image-upload")
+			if err != nil {
+				http.Error(w, "Image not found", http.StatusBadRequest)
+				return
+			}
 
-		w.WriteHeader(http.StatusNotImplemented)
-		http.Error(w, "Not implemented", http.StatusNotImplemented)
+			defer file.Close()
+
+			var adFolder string = r.Form.Get("type")
+
+			// Create target folder
+			targetDir := filepath.Join("..", "..", "ads", adFolder)
+			os.MkdirAll(targetDir, os.ModePerm)
+
+			// Save file
+			dstPath := filepath.Join(targetDir, handler.Filename)
+			dst, err := os.Create(dstPath)
+			if err != nil {
+				http.Error(w, "Failed to save image", http.StatusInternalServerError)
+				return
+			}
+
+			defer dst.Close()
+
+			io.Copy(dst, file)
+
+			log.Info("Saved image to " + dstPath)
+			w.Write([]byte(`{"status":"image saved"}`))
+		} else {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
 	})
 }

@@ -1,12 +1,14 @@
 package main
 
 import (
-	"bridge/log"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/url"
 	"os"
 	"strings"
+
+	"bridge/log"
 
 	"github.com/google/uuid"
 )
@@ -29,6 +31,17 @@ func generateSessionID() string {
 	return uuid.New().String() // or any secure random generator
 }
 
+func GetSessionFromId(id string) (*User, error) {
+	user, ok := sessions[id]
+	if !ok {
+		log.Error("User " + id + " not found")
+		return nil, fmt.Errorf("User not found")
+	}
+
+	log.Info("User " + id + " found and authorized")
+	return &user, nil
+}
+
 func getUserFromSession(r *http.Request) *User {
 	cookie, err := r.Cookie("session_id")
 	if err != nil {
@@ -36,14 +49,13 @@ func getUserFromSession(r *http.Request) *User {
 		return nil
 	}
 
-	user, ok := sessions[cookie.Value]
-	if !ok {
-		log.Error("User " + cookie.Value + " not found")
+	user, err := GetSessionFromId(cookie.Value)
+	if err != nil {
+		log.Error(err.Error())
 		return nil
 	}
 
-	log.Info("User " + cookie.Value + " found and authorized")
-	return &user
+	return user
 }
 
 func init() {
