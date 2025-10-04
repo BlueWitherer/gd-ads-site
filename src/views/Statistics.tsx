@@ -79,9 +79,17 @@ export default function Statistics() {
             <p className="text-4xl font-bold">
               {clicks !== null ? clicks.toLocaleString() : "Loading..."}
             </p>
-            <div style={{ fontSize: '1.2rem', color: '#4caf50', marginTop: '12px' }}>
-              {(views !== null && clicks !== null && views > 0) ? (
-                <span>Click/View Ratio: {((clicks / views) * 100).toFixed(2)}%</span>
+            <div
+              style={{
+                fontSize: "1.2rem",
+                color: "#4caf50",
+                marginTop: "12px",
+              }}
+            >
+              {views !== null && clicks !== null && views > 0 ? (
+                <span>
+                  Click/View Ratio: {((clicks / views) * 100).toFixed(2)}%
+                </span>
               ) : (
                 <span>Click/View Ratio: N/A</span>
               )}
