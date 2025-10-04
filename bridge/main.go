@@ -23,7 +23,13 @@ func main() {
 		asciiArt, err := os.ReadFile("../src/assets/aw-ascii.txt")
 		if err != nil {
 			log.Error("Failed to read ASCII art: " + err.Error())
-			w.Header().Set("Content-Type", "text/plain")
+			header := w.Header()
+
+			header.Set("Access-Control-Allow-Origin", "*")
+			header.Set("Access-Control-Allow-Methods", "GET")
+			header.Set("Access-Control-Allow-Headers", "Content-Type")
+			header.Set("Content-Type", "text/plain")
+
 			w.WriteHeader(http.StatusOK)
 			w.Write([]byte("pong!"))
 			return

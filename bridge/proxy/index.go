@@ -1,4 +1,4 @@
-package stats
+package proxy
 
 import (
 	"net/http"
@@ -7,8 +7,8 @@ import (
 )
 
 func init() {
-	http.HandleFunc("/api/stats", func(w http.ResponseWriter, r *http.Request) {
-		log.Debug("Statistics API service pinged")
+	http.HandleFunc("/api/proxy", func(w http.ResponseWriter, r *http.Request) {
+		log.Debug("Boomlings Proxy service pinged")
 		header := w.Header()
 
 		header.Set("Access-Control-Allow-Origin", "*")

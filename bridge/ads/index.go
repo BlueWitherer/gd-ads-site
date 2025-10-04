@@ -14,7 +14,7 @@ func init() {
 		header.Set("Access-Control-Allow-Origin", "*")
 		header.Set("Access-Control-Allow-Methods", "GET")
 		header.Set("Access-Control-Allow-Headers", "Content-Type")
-		header.Set("Content-Type", "application/json")
+		header.Set("Content-Type", "text/plain")
 
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("pong!"))

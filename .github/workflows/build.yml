@@ -78,9 +78,6 @@ jobs:
           name: bridge-binary
           path: bridge-binary
 
-      - name: Make bridge binary executable
-        run: chmod +x bridge-binary/bridge
-
       - name: Create release bundle
         run: |
           set -euo pipefail
@@ -106,3 +103,6 @@ jobs:
         with:
           name: release
           path: release
+
+      - name: Make binary executable
+        run: chmod +x release/bridge
