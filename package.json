@@ -11,6 +11,9 @@
     "start": "npm run build && cd ./build && bridge.exe"
   },
   "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/x-charts": "^8.13.1",
     "@tailwindcss/vite": "^4.1.14",
     "golang": "^0.1.5-stable",
     "react": "^19.1.1",

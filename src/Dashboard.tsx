@@ -5,6 +5,7 @@ import Statistics from "./views/Statistics";
 import Create from "./views/Create";
 import Leaderboard from "./views/Leaderboard";
 import Manage from "./views/Manage";
+import CreditsButton from "./Credits";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -39,15 +40,15 @@ export default function Dashboard() {
         <div className="sidebar-container">
           <button
             className="nine-slice-button padding-4 mt-4 mb-4"
-            onClick={() => setSelectedView("statistics")}
-          >
-            Statistics
-          </button>
-          <button
-            className="nine-slice-button padding-4 mt-4 mb-4"
             onClick={() => setSelectedView("create")}
           >
             Create
+          </button>
+          <button
+            className="nine-slice-button padding-4 mt-4 mb-4"
+            onClick={() => setSelectedView("statistics")}
+          >
+            Statistics
           </button>
           <button
             className="nine-slice-button padding-4 mt-4 mb-4"
@@ -86,6 +87,7 @@ export default function Dashboard() {
         </div>
         <div className="dashboard-container">{renderContent()}</div>
       </div>
+      <CreditsButton />
     </>
   );
 }

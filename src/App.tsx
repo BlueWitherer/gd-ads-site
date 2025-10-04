@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import './App.css'
 import './Log.mjs'
+import CreditsButton from './Credits';
 
 function App() {
   console.log('App rendered');
@@ -22,6 +23,7 @@ function App() {
           Login
         </button>
       </div>
+      <CreditsButton />
     </>
   )
 }
