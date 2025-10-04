@@ -10,19 +10,24 @@ export default function Statistics() {
   const [clicks, setClicks] = useState<number | null>(null);
 
   useEffect(() => {
-    async function fetchStats(endpoint: string): Promise<number> {
+    async function fetchStats(): Promise<number> {
       try {
-        const res = await fetch(`/api/stats/${endpoint}`);
-        if (res.ok) return parseInt(await res.text());
+        const res = await fetch(`/api/stats/get`);
+        if (res.ok) return await res.json().then((data) => {
+          setViews(data.views);
+          setClicks(data.clicks);
+
+          return 1;
+        });
+
         return 1;
       } catch (err) {
-        console.error("Error fetching stats:", err);
+        console.error("Error fetching ad stats:", err);
         return -1;
-      }
-    }
+      };
+    };
 
-    fetchStats("views").then(setViews);
-    fetchStats("clicks").then(setClicks);
+    fetchStats();
   }, []);
 
   const settings = {
@@ -30,6 +35,7 @@ export default function Statistics() {
     height: 200,
     hideLegend: true,
   };
+
   return (
     <>
       <h1 className="text-2xl font-bold mb-6">Statistics</h1>

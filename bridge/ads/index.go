@@ -9,8 +9,13 @@ import (
 func init() {
 	http.HandleFunc("/api/ads", func(w http.ResponseWriter, r *http.Request) {
 		log.Debug("Ads management API service pinged")
+		header := w.Header()
 
-		w.Header().Set("Content-Type", "application/json")
+		header.Set("Access-Control-Allow-Origin", "*")
+		header.Set("Access-Control-Allow-Methods", "GET")
+		header.Set("Access-Control-Allow-Headers", "Content-Type")
+		header.Set("Content-Type", "application/json")
+
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("pong!"))
 	})
