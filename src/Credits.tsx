@@ -6,7 +6,6 @@ export default function CreditsButton() {
   const [open, setOpen] = useState(false);
   return (
     <>
-      {/* Sprite Button */}
       <button
         className="sprite-button"
         style={{
@@ -33,11 +32,8 @@ export default function CreditsButton() {
           style={{ width: "100%", height: "100%", objectFit: "contain" }}
         />
       </button>
-
-      {/* Overlay and Popup */}
       {open && (
         <>
-          {/* Dimmed overlay */}
           <div
             className="credit-popup-overlay"
             style={{
@@ -52,7 +48,6 @@ export default function CreditsButton() {
             }}
             onClick={() => setOpen(false)}
           />
-          {/* Popup with elastic animation */}
           <div
             className="credit-popup-bg credit-popup-elastic"
             style={{
@@ -97,7 +92,6 @@ export default function CreditsButton() {
                   gap: "2em",
                 }}
               >
-                {/* ArcticWoof Column */}
                 <div
                   style={{
                     display: "flex",
@@ -126,7 +120,6 @@ export default function CreditsButton() {
                   <span style={{ fontSize: "0.8em" }}>Frontend/UI/UX</span>
                   <span style={{ fontSize: "0.8em" }}>Geode Mod</span>
                 </div>
-                {/* Cheeseworks Column */}
                 <div
                   style={{
                     display: "flex",
@@ -160,7 +153,7 @@ export default function CreditsButton() {
               </p>
             </div>
             <button
-              className="nine-slice-button small"
+              className="nine-slice-button large"
               style={{ marginTop: "8px" }}
               onClick={() => setOpen(false)}
             >
