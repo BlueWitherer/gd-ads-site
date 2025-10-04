@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	log.Info("Starting server on http://localhost:8080")
+	log.Info("Starting server on http://localhost:8081")
 
 	log.Debug("Serving static files")
 	fs := http.FileServer(http.Dir("../dist"))
@@ -25,7 +25,7 @@ func main() {
 	})
 
 	log.Done("Server started successfully")
-	http.ListenAndServe(":8080", nil)
+	http.ListenAndServe(":8081", nil)
 
 	log.Warn("Server stopped")
 }

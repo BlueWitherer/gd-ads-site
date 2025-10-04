@@ -4,11 +4,12 @@ import { useNavigate } from "react-router-dom";
 import Statistics from "./views/Statistics";
 import Create from "./views/Create";
 import Leaderboard from "./views/Leaderboard";
+import Manage from "./views/Manage";
 
 export default function Dashboard() {
   const navigate = useNavigate();
   const [selectedView, setSelectedView] = useState<
-    "statistics" | "create" | "leaderboard"
+    "statistics" | "create" | "leaderboard" | "manage"
   >("statistics");
 
   const logout = () => {
@@ -24,6 +25,8 @@ export default function Dashboard() {
         return <Create />;
       case "leaderboard":
         return <Leaderboard />;
+      case "manage":
+        return <Manage />;
       default:
         return null;
     }
@@ -51,6 +54,12 @@ export default function Dashboard() {
             onClick={() => setSelectedView("leaderboard")}
           >
             Leaderboard
+          </button>
+          <button
+            className="nine-slice-button padding-4 mt-4 mb-4"
+            onClick={() => setSelectedView("manage")}
+          >
+            Manage
           </button>
         </div>
         <div className="user-container">

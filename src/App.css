@@ -131,13 +131,17 @@
   top: 50%;
   transform: translateY(-50%);
   width: 700px;
+  height: 725px;
   min-height: 725px;
+  max-height: 725px;
   padding: 40px;
   border-style: solid;
   border-width: 24px;
   border-image: url('./assets/blacksquare.png') 24 fill stretch;
   background: transparent;
   pointer-events: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .user-container {
@@ -190,4 +194,60 @@
 .stats-table tbody tr:hover {
   background-color: rgba(255, 255, 255, 0.05);
   cursor: pointer;
+}
+
+.form-group {
+  text-align: left;
+}
+
+.custom-select {
+  width: 100%;
+  padding: 12px 16px;
+  font-size: 18px;
+  font-family: 'Righteous', sans-serif;
+  color: white;
+  background-color: rgba(0, 0, 0, 0.5);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+.custom-select:hover {
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.custom-select:focus {
+  outline: none;
+  border-color: rgba(110, 91, 255, 0.8);
+}
+
+.custom-select option {
+  background-color: rgba(30, 30, 30, 0.95);
+  color: white;
+}
+
+.nine-slice-button.small {
+  padding: 4px 16px;
+  font-size: 18px;
+  border-width: 20px;
+  border-image: url('./assets/button05.png') 20 fill stretch;
+}
+
+.image-preview {
+  width: 600px;
+  height: 320px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.3);
+}
+
+.image-preview img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
 }
