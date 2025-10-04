@@ -80,11 +80,9 @@ export default function Create() {
   const handleLevelIdChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const newLevelId = event.target.value;
     setLevelId(newLevelId);
-
     if (newLevelId.trim() === "") {
       setLevelValid(null);
-    } else {
-      checkLevelValidity(newLevelId);
+      setLevelName("");
     }
   };
 
@@ -213,12 +211,23 @@ export default function Create() {
       </div>
       <div className="form-group mb-6">
         <label className="text-lg font-bold mb-2 block">Level ID</label>
-        <input
-          className="custom-select"
-          placeholder="Enter Level ID"
-          value={levelId}
-          onChange={handleLevelIdChange}
-        />
+        <div style={{ display: "flex", alignItems: "center", gap: "1em" }}>
+          <input
+            className="custom-select"
+            placeholder="Enter Level ID"
+            value={levelId}
+            onChange={handleLevelIdChange}
+          />
+          <button
+            className="nine-slice-button small"
+            type="button"
+            style={{ padding: "0.5em 1em", fontSize: "1em" }}
+            onClick={() => checkLevelValidity(levelId)}
+            disabled={checkingLevel || !levelId.trim()}
+          >
+            Check
+          </button>
+        </div>
         <div style={{ marginTop: "8px", fontSize: "0.9em" }}>
           {checkingLevel && (
             <span style={{ color: "#888" }}>Checking level...</span>
