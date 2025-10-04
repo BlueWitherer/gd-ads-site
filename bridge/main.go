@@ -2,6 +2,7 @@ package main
 
 import (
 	"net/http"
+	"os"
 
 	_ "bridge/ads"
 	"bridge/log"
@@ -19,10 +20,18 @@ func main() {
 	log.Debug("Starting handlers")
 	http.HandleFunc("/api", func(w http.ResponseWriter, r *http.Request) {
 		log.Info("Server pinged!")
+		asciiArt, err := os.ReadFile("../src/assets/aw-ascii.txt")
+		if err != nil {
+			log.Error("Failed to read ASCII art: " + err.Error())
+			w.Header().Set("Content-Type", "text/plain")
+			w.WriteHeader(http.StatusOK)
+			w.Write([]byte("pong!"))
+			return
+		}
 
-		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("Content-Type", "text/plain")
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("pong!"))
+		w.Write(asciiArt)
 	})
 
 	log.Done("Server started successfully")
