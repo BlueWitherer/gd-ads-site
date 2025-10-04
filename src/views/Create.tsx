@@ -8,6 +8,7 @@ export default function Create() {
   const [imageDimensions, setImageDimensions] = useState<{ width: number; height: number } | null>(null);
   const [levelId, setLevelId] = useState<string>('');
   const [levelValid, setLevelValid] = useState<boolean | null>(null);
+  const [levelName, setLevelName] = useState<string>('');
   const [checkingLevel, setCheckingLevel] = useState<boolean>(false);
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -37,13 +38,11 @@ export default function Create() {
     try {
       const formData = new URLSearchParams();
       formData.append('levelID', id);
-      formData.append('secret', 'Wmfd2893gb7');
 
-      const response = await fetch('https://www.boomlings.com/database/downloadGJLevel22.php', {
+      const response = await fetch('http://localhost:8081/api/proxy/level', { // probs change this to a relative path later
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
-          'User-Agent': '',
         },
         body: formData.toString(),
       });
@@ -52,8 +51,17 @@ export default function Create() {
       
       if (data === '-1' || data.trim() === '-1') {
         setLevelValid(false);
+        setLevelName('');
       } else {
         setLevelValid(true);
+        // (format: 1:128:2:Level Name:3:...)
+        const parts = data.split(':');
+        const levelNameIndex = parts.indexOf('2');
+        if (levelNameIndex !== -1 && levelNameIndex + 1 < parts.length) {
+          setLevelName(parts[levelNameIndex + 1]);
+        } else {
+          setLevelName('');
+        }
       }
     } catch (error) {
       console.error('Error checking level validity:', error);
@@ -160,7 +168,11 @@ export default function Create() {
         />
         <div style={{ marginTop: '8px', fontSize: '0.9em' }}>
           {checkingLevel && <span style={{ color: '#888' }}>Checking level...</span>}
-          {!checkingLevel && levelValid === true && <span style={{ color: '#4CAF50' }}>✓ Valid level</span>}
+          {!checkingLevel && levelValid === true && (
+            <span style={{ color: '#4CAF50' }}>
+              ✓ Valid level{levelName && `: ${levelName}`}
+            </span>
+          )}
           {!checkingLevel && levelValid === false && <span style={{ color: '#f44336' }}>✗ Invalid level ID</span>}
         </div>
       </div>

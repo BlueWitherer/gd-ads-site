@@ -5,6 +5,7 @@ import (
 
 	_ "bridge/ads"
 	"bridge/log"
+	_ "bridge/proxy"
 	_ "bridge/stats"
 )
 
