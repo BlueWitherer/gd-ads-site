@@ -13,6 +13,7 @@ dist
 dist-ssr
 *.local
 build/*
+*.env
 
 # Editor directories and files
 .vscode/*
@@ -24,3 +25,7 @@ build/*
 *.njsproj
 *.sln
 *.sw?
+
+# Scripts
+*.sh
+*.bat

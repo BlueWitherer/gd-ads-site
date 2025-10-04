@@ -1,16 +1,9 @@
-import { useNavigate } from 'react-router-dom'
-import './App.css'
-import './Log.mjs'
+import { useNavigate } from 'react-router-dom';
+import './App.css';
 import CreditsButton from './Credits';
 
-function App() {
-  console.log('App rendered');
+export default function App() {
   const navigate = useNavigate();
-
-  const handleLogin = () => {
-    // test login
-    navigate('/dashboard');
-  };
 
   return (
     <>
@@ -19,13 +12,11 @@ function App() {
         <h1 className="text-3xl font-bold padding-4 mt-4 mb-8">
           Advertisement Manager
         </h1>
-        <button className="nine-slice-button" onClick={handleLogin}>
+        <button className="nine-slice-button" onClick={() => navigate('/dashboard')}>
           Login
         </button>
       </div>
       <CreditsButton />
     </>
-  )
+  );
 }
-
-export default App

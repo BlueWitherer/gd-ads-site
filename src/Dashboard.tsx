@@ -1,18 +1,36 @@
 import "./App.css";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Statistics from "./views/Statistics";
-import Create from "./views/Create";
-import Leaderboard from "./views/Leaderboard";
-import Manage from "./views/Manage";
-import Account from "./views/Account";
+import Statistics from "./dashboard/Statistics";
+import Create from "./dashboard/Create";
+import Leaderboard from "./dashboard/Leaderboard";
+import Manage from "./dashboard/Manage";
+import Account from "./dashboard/Account";
 import CreditsButton from "./Credits";
+import "./Log.mjs";
 
 export default function Dashboard() {
   const navigate = useNavigate();
   const [selectedView, setSelectedView] = useState<
     "statistics" | "create" | "leaderboard" | "manage" | "account"
   >("statistics");
+
+  const [user, setUser] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch("/session", { credentials: "include" })
+      .then(res => res.ok ? res.json() : null)
+      .then(data => {
+        if (data?.username && data?.id) {
+          setUser(data.username);
+          navigate("/dashboard");
+        } else {
+          navigate("/login");
+        }
+      })
+      .catch(() => navigate("/"))
+      .finally(() => console.log("User authorized"));
+  }, [navigate]);
 
   const logout = () => {
     // handle logout logic here
@@ -31,9 +49,10 @@ export default function Dashboard() {
         return <Manage />;
       case "account":
         return <Account />;
+
       default:
         return null;
-    }
+    };
   };
 
   return (
@@ -73,7 +92,7 @@ export default function Dashboard() {
           </button>
         </div>
         <div className="user-container">
-          <p className="text-lg">User Info</p>
+          <p className="text-lg">{user !== null ? user : "Guest"}</p>
           <button
             title="Log Out"
             className="nine-slice-button"

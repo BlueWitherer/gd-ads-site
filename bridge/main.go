@@ -1,8 +1,12 @@
 package main
 
 import (
+	"context"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	_ "bridge/ads"
 	"bridge/log"
@@ -11,7 +15,7 @@ import (
 )
 
 func main() {
-	log.Info("Starting server on http://localhost:8081")
+	log.Print("Starting server...")
 
 	log.Debug("Serving static files")
 	fs := http.FileServer(http.Dir("../dist"))
@@ -32,16 +36,34 @@ func main() {
 
 			w.WriteHeader(http.StatusOK)
 			w.Write([]byte("pong!"))
-			return
+		} else {
+			w.Header().Set("Content-Type", "text/plain")
+			w.WriteHeader(http.StatusOK)
+			w.Write(asciiArt)
 		}
-
-		w.Header().Set("Content-Type", "text/plain")
-		w.WriteHeader(http.StatusOK)
-		w.Write(asciiArt)
 	})
 
-	log.Done("Server started successfully")
-	http.ListenAndServe(":8081", nil)
+	srv := &http.Server{Addr: ":8081"}
 
-	log.Warn("Server stopped")
+	go func() {
+		log.Done("Server started successfully on host http://localhost:8081")
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Error(err.Error())
+		}
+	}()
+
+	// Wait for interrupt signal to gracefully shut down
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
+	<-quit
+
+	log.Warn("Shutting down server...")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
+	if err := srv.Shutdown(ctx); err != nil {
+		log.Error("Shutdown error: " + err.Error())
+	} else {
+		log.Print("Server stopped")
+	}
 }
