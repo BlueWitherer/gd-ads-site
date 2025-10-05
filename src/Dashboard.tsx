@@ -116,7 +116,7 @@ export default function Dashboard() {
             justifyContent: "space-between",
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
             {(() => {
               if (!user) return null;
               const avatarUrl =

@@ -20,7 +20,6 @@ export default function App() {
   }, [navigate]);
 
   const handleLogin = () => {
-    // Redirect to backend login endpoint which handles Discord OAuth
     window.location.href = '/login';
   };
 
