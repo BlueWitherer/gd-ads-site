@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import CreditsButton from "./Credits";
 import "./App.css";
 import "./Log.mjs";
 
@@ -13,6 +14,7 @@ export default function NotFound() {
 
   return (
     <>
+      <div id="background-scroll"></div>
       <div id="centered-container">
         <h1 className="text-6xl mt-8 mb-4">Oops!</h1>
         <h6 className="text-1xl mb-4">404 - Page Not Found</h6>
@@ -21,6 +23,7 @@ export default function NotFound() {
           Go Back
         </button>
       </div>
+      <CreditsButton />
     </>
   );
 }

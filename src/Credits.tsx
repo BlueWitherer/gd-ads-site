@@ -152,6 +152,14 @@ export default function CreditsButton() {
                 Assets by Geode Team and RobTop Games.
               </p>
             </div>
+            <a
+              href="https://arcticwoof.com.au/privacy/"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ color: "#fff", textDecoration: "underline", marginBottom: "8px" }}
+            >
+              Privacy Policy
+            </a>
             <button
               className="nine-slice-button large"
               style={{ marginTop: "8px" }}

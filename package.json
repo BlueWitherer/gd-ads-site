@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "concurrently \"vite --host\" \"cd ./bridge && npm run dev\"",
+    "dev": "npm run build && concurrently \"vite --host\" \"cd ./bridge && npm run dev\"",
     "build": "tsc -b && vite build && cd ./bridge && npm run build",
     "lint": "eslint .",
     "preview": "vite preview",

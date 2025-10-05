@@ -126,12 +126,11 @@ func init() {
 		})
 
 		log.Info("Redirecting to dashboard")
-		http.Redirect(w, r, "/", http.StatusFound)
+		http.Redirect(w, r, "/dashboard", http.StatusFound)
 	})
 
 	http.HandleFunc("/session", func(w http.ResponseWriter, r *http.Request) {
-		// Example: get user from session or cookie
-		user := getUserFromSession(r) // your logic here
+		user := getUserFromSession(r)
 
 		if user == nil {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
@@ -140,5 +139,25 @@ func init() {
 
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(user)
+	})
+
+	http.HandleFunc("/logout", func(w http.ResponseWriter, r *http.Request) {
+		cookie, err := r.Cookie("session_id")
+		if err == nil {
+			delete(sessions, cookie.Value)
+			log.Info("User " + cookie.Value + " logged out")
+		}
+
+		http.SetCookie(w, &http.Cookie{
+			Name:     "session_id",
+			Value:    "",
+			Path:     "/",
+			MaxAge:   -1, // bye bye cookie
+			HttpOnly: true,
+			Secure:   true,
+		})
+
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("Logged out successfully"))
 	})
 }

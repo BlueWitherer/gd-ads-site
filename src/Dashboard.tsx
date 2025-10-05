@@ -15,17 +15,26 @@ export default function Dashboard() {
     "statistics" | "create" | "leaderboard" | "manage" | "account"
   >("statistics");
 
-  const [user, setUser] = useState<string | null>(null);
+  const [user, setUser] = useState<{
+    id: string;
+    username: string;
+    avatar?: string | null;
+    discriminator?: string | null;
+  } | null>(null);
 
   useEffect(() => {
     fetch("/session", { credentials: "include" })
-      .then(res => res.ok ? res.json() : null)
-      .then(data => {
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
         if (data?.username && data?.id) {
-          setUser(data.username);
-          navigate("/dashboard");
+          setUser({
+            id: data.id,
+            username: data.username,
+            avatar: data.avatar ?? null,
+            discriminator: data.discriminator ?? null,
+          });
         } else {
-          navigate("/login");
+          navigate("/");
         }
       })
       .catch(() => navigate("/"))
@@ -33,8 +42,16 @@ export default function Dashboard() {
   }, [navigate]);
 
   const logout = () => {
-    // handle logout logic here
-    navigate("/"); // Redirect to login page
+    fetch("/logout", {
+      method: "POST",
+      credentials: "include",
+    })
+      .then(() => {
+        navigate("/");
+      })
+      .catch(() => {
+        navigate("/");
+      });
   };
 
   const renderContent = () => {
@@ -52,7 +69,7 @@ export default function Dashboard() {
 
       default:
         return null;
-    };
+    }
   };
 
   return (
@@ -91,8 +108,37 @@ export default function Dashboard() {
             Account
           </button>
         </div>
-        <div className="user-container">
-          <p className="text-lg">{user !== null ? user : "Guest"}</p>
+        <div
+          className="user-container"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            {(() => {
+              if (!user) return null;
+              const avatarUrl =
+                user.avatar && user.id
+                  ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=64`
+                  : user.discriminator
+                  ? `https://cdn.discordapp.com/embed/avatars/${
+                      parseInt(user.discriminator || "0", 10) % 5
+                    }.png`
+                  : null;
+              return avatarUrl ? (
+                <img
+                  src={avatarUrl}
+                  alt="avatar"
+                  style={{ width: 64, height: 64, borderRadius: 9999 }}
+                />
+              ) : null;
+            })()}
+
+            <p className="text-lg">{user !== null ? user.username : "Guest"}</p>
+          </div>
+
           <button
             title="Log Out"
             className="nine-slice-button"
@@ -107,11 +153,11 @@ export default function Dashboard() {
               viewBox="0 0 16 16"
             >
               <path
-                fill-rule="evenodd"
+                fillRule="evenodd"
                 d="M6 12.5a.5.5 0 0 0 .5.5h8a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 0-.5-.5h-8a.5.5 0 0 0-.5.5v2a.5.5 0 0 1-1 0v-2A1.5 1.5 0 0 1 6.5 2h8A1.5 1.5 0 0 1 16 3.5v9a1.5 1.5 0 0 1-1.5 1.5h-8A1.5 1.5 0 0 1 5 12.5v-2a.5.5 0 0 1 1 0z"
               />
               <path
-                fill-rule="evenodd"
+                fillRule="evenodd"
                 d="M.146 8.354a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L1.707 7.5H10.5a.5.5 0 0 1 0 1H1.707l2.147 2.146a.5.5 0 0 1-.708.708z"
               />
             </svg>

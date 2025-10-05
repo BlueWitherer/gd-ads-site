@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"path/filepath"
+	"strings"
 	"syscall"
 	"time"
 
@@ -16,10 +18,6 @@ import (
 
 func main() {
 	log.Print("Starting server...")
-
-	log.Debug("Serving static files")
-	fs := http.FileServer(http.Dir("../dist"))
-	http.Handle("/", fs)
 
 	log.Debug("Starting handlers")
 	http.HandleFunc("/api", func(w http.ResponseWriter, r *http.Request) {
@@ -41,6 +39,26 @@ func main() {
 			w.WriteHeader(http.StatusOK)
 			w.Write(asciiArt)
 		}
+	})
+
+	// SPA fallback
+	log.Debug("Setting up SPA fallback for client-side routing")
+	staticDir := "../dist"
+	fs := http.FileServer(http.Dir(staticDir))
+
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		requestedPath := strings.TrimPrefix(filepath.Clean(r.URL.Path), "/")
+		fullPath := filepath.Join(staticDir, requestedPath)
+		if requestedPath == "" || requestedPath == "." {
+			http.ServeFile(w, r, filepath.Join(staticDir, "index.html"))
+			return
+		}
+		if info, err := os.Stat(fullPath); err == nil && !info.IsDir() {
+			fs.ServeHTTP(w, r)
+			return
+		}
+		log.Debug("Serving index.html for SPA route: " + r.URL.Path)
+		http.ServeFile(w, r, filepath.Join(staticDir, "index.html"))
 	})
 
 	srv := &http.Server{Addr: ":8081"}

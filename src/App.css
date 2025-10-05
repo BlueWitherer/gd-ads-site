@@ -61,11 +61,22 @@
   z-index: 1;
   width: 1200px;
   height: 800px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   pointer-events: none;
   border-style: solid;
   border-width: 32px;
   border-image: url('./assets/square03.png') 32 fill stretch;
   background: transparent;
+}
+
+/* Allow interactive children inside the centered container to receive pointer events */
+#centered-container .nine-slice-button,
+#centered-container button,
+#centered-container a {
+  pointer-events: auto;
 }
 
 /* gradient overlay */
