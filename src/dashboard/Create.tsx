@@ -3,7 +3,7 @@ import { useState } from "react";
 
 export default function Create() {
   const [selectedSize, setSelectedSize] = useState<
-    "banner" | "square" | "vertical"
+    "banner" | "square" | "skyscraper"
   >("banner");
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imageName, setImageName] = useState<string>("");
@@ -30,14 +30,14 @@ export default function Create() {
         };
       };
       reader.readAsDataURL(file);
-    }
+    };
   };
 
   const checkLevelValidity = async (id: string) => {
     if (!id || id.trim() === "") {
       setLevelValid(null);
       return;
-    }
+    };
 
     setCheckingLevel(true);
     try {
@@ -67,14 +67,14 @@ export default function Create() {
           setLevelName(parts[levelNameIndex + 1]);
         } else {
           setLevelName("");
-        }
-      }
+        };
+      };
     } catch (error) {
       console.error("Error checking level validity:", error);
       setLevelValid(false);
     } finally {
       setCheckingLevel(false);
-    }
+    };
   };
 
   const handleLevelIdChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -83,7 +83,7 @@ export default function Create() {
     if (newLevelId.trim() === "") {
       setLevelValid(null);
       setLevelName("");
-    }
+    };
   };
 
   function handleSubmit() {
@@ -100,7 +100,7 @@ export default function Create() {
       )
         valid = true;
       if (
-        selectedSize === "vertical" &&
+        selectedSize === "skyscraper" &&
         img.width === 180 &&
         img.height === 1456
       )
@@ -146,13 +146,13 @@ export default function Create() {
           className="custom-select"
           value={selectedSize}
           onChange={(e) =>
-            setSelectedSize(e.target.value as "banner" | "square" | "vertical")
+            setSelectedSize(e.target.value as "banner" | "square" | "skyscraper")
           }
         >
           <option value="banner">Banner (1456 x 180)</option>
           <option value="square">Square (1456 x 1456)</option>{" "}
           {/* ill figure out the ratio  for this later */}
-          <option value="vertical">Vertical (180 x 1456)</option>
+          <option value="skyscraper">Skyscraper (180 x 1456)</option>
         </select>
       </div>
       <div className="form-group mb-6">
@@ -260,7 +260,7 @@ function getExpectedDimensions(selectedSize: string) {
       return "1456 x 180";
     case "square":
       return "1456 x 1456";
-    case "vertical":
+    case "skyscraper":
       return "180 x 1456";
     default:
       return "Unknown size";

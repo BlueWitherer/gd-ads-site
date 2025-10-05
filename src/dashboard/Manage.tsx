@@ -6,7 +6,7 @@ function Manage() {
   const adverts = [
     {
       id: 'ad-banner', // likely going to be just a number
-      type: 'Banner', // type of banner, square, vertical
+      type: 'Banner', // type of banner, square, skyscraper
       levelId: '123456', // level id associated with the ad
       expiration: '3 days left', // time left until expiration (7-6 days is green, 5-3 yellow, 2-0 red)
       image: 'https://via.placeholder.com/728x90?text=Banner+Ad', // endpoint of the ad image
@@ -19,11 +19,11 @@ function Manage() {
       image: 'https://via.placeholder.com/180x180?text=Square+Ad',
     },
     {
-      id: 'ad-vertical',
-      type: 'Vertical',
+      id: 'ad-skyscraper',
+      type: 'Skyscraper',
       levelId: '112233',
       expiration: '1 day left',
-      image: 'https://via.placeholder.com/90x728?text=Vertical+Ad',
+      image: 'https://via.placeholder.com/90x728?text=Skyscraper+Ad',
     },
   ];
 
@@ -31,7 +31,7 @@ function Manage() {
     <>
       <h1 className="text-2xl font-bold mb-6">Manage Advertisements</h1>
       <p className="text-lg">
-        Manage and configure your advertisement.
+        Manage and configure your active advertisements.
       </p>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '2em', marginTop: '1em' }}>
         {adverts.map(advert => (
@@ -75,7 +75,7 @@ function Manage() {
                 fontSize: '1em',
                 transition: 'background 0.2s',
               }}
-              onClick={() => {}}
+              onClick={() => { }}
             >
               Delete
             </button>
