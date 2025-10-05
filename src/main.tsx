@@ -5,10 +5,12 @@ import "./index.css";
 import App from "./App.tsx";
 import Dashboard from "./Dashboard.tsx";
 import NotFound from "./NotFound.tsx";
+import MobileWarning from "./MobileWarning";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <BrowserRouter>
+      <MobileWarning />
       <Routes>
         <Route path="/" element={<App />} />
         <Route path="/dashboard" element={<Dashboard />} />
