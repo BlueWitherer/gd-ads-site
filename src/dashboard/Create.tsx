@@ -1,5 +1,5 @@
 import "../App.css";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function Create() {
   const [selectedSize, setSelectedSize] = useState<
@@ -11,6 +11,9 @@ export default function Create() {
     width: number;
     height: number;
   } | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [uploading, setUploading] = useState<boolean>(false);
   const [levelId, setLevelId] = useState<string>("");
   const [levelValid, setLevelValid] = useState<boolean | null>(null);
   const [levelName, setLevelName] = useState<string>("");
@@ -19,6 +22,7 @@ export default function Create() {
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
+      setSelectedFile(file);
       setImageName(file.name);
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -32,6 +36,16 @@ export default function Create() {
       reader.readAsDataURL(file);
     };
   };
+
+  useEffect(() => {
+    // fetch session to get logged-in user's id for filename
+    fetch("/session", { credentials: "include" })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data?.id) setUserId(data.id);
+      })
+      .catch(() => setUserId(null));
+  }, []);
 
   const checkLevelValidity = async (id: string) => {
     if (!id || id.trim() === "") {
@@ -86,45 +100,124 @@ export default function Create() {
     };
   };
 
-  function handleSubmit() {
-    const img = document.createElement("img");
-    img.src = imagePreview || "";
-    img.onload = function () {
-      let valid = false;
-      if (selectedSize === "banner" && img.width === 1456 && img.height === 180)
-        valid = true;
-      if (
-        selectedSize === "square" &&
-        img.width === 1456 &&
-        img.height === 1456
-      )
-        valid = true;
-      if (
-        selectedSize === "skyscraper" &&
-        img.width === 180 &&
-        img.height === 1456
-      )
-        valid = true;
-      if (levelValid !== true) {
-        alert("Please enter a valid Level ID.");
-        return;
-      }
-      if (!valid) {
-        alert(
-          `Image dimensions do not match the selected size! Expected ${selectedSize} dimensions are: ${getExpectedDimensions(
-            selectedSize
-          )}`
-        );
-        return;
-      }
-      // submit loggin here, probs make it so it goes to the pending endpoint first then us to approve
-      // the image should be processed the following {accountid}-{levelid}-{1-3}.png
-      alert("Advertisement submitted!");
-    };
-    if (!imagePreview) {
+  async function handleSubmit() {
+    if (!selectedFile || !imagePreview) {
       alert("Please select an image.");
-    } else {
-      img.dispatchEvent(new Event("load"));
+      return;
+    }
+
+    if (levelValid !== true) {
+      alert("Please enter a valid Level ID.");
+      return;
+    }
+
+    if (!imageDimensions) {
+      alert("Image dimensions unknown. Please re-import the image.");
+      return;
+    }
+
+    // validate expected dimensions
+    const dims = imageDimensions;
+    let valid = false;
+    if (selectedSize === "banner" && dims.width === 1456 && dims.height === 180)
+      valid = true;
+    if (
+      selectedSize === "square" &&
+      dims.width === 1456 &&
+      dims.height === 1456
+    )
+      valid = true;
+    if (
+      selectedSize === "skyscraper" &&
+      dims.width === 180 &&
+      dims.height === 1456
+    )
+      valid = true;
+
+    if (!valid) {
+      alert(
+        `Image dimensions do not match the selected size! Expected ${selectedSize} dimensions are: ${getExpectedDimensions(
+          selectedSize
+        )}`
+      );
+      return;
+    }
+
+    if (!userId) {
+      alert("You must be logged in to submit an advertisement.");
+      return;
+    }
+
+    setUploading(true);
+
+    try {
+      // convert to WebP using canvas
+      const img = new Image();
+      img.src = imagePreview;
+      await new Promise<void>((resolve, reject) => {
+        img.onload = () => resolve();
+        img.onerror = () => reject(new Error("Failed to load image for conversion"));
+      });
+
+      const canvas = document.createElement("canvas");
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) throw new Error("Canvas unsupported");
+      ctx.drawImage(img, 0, 0);
+
+      const webpBlob: Blob | null = await new Promise((resolve) =>
+        canvas.toBlob(
+          (b) => resolve(b),
+          "image/webp",
+          0.92
+        )
+      );
+
+      let uploadBlob: Blob;
+      let ext = "webp";
+      if (webpBlob) {
+        uploadBlob = webpBlob;
+      } else {
+        // fallback: use original file
+        uploadBlob = selectedFile;
+        ext = selectedFile.name.split(".").pop() || "png";
+      }
+
+      const sizeNum = selectedSize === "banner" ? 1 : selectedSize === "square" ? 2 : 3;
+      const filename = `${userId}-${levelId}-${sizeNum}.${ext}`;
+
+      const formData = new FormData();
+      formData.append("image-upload", uploadBlob, filename);
+      formData.append("type", selectedSize);
+      formData.append("levelID", levelId);
+
+      const resp = await fetch("/api/ads/submit", {
+        method: "POST",
+        credentials: "include",
+        body: formData,
+      });
+
+      if (resp.ok) {
+        alert("Advertisement submitted!");
+        // reset form
+        setSelectedFile(null);
+        setImagePreview(null);
+        setImageName("");
+        setImageDimensions(null);
+        setLevelId("");
+        setLevelValid(null);
+        setLevelName("");
+      } else {
+        const txt = await resp.text();
+        console.error("Upload failed:", txt);
+        alert("Failed to submit advertisement.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("An error occurred while processing the image.");
+    } finally {
+      setUploading(false);
     }
   }
 
@@ -246,8 +339,12 @@ export default function Create() {
         className="form-group mb-6"
         style={{ display: "flex", justifyContent: "center" }}
       >
-        <button className="nine-slice-button small" onClick={handleSubmit}>
-          Submit
+        <button
+          className="nine-slice-button small"
+          onClick={handleSubmit}
+          disabled={uploading}
+        >
+          {uploading ? "Uploading..." : "Submit"}
         </button>
       </div>
     </>
