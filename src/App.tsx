@@ -2,20 +2,19 @@ import './App.css';
 import CreditsButton from './Credits';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import './Log.mjs';
 
 export default function App() {
   const navigate = useNavigate();
 
   useEffect(() => {
     fetch("/session", { credentials: "include" })
-      .then(res => res.ok ? res.json() : null)
-      .then(data => {
-        if (data?.username && data?.id) {
-          navigate("/dashboard");
-        }
+      .then((res) => res.ok ? res.json() : null)
+      .then((data) => {
+        if (data?.username && data?.id) navigate("/dashboard");
       })
       .catch(() => {
-        // User is not authenticated
+        console.error("User unauthorized");
       });
   }, [navigate]);
 

@@ -24,8 +24,8 @@ func init() {
 
 		log.Debug("Constructing stats object response...")
 		stats := Stats{
-			Views:  906,
-			Clicks: 24,
+			Views:  469,
+			Clicks: 167,
 		}
 
 		log.Info("Retrieved stats for user")
