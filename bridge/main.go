@@ -19,6 +19,12 @@ import (
 func main() {
 	log.Print("Starting server...")
 
+	// Initialize DB
+	if err := InitDB(); err != nil {
+		log.Error("Database initialization failed: " + err.Error())
+		// Continue running without DB, but many features will be disabled
+	}
+
 	log.Debug("Starting handlers")
 	http.HandleFunc("/api", func(w http.ResponseWriter, r *http.Request) {
 		log.Info("Server pinged!")

@@ -32,3 +32,6 @@ build
 # Scripts
 *.sh
 *.bat
+
+# Ignore build
+build/*
