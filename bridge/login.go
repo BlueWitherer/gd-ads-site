@@ -128,11 +128,6 @@ func init() {
 		sessionID := generateSessionID()
 		sessions[sessionID] = user
 
-		// Persist user to database (best-effort)
-		if err := UpsertUser(user); err != nil {
-			log.Error("Failed to upsert user to DB: " + err.Error())
-		}
-
 		log.Debug("Setting session cookie...")
 		http.SetCookie(w, &http.Cookie{
 			Name:     "session_id",
