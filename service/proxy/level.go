@@ -6,8 +6,8 @@ import (
 	"net/url"
 	"strings"
 
-	"bridge/access"
-	"bridge/log"
+	"service/access"
+	"service/log"
 )
 
 type Level struct {

@@ -3,7 +3,7 @@ package access
 import (
 	"net/http"
 
-	"bridge/log"
+	"service/log"
 )
 
 func init() {

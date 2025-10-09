@@ -1,14 +1,14 @@
-package ads
+package api
 
 import (
 	"net/http"
 
-	"bridge/log"
+	"service/log"
 )
 
 func init() {
-	http.HandleFunc("/ads/get", func(w http.ResponseWriter, r *http.Request) {
-		log.Debug("Attempting to get ad(s)...")
+	http.HandleFunc("/api/click", func(w http.ResponseWriter, r *http.Request) {
+		log.Debug("Registering click...")
 		log.Warn("This feature has not been implemented yet!")
 		header := w.Header()
 

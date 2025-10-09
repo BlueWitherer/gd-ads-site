@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strings"
 
-	"bridge/log"
+	"service/log"
 )
 
 func isInternal(ip string) bool {

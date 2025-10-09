@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"bridge/log"
+	"service/log"
 )
 
 type Stats struct {

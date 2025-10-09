@@ -29,12 +29,12 @@ jobs:
       - name: Install Node dependencies
         run: npm ci
 
-      - name: Build project (tsc, vite, bridge)
+      - name: Build project (tsc, vite, service)
         run: npm run build
 
-      - name: Ensure bridge binary is executable
+      - name: Ensure service binary is executable
         run: |
-          if [ -f build/bridge ]; then chmod +x build/bridge; fi
+          if [ -f build/service ]; then chmod +x build/service; fi
 
       - name: Upload frontend artifact
         run: |
@@ -48,17 +48,17 @@ jobs:
           name: frontend-dist
           path: artifacts/frontend-dist
 
-      - name: Upload bridge binary artifact
+      - name: Upload service binary artifact
         run: |
-          rm -rf artifacts/bridge-binary
-          mkdir -p artifacts/bridge-binary
-          cp build/bridge artifacts/bridge-binary/bridge
+          rm -rf artifacts/service-binary
+          mkdir -p artifacts/service-binary
+          cp build/service artifacts/service-binary/service
 
-      - name: Upload bridge binary artifact
+      - name: Upload service binary artifact
         uses: actions/upload-artifact@v4
         with:
-          name: bridge-binary
-          path: artifacts/bridge-binary
+          name: service-binary
+          path: artifacts/service-binary
 
   package:
     name: Package release
@@ -72,14 +72,14 @@ jobs:
           name: frontend-dist
           path: frontend-dist
 
-      - name: Download bridge artifact
+      - name: Download service artifact
         uses: actions/download-artifact@v4
         with:
-          name: bridge-binary
-          path: bridge-binary
+          name: service-binary
+          path: service-binary
 
-      - name: Reapply executable bit to bridge binary
-        run: chmod +x bridge-binary/bridge
+      - name: Reapply executable bit to service binary
+        run: chmod +x service-binary/service
 
       - name: Create release bundle
         run: |
@@ -94,10 +94,10 @@ jobs:
             exit 1
           fi
 
-          if [ -f bridge-binary/bridge ]; then
-            cp bridge-binary/bridge release/
+          if [ -f service-binary/service ]; then
+            cp service-binary/service release/
           else
-            echo "bridge-binary/bridge not found" >&2
+            echo "service-binary/service not found" >&2
             exit 1
           fi
 

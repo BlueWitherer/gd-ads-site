@@ -3,8 +3,8 @@ package ads
 import (
 	"net/http"
 
-	"bridge/access"
-	"bridge/log"
+	"service/access"
+	"service/log"
 )
 
 func init() {

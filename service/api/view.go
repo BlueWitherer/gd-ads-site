@@ -3,12 +3,12 @@ package api
 import (
 	"net/http"
 
-	"bridge/log"
+	"service/log"
 )
 
 func init() {
-	http.HandleFunc("/api/click", func(w http.ResponseWriter, r *http.Request) {
-		log.Debug("Registering click...")
+	http.HandleFunc("/api/view", func(w http.ResponseWriter, r *http.Request) {
+		log.Debug("Registering view...")
 		log.Warn("This feature has not been implemented yet!")
 		header := w.Header()
 

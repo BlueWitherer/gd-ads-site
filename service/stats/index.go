@@ -3,7 +3,7 @@ package stats
 import (
 	"net/http"
 
-	"bridge/log"
+	"service/log"
 )
 
 func init() {

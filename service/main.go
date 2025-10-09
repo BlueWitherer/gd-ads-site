@@ -10,10 +10,10 @@ import (
 	"syscall"
 	"time"
 
-	_ "bridge/ads"
-	"bridge/log"
-	_ "bridge/proxy"
-	_ "bridge/stats"
+	_ "service/ads"
+	"service/log"
+	_ "service/proxy"
+	_ "service/stats"
 )
 
 func main() {

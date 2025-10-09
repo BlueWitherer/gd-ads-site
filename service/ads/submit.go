@@ -6,7 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"bridge/log"
+	"service/log"
 )
 
 func init() {

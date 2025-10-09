@@ -8,7 +8,7 @@ import (
 	"os"
 	"strings"
 
-	"bridge/log"
+	"service/log"
 
 	"github.com/google/uuid"
 )
