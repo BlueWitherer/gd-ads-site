@@ -1,4 +1,4 @@
-package ads
+package api
 
 import (
 	"net/http"
@@ -7,8 +7,8 @@ import (
 )
 
 func init() {
-	http.HandleFunc("/ads/get", func(w http.ResponseWriter, r *http.Request) {
-		log.Debug("Attempting to get ad(s)...")
+	http.HandleFunc("/api/view", func(w http.ResponseWriter, r *http.Request) {
+		log.Debug("Registering view...")
 		log.Warn("This feature has not been implemented yet!")
 		header := w.Header()
 

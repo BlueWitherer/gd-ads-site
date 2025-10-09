@@ -7,7 +7,7 @@ import (
 )
 
 func init() {
-	http.HandleFunc("/api/stats", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/stats", func(w http.ResponseWriter, r *http.Request) {
 		log.Debug("Statistics API service pinged")
 		header := w.Header()
 

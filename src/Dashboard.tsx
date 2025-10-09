@@ -123,10 +123,9 @@ export default function Dashboard() {
                 user.avatar && user.id
                   ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=64`
                   : user.discriminator
-                  ? `https://cdn.discordapp.com/embed/avatars/${
-                      parseInt(user.discriminator || "0", 10) % 5
+                    ? `https://cdn.discordapp.com/embed/avatars/${parseInt(user.discriminator || "0", 10) % 5
                     }.png`
-                  : null;
+                    : null;
               return avatarUrl ? (
                 <img
                   src={avatarUrl}

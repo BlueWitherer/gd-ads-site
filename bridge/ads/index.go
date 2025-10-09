@@ -7,7 +7,7 @@ import (
 )
 
 func init() {
-	http.HandleFunc("/api/ads", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/ads", func(w http.ResponseWriter, r *http.Request) {
 		log.Debug("Ads management API service pinged")
 		header := w.Header()
 

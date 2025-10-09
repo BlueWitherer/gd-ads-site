@@ -58,7 +58,7 @@ export default function Create() {
       const formData = new URLSearchParams();
       formData.append("levelID", id);
 
-      const response = await fetch("/api/proxy/level", {
+      const response = await fetch("/proxy/level", {
         // probs change this to a relative path later
         method: "POST",
         headers: {
@@ -192,7 +192,7 @@ export default function Create() {
       formData.append("type", selectedSize);
       formData.append("levelID", levelId);
 
-      const resp = await fetch("/api/ads/submit", {
+      const resp = await fetch("/ads/submit", {
         method: "POST",
         credentials: "include",
         body: formData,

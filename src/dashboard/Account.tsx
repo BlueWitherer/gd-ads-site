@@ -26,7 +26,7 @@ export default function Account() {
             )
               return;
             try {
-              const res = await fetch("/api/account/delete", {
+              const res = await fetch("/account/delete", {
                 method: "POST",
                 credentials: "include",
               });
@@ -51,7 +51,7 @@ export default function Account() {
           className="nine-slice-button"
           onClick={async () => {
             try {
-              const res = await fetch("/api/ads/get?status=pending", {
+              const res = await fetch("/ads/get?status=pending", {
                 method: "GET",
                 credentials: "include",
               });

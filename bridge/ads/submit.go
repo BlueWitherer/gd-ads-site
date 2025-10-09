@@ -10,7 +10,7 @@ import (
 )
 
 func init() {
-	http.HandleFunc("/api/ads/submit", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/ads/submit", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodPost {
 			// Parse form with 10MB limit
 			r.ParseMultipartForm(10 << 20)

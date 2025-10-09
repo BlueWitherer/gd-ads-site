@@ -12,7 +12,7 @@ export default function Statistics() {
   useEffect(() => {
     async function fetchStats(): Promise<number> {
       try {
-        const res = await fetch(`/api/stats/get`);
+        const res = await fetch(`/stats/get`);
         if (res.ok) return await res.json().then((data) => {
           setViews(data.views);
           setClicks(data.clicks);

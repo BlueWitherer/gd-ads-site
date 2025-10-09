@@ -1,4 +1,4 @@
-package main
+package access
 
 import (
 	"encoding/json"
@@ -27,10 +27,6 @@ type Token struct {
 
 var sessions = map[string]User{} // sessionID -> User
 
-func generateSessionID() string {
-	return uuid.New().String() // or any secure random generator
-}
-
 func GetSessionFromId(id string) (*User, error) {
 	user, ok := sessions[id]
 	if !ok {
@@ -40,6 +36,10 @@ func GetSessionFromId(id string) (*User, error) {
 
 	log.Info("User " + id + " found and authorized")
 	return &user, nil
+}
+
+func generateSessionID() string {
+	return uuid.New().String() // or any secure random generator
 }
 
 func getUserFromSession(r *http.Request) *User {
@@ -85,7 +85,7 @@ func init() {
 		data.Set("code", code)
 		data.Set("redirect_uri", os.Getenv("DISCORD_REDIRECT_URI"))
 
-		req, _ := http.NewRequest("POST", "https://discord.com/api/oauth2/token", strings.NewReader(data.Encode()))
+		req, _ := http.NewRequest("POST", "https://discord.com/oauth2/token", strings.NewReader(data.Encode()))
 		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 		log.Debug("Sending data request to Discord...")
@@ -93,6 +93,7 @@ func init() {
 		client := &http.Client{}
 		resp, err := client.Do(req)
 		if err != nil {
+			log.Error(err.Error())
 			http.Error(w, "Token exchange failed", http.StatusInternalServerError)
 			return
 		}
@@ -107,10 +108,12 @@ func init() {
 		// Fetch user info from Discord
 		req, _ = http.NewRequest("GET", "https://discord.com/api/users/@me", nil)
 		req.Header.Set("Authorization", tokenResp.TokenType+" "+tokenResp.AccessToken)
+		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 		log.Debug("Getting user info...")
 		resp, err = client.Do(req)
 		if err != nil {
+			log.Error(err.Error())
 			http.Error(w, "Failed to fetch user info", http.StatusInternalServerError)
 			return
 		}
@@ -121,6 +124,7 @@ func init() {
 
 		log.Debug("Decoding user info...")
 		if err := json.NewDecoder(resp.Body).Decode(&user); err != nil {
+			log.Error(err.Error())
 			http.Error(w, "Failed to decode user info", http.StatusInternalServerError)
 			return
 		}
@@ -145,11 +149,15 @@ func init() {
 		user := getUserFromSession(r)
 
 		if user == nil {
+			log.Error("User does not exist")
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
 
-		w.Header().Set("Content-Type", "application/json")
+		header := w.Header()
+
+		w.WriteHeader(http.StatusOK)
+		header.Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(user)
 	})
 

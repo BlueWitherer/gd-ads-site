@@ -13,7 +13,7 @@ type Stats struct {
 }
 
 func init() {
-	http.HandleFunc("/api/stats/get", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/stats/get", func(w http.ResponseWriter, r *http.Request) {
 		log.Debug("Getting advertisement stats for user...")
 		header := w.Header()
 
