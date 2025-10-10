@@ -47,6 +47,11 @@ func init() {
 			log.Error(err.Error())
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		} else {
+			if ownerID, ownerErr := access.GetAdvertisementOwner(ad); ownerErr == nil && ownerID != "" {
+				if incErr := access.IncrementUserStats(ownerID, 0, 1); incErr != nil {
+					log.Error("Failed to increment total clicks: " + incErr.Error())
+				}
+			}
 			w.WriteHeader(http.StatusOK)
 			w.Write([]byte("Click registered!"))
 		}

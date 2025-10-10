@@ -47,6 +47,12 @@ func init() {
 			log.Error(err.Error())
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		} else {
+			// Increment ad owner's total views
+			if ownerID, ownerErr := access.GetAdvertisementOwner(ad); ownerErr == nil && ownerID != "" {
+				if incErr := access.IncrementUserStats(ownerID, 1, 0); incErr != nil {
+					log.Error("Failed to increment total views: " + incErr.Error())
+				}
+			}
 			w.WriteHeader(http.StatusOK)
 			w.Write([]byte("View registered!"))
 		}

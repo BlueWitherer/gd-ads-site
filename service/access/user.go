@@ -158,6 +158,11 @@ func init() {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
+		if err := UpsertUser(user.ID, user.Username); err != nil {
+			log.Error("Failed to upsert user: " + err.Error())
+			return
+			// session failed when DB write failed
+		}
 
 		sessionID := generateSessionID()
 		sessions[sessionID] = user

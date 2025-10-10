@@ -1,23 +1,30 @@
 package ads
 
 import (
-	"net/http"
+    "encoding/json"
+    "net/http"
 
-	"service/log"
+    "service/access"
+    "service/log"
 )
 
 func init() {
-	http.HandleFunc("/ads/get", func(w http.ResponseWriter, r *http.Request) {
-		log.Debug("Attempting to get ad(s)...")
-		log.Warn("This feature has not been implemented yet!")
-		header := w.Header()
+    http.HandleFunc("/ads/get", func(w http.ResponseWriter, r *http.Request) {
+        // require login
+        userID, err := access.GetSessionUserID(r)
+        if err != nil || userID == "" {
+            http.Error(w, "Unauthorized", http.StatusUnauthorized)
+            return
+        }
 
-		header.Set("Access-Control-Allow-Origin", "*")
-		header.Set("Access-Control-Allow-Methods", "GET")
-		header.Set("Access-Control-Allow-Headers", "Content-Type")
-		header.Set("Content-Type", "application/json")
+        ads, err := access.ListAdvertisementsByUser(userID)
+        if err != nil {
+            log.Error("List ads failed: " + err.Error())
+            http.Error(w, "Failed to fetch ads", http.StatusInternalServerError)
+            return
+        }
 
-		w.WriteHeader(http.StatusNotImplemented)
-		http.Error(w, "Not implemented", http.StatusNotImplemented)
-	})
+        w.Header().Set("Content-Type", "application/json")
+        json.NewEncoder(w).Encode(ads)
+    })
 }

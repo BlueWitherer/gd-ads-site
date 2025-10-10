@@ -1,17 +1,28 @@
 package ads
 
 import (
+	"fmt"
 	"io"
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
+	"strings"
 
+	"service/access"
 	"service/log"
 )
 
 func init() {
 	http.HandleFunc("/ads/submit", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodPost {
+			// Require logged-in session
+			userID, err := access.GetSessionUserID(r)
+			if err != nil || userID == "" {
+				http.Error(w, "Unauthorized", http.StatusUnauthorized)
+				return
+			}
+
 			// Parse form with 10MB limit
 			r.ParseMultipartForm(10 << 20)
 
@@ -25,13 +36,34 @@ func init() {
 			defer file.Close()
 
 			var adFolder string = r.Form.Get("type")
+			levelID := r.Form.Get("levelID")
+			if adFolder == "" || levelID == "" {
+				http.Error(w, "Missing type or levelID", http.StatusBadRequest)
+				return
+			}
+
+			// Map type to number
+			typeNum := 0
+			switch adFolder {
+			case "banner":
+				typeNum = 1
+			case "square":
+				typeNum = 2
+			case "skyscraper":
+				typeNum = 3
+			default:
+				http.Error(w, "Invalid ad type", http.StatusBadRequest)
+				return
+			}
 
 			// Create target folder
 			targetDir := filepath.Join("..", "..", "ads", adFolder)
 			os.MkdirAll(targetDir, os.ModePerm)
 
 			// Save file
-			dstPath := filepath.Join(targetDir, handler.Filename)
+			// Sanitize filename to prevent path traversal
+			baseName := filepath.Base(handler.Filename)
+			dstPath := filepath.Join(targetDir, baseName)
 			dst, err := os.Create(dstPath)
 			if err != nil {
 				http.Error(w, "Failed to save image", http.StatusInternalServerError)
@@ -40,10 +72,25 @@ func init() {
 
 			defer dst.Close()
 
-			io.Copy(dst, file)
+			if _, err := io.Copy(dst, file); err != nil {
+				http.Error(w, "Failed to write image", http.StatusInternalServerError)
+				return
+			}
 
-			log.Info("Saved image to " + dstPath)
-			w.Write([]byte(`{"status":"image saved"}`))
+			// Build a URL-ish path for retrieval; adjust base URL if you serve ads statically
+			imageURL := strings.Join([]string{"/ads", adFolder, baseName}, "/")
+
+			// Create DB row for the advertisement
+			adID, err := access.CreateAdvertisement(userID, levelID, typeNum, imageURL)
+			if err != nil {
+				log.Error("Failed to create advertisement row: " + err.Error())
+				http.Error(w, "Failed to save advertisement", http.StatusInternalServerError)
+				return
+			}
+
+			log.Info("Saved image to " + dstPath + ", ad_id=" + strconv.FormatInt(adID, 10) + ", user_id=" + userID)
+			w.Header().Set("Content-Type", "application/json")
+			w.Write([]byte(fmt.Sprintf(`{"status":"ok","ad_id":%d,"image_url":"%s"}`, adID, imageURL)))
 		} else {
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 			return
