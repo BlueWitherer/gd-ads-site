@@ -70,7 +70,7 @@ func init() {
 	log.Print("MariaDB connection established.")
 }
 
-//  inserts a new user or updates username if it already exists.
+// inserts a new user or updates username if it already exists.
 func UpsertUser(id string, username string) error {
 	if id == "" {
 		return errors.New("empty user id")
@@ -92,7 +92,7 @@ func IncrementUserStats(userID string, viewsDelta, clicksDelta int) error {
 	return err
 }
 
-//  inserts an ad row
+// inserts an ad row
 func CreateAdvertisement(userID, levelID string, adType int, imageURL string) (int64, error) {
 	if userID == "" || levelID == "" || imageURL == "" {
 		return 0, errors.New("missing ad fields")
