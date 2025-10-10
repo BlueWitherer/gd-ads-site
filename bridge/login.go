@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"os"
@@ -85,7 +86,14 @@ func init() {
 		data.Set("code", code)
 		data.Set("redirect_uri", os.Getenv("DISCORD_REDIRECT_URI"))
 
-		req, _ := http.NewRequest("POST", "https://discord.com/api/oauth2/token", strings.NewReader(data.Encode()))
+		encoded := data.Encode()
+		// redact client_secret in logs
+		secret := os.Getenv("DISCORD_CLIENT_SECRET")
+		redacted := strings.ReplaceAll(encoded, secret, "<redacted>")
+
+		log.Debug("Token request body (redacted): " + redacted)
+
+		req, _ := http.NewRequest("POST", "https://discord.com/api/oauth2/token", strings.NewReader(encoded))
 		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 		log.Debug("Sending data request to Discord...")
@@ -101,8 +109,24 @@ func init() {
 
 		tokenResp := Token{}
 
-		log.Debug("Decoding token...")
-		json.NewDecoder(resp.Body).Decode(&tokenResp)
+		// Read token response body so we can log on error and still attempt decode
+		tokenBody, _ := io.ReadAll(resp.Body)
+		log.Debug("Token endpoint status: " + resp.Status)
+		log.Debug("Token endpoint body: " + string(tokenBody))
+		if resp.Request != nil {
+			log.Debug("Token endpoint final URL: " + resp.Request.URL.String())
+		}
+		if err := json.Unmarshal(tokenBody, &tokenResp); err != nil {
+			log.Error("Failed to decode token response: " + err.Error())
+			http.Error(w, "Token decode failed", http.StatusInternalServerError)
+			return
+		}
+
+		if tokenResp.AccessToken == "" {
+			log.Error("No access token returned from Discord")
+			http.Error(w, "No access token", http.StatusInternalServerError)
+			return
+		}
 
 		// Fetch user info from Discord
 		req, _ = http.NewRequest("GET", "https://discord.com/api/users/@me", nil)
@@ -119,14 +143,31 @@ func init() {
 
 		user := User{}
 
-		log.Debug("Decoding user info...")
-		if err := json.NewDecoder(resp.Body).Decode(&user); err != nil {
+		// Read user response body so we can log and validate
+		userBody, _ := io.ReadAll(resp.Body)
+		log.Debug("User endpoint status: " + resp.Status)
+		log.Debug("User endpoint body: " + string(userBody))
+		if err := json.Unmarshal(userBody, &user); err != nil {
+			log.Error("Failed to decode user info: " + err.Error())
 			http.Error(w, "Failed to decode user info", http.StatusInternalServerError)
+			return
+		}
+
+		if user.ID == "" {
+			log.Error("Discord returned empty user id")
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
 
 		sessionID := generateSessionID()
 		sessions[sessionID] = user
+
+		// Log the created session and user for debugging
+		if jb, err := json.Marshal(user); err == nil {
+			log.Debug("Creating session: id=" + sessionID + " user=" + string(jb))
+		} else {
+			log.Debug("Creating session: id=" + sessionID + " (failed to marshal user)")
+		}
 
 		secure := false
 		if r.TLS != nil || os.Getenv("ENV") == "production" {
@@ -147,7 +188,7 @@ func init() {
 			cookie.SameSite = http.SameSiteLaxMode
 		}
 
-		log.Debug("Setting session cookie...")
+		log.Debug("Setting session cookie: " + cookie.String())
 		http.SetCookie(w, cookie)
 
 		log.Info("Redirecting to dashboard")
@@ -155,6 +196,13 @@ func init() {
 	})
 
 	http.HandleFunc("/session", func(w http.ResponseWriter, r *http.Request) {
+		// Log incoming cookie on session request
+		if c, err := r.Cookie("session_id"); err == nil {
+			log.Debug("/session request cookie: " + c.Value)
+		} else {
+			log.Debug("/session request no cookie: " + err.Error())
+		}
+
 		user := getUserFromSession(r)
 
 		if user == nil {
@@ -163,6 +211,16 @@ func init() {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
+		if user != nil {
+			if jb, err := json.Marshal(user); err == nil {
+				log.Debug("/session returning user: " + string(jb))
+			} else {
+				log.Debug("/session returning user: (failed to marshal)")
+			}
+		} else {
+			log.Debug("/session returning nil user")
+		}
+
 		json.NewEncoder(w).Encode(user)
 	})
 
