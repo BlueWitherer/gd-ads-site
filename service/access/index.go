@@ -16,6 +16,7 @@ func isInternal(ip string) bool {
 		strings.HasPrefix(ip, "172.")
 }
 
+// Check if the request was received internally (not recommended)
 func Restrict(ip string) (int, error) {
 	log.Debug("Checking internal address " + ip)
 

@@ -25,8 +25,9 @@ type Token struct {
 	TokenType   string `json:"token_type"`
 }
 
-var sessions = map[string]User{} // sessionID -> User
+var sessions = map[string]User{} // session ID -> User{}
 
+// Get an ongoing user session if found
 func GetSessionFromId(id string) (*User, error) {
 	user, ok := sessions[id]
 	if !ok {
