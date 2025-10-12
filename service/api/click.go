@@ -52,6 +52,7 @@ func init() {
 					log.Error("Failed to increment total clicks: " + incErr.Error())
 				}
 			}
+
 			w.WriteHeader(http.StatusOK)
 			w.Write([]byte("Click registered!"))
 		}

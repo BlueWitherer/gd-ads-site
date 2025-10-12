@@ -111,10 +111,17 @@ func init() {
 
 		tokenBody, _ := io.ReadAll(resp.Body)
 		log.Debug("Token endpoint status: " + resp.Status)
-		//log.Debug("Token endpoint body: " + string(tokenBody))
+
+		if !strings.Contains(resp.Header.Get("Content-Type"), "application/json") {
+			log.Error("Discord returned non-JSON: " + string(tokenBody))
+			http.Error(w, "Discord returned unexpected response", http.StatusInternalServerError)
+			return
+		}
+
 		if resp.Request != nil {
 			log.Debug("Token endpoint final URL: " + resp.Request.URL.String())
 		}
+
 		if err := json.Unmarshal(tokenBody, &tokenResp); err != nil {
 			log.Error("Failed to decode token response: " + err.Error())
 			http.Error(w, "Token decode failed", http.StatusInternalServerError)
@@ -250,6 +257,7 @@ func init() {
 			HttpOnly: true,
 			Secure:   secure,
 		}
+
 		if secure {
 			clearCookie.SameSite = http.SameSiteNoneMode
 		} else {

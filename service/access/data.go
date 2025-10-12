@@ -2,7 +2,7 @@ package access
 
 import (
 	"database/sql"
-	"errors"
+	"fmt"
 	"net/http"
 	"os"
 	"time"
@@ -16,14 +16,14 @@ var data *sql.DB
 
 type AdEvent string
 
-const (
-	AdEventView  AdEvent = "view"  // For views
-	AdEventClick AdEvent = "click" // For clicks
+const ( // Table to save stats
+	AdEventView  AdEvent = "views"  // For views
+	AdEventClick AdEvent = "clicks" // For clicks
 )
 
 type StatBy string
 
-const (
+const ( // Row to filter through
 	StatByAd   StatBy = "ad_id"   // Filter stats by ad
 	StatByUser StatBy = "user_id" // Filter stats by user
 )
@@ -39,17 +39,108 @@ type AdRow struct {
 }
 
 // Register a new client event for an ad
-func NewStat(event AdEvent, ad int64, user interface{}) error {
+func NewStat(event AdEvent, ad int64, user int64) error {
 	log.Debug("Registering new " + event)
-	stmt, err := data.Prepare("INSERT INTO ad_views (ad_id, user_id, timestamp) VALUES (?, ?, ?)")
+	sql := fmt.Sprintf("INSERT INTO %s (ad_id, user_id, timestamp) VALUES (?, ?, ?)", event)
+
+	stmt, err := data.Prepare(sql)
 	if err != nil {
 		return err
 	}
 
-	// Coerce numeric user to string transparently
-	userID := user.(int64) // user is passed as int64
-	_, err = stmt.Exec(ad, userID, time.Now())
+	_, err = stmt.Exec(ad, user, time.Now())
 	return err
+}
+
+// inserts a new user or updates username if it already exists.
+func UpsertUser(id string, username string) error {
+	if id == "" {
+		return fmt.Errorf("empty user id")
+	}
+
+	// For MariaDB: use INSERT ... ON DUPLICATE KEY UPDATE
+	sql := `INSERT INTO users (id, username) VALUES (?, ?) ON DUPLICATE KEY UPDATE username = VALUES(username), updated_at = CURRENT_TIMESTAMP`
+	_, err := data.Exec(sql, id, username)
+	return err
+}
+
+// increments total_views or total_clicks for a user.
+func IncrementUserStats(userID string, viewsDelta int, clicksDelta int) error {
+	if userID == "" {
+		return fmt.Errorf("empty user id")
+	}
+
+	sql := `UPDATE users SET total_views = total_views + ?, total_clicks = total_clicks + ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`
+	_, err := data.Exec(sql, viewsDelta, clicksDelta, userID)
+	return err
+}
+
+// inserts an ad row
+func CreateAdvertisement(userID, levelID string, adType int, imageURL string) (int64, error) {
+	if userID == "" || levelID == "" || imageURL == "" {
+		return 0, fmt.Errorf("missing ad fields")
+	}
+
+	res, err := data.Exec(`INSERT INTO advertisements (user_id, level_id, type, image_url) VALUES (?, ?, ?, ?)`, userID, levelID, adType, imageURL)
+	if err != nil {
+		return 0, err
+	}
+
+	id, _ := res.LastInsertId()
+	return id, nil
+}
+
+// extracts the logged-in user's ID from the session cookie via access session map
+func GetSessionUserID(r *http.Request) (string, error) {
+	c, err := r.Cookie("session_id")
+	if err != nil {
+		return "", err
+	}
+
+	u, err := GetSessionFromId(c.Value)
+	if err != nil || u == nil {
+		if err == nil {
+			err = fmt.Errorf("no user in session")
+		}
+
+		return "", err
+	}
+
+	return u.ID, nil
+}
+
+// fetches all ads for a given user
+func ListAdvertisementsByUser(userID string) ([]AdRow, error) {
+	rows, err := data.Query(`SELECT ad_id, user_id, level_id, type, image_url, created_at FROM advertisements WHERE user_id = ? ORDER BY ad_id DESC`, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	var out []AdRow
+	for rows.Next() {
+		var r AdRow
+		if err := rows.Scan(&r.AdID, &r.UserID, &r.LevelID, &r.Type, &r.ImageURL, &r.Created); err != nil {
+			return nil, err
+		}
+
+		out = append(out, r)
+	}
+
+	return out, rows.Err()
+}
+
+// returns the owning user_id for an ad
+func GetAdvertisementOwner(adID int64) (string, error) {
+	var uid string
+
+	err := data.QueryRow(`SELECT user_id FROM advertisements WHERE ad_id = ?`, adID).Scan(&uid)
+	if err != nil {
+		return "", err
+	}
+
+	return uid, nil
 }
 
 func init() {
@@ -68,83 +159,4 @@ func init() {
 	}
 
 	log.Print("MariaDB connection established.")
-}
-
-// inserts a new user or updates username if it already exists.
-func UpsertUser(id string, username string) error {
-	if id == "" {
-		return errors.New("empty user id")
-	}
-	// For MariaDB: use INSERT ... ON DUPLICATE KEY UPDATE
-	q := `INSERT INTO users (id, username) VALUES (?, ?)
-		  ON DUPLICATE KEY UPDATE username = VALUES(username), updated_at = CURRENT_TIMESTAMP`
-	_, err := data.Exec(q, id, username)
-	return err
-}
-
-// increments total_views or total_clicks for a user.
-func IncrementUserStats(userID string, viewsDelta, clicksDelta int) error {
-	if userID == "" {
-		return errors.New("empty user id")
-	}
-	q := `UPDATE users SET total_views = total_views + ?, total_clicks = total_clicks + ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`
-	_, err := data.Exec(q, viewsDelta, clicksDelta, userID)
-	return err
-}
-
-// inserts an ad row
-func CreateAdvertisement(userID, levelID string, adType int, imageURL string) (int64, error) {
-	if userID == "" || levelID == "" || imageURL == "" {
-		return 0, errors.New("missing ad fields")
-	}
-	res, err := data.Exec(`INSERT INTO advertisements (user_id, level_id, type, image_url) VALUES (?, ?, ?, ?)`, userID, levelID, adType, imageURL)
-	if err != nil {
-		return 0, err
-	}
-	id, _ := res.LastInsertId()
-	return id, nil
-}
-
-// extracts the logged-in user's ID from the session cookie via access session map
-func GetSessionUserID(r *http.Request) (string, error) {
-	c, err := r.Cookie("session_id")
-	if err != nil {
-		return "", err
-	}
-	u, err := GetSessionFromId(c.Value)
-	if err != nil || u == nil {
-		if err == nil {
-			err = errors.New("no user in session")
-		}
-		return "", err
-	}
-	return u.ID, nil
-}
-
-// fetches all ads for a given user
-func ListAdvertisementsByUser(userID string) ([]AdRow, error) {
-	rows, err := data.Query(`SELECT ad_id, user_id, level_id, type, image_url, created_at FROM advertisements WHERE user_id = ? ORDER BY ad_id DESC`, userID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var out []AdRow
-	for rows.Next() {
-		var r AdRow
-		if err := rows.Scan(&r.AdID, &r.UserID, &r.LevelID, &r.Type, &r.ImageURL, &r.Created); err != nil {
-			return nil, err
-		}
-		out = append(out, r)
-	}
-	return out, rows.Err()
-}
-
-// returns the owning user_id for an ad
-func GetAdvertisementOwner(adID int64) (string, error) {
-	var uid string
-	err := data.QueryRow(`SELECT user_id FROM advertisements WHERE ad_id = ?`, adID).Scan(&uid)
-	if err != nil {
-		return "", err
-	}
-	return uid, nil
 }
