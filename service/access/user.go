@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"os"
 	"strings"
+	"time"
 
 	"service/log"
 
@@ -58,7 +59,7 @@ func GetSessionUserID(r *http.Request) (string, error) {
 }
 
 func generateSessionID() string {
-	return uuid.New().String() // or any secure random generator
+	return uuid.New().String() // v4
 }
 
 func getUserFromSession(r *http.Request) *User {
@@ -210,22 +211,23 @@ func init() {
 			secure = true
 		}
 
-		cookie := &http.Cookie{
+		session := &http.Cookie{
 			Name:     "session_id",
 			Value:    sessionID,
 			Path:     "/",
 			HttpOnly: true,
 			Secure:   secure,
+			Expires:  time.Now().Add(30 * 24 * time.Hour),
 		}
 
 		if secure {
-			cookie.SameSite = http.SameSiteNoneMode
+			session.SameSite = http.SameSiteNoneMode
 		} else {
-			cookie.SameSite = http.SameSiteLaxMode
+			session.SameSite = http.SameSiteLaxMode
 		}
 
 		log.Debug("Setting session cookie...")
-		http.SetCookie(w, cookie)
+		http.SetCookie(w, session)
 
 		// Debug log created session
 		if jb, err := json.Marshal(user); err == nil {
