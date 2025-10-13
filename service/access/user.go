@@ -117,8 +117,7 @@ func init() {
 		data.Set("redirect_uri", os.Getenv("DISCORD_REDIRECT_URI"))
 
 		encoded := data.Encode()
-		secret := os.Getenv("DISCORD_CLIENT_SECRET")
-		redacted := strings.ReplaceAll(encoded, secret, "<redacted>")
+		redacted := strings.ReplaceAll(encoded, os.Getenv("DISCORD_CLIENT_SECRET"), "<redacted>")
 		log.Debug("Token request body (redacted): " + redacted)
 
 		req, _ := http.NewRequest("POST", "https://discord.com/api/oauth2/token", strings.NewReader(encoded))
@@ -288,12 +287,7 @@ func init() {
 			MaxAge:   -1, // bye bye cookie
 			HttpOnly: true,
 			Secure:   secure,
-		}
-
-		if secure {
-			clearCookie.SameSite = http.SameSiteNoneMode
-		} else {
-			clearCookie.SameSite = http.SameSiteLaxMode
+			SameSite: http.SameSiteNoneMode,
 		}
 
 		http.SetCookie(w, clearCookie)
