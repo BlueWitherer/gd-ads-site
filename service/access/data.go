@@ -3,7 +3,6 @@ package access
 import (
 	"database/sql"
 	"fmt"
-	"net/http"
 	"os"
 	"time"
 
@@ -38,12 +37,22 @@ type AdRow struct {
 	Created  string `json:"created_at"`
 }
 
+// private method to safely prepare the sql statement
+func safePrepare(db *sql.DB, sql string) (*sql.Stmt, error) {
+	if db != nil {
+		log.Debug("Preparing connection for statement")
+		return db.Prepare(sql)
+	} else {
+		return nil, fmt.Errorf("database connection non-existent")
+	}
+}
+
 // Register a new client event for an ad
 func NewStat(event AdEvent, ad int64, user int64) error {
 	log.Debug("Registering new " + event)
 	sql := fmt.Sprintf("INSERT INTO %s (ad_id, user_id, timestamp) VALUES (?, ?, ?)", event)
 
-	stmt, err := data.Prepare(sql)
+	stmt, err := safePrepare(data, sql)
 	if err != nil {
 		return err
 	}
@@ -58,9 +67,12 @@ func UpsertUser(id string, username string) error {
 		return fmt.Errorf("empty user id")
 	}
 
-	// For MariaDB: use INSERT ... ON DUPLICATE KEY UPDATE
-	sql := `INSERT INTO users (id, username) VALUES (?, ?) ON DUPLICATE KEY UPDATE username = VALUES(username), updated_at = CURRENT_TIMESTAMP`
-	_, err := data.Exec(sql, id, username)
+	stmt, err := safePrepare(data, "INSERT INTO users (username, id) VALUES (?, ?) ON DUPLICATE KEY UPDATE username = VALUES (?), updated_at = CURRENT_TIMESTAMP")
+	if err != nil {
+		return err
+	}
+
+	_, err = stmt.Exec(username, id)
 	return err
 }
 
@@ -70,8 +82,12 @@ func IncrementUserStats(userID string, viewsDelta int, clicksDelta int) error {
 		return fmt.Errorf("empty user id")
 	}
 
-	sql := `UPDATE users SET total_views = total_views + ?, total_clicks = total_clicks + ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`
-	_, err := data.Exec(sql, viewsDelta, clicksDelta, userID)
+	stmt, err := safePrepare(data, "UPDATE users SET total_views = total_views + ?, total_clicks = total_clicks + ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?")
+	if err != nil {
+		return err
+	}
+
+	_, err = stmt.Exec(viewsDelta, clicksDelta, userID)
 	return err
 }
 
@@ -81,32 +97,18 @@ func CreateAdvertisement(userID, levelID string, adType int, imageURL string) (i
 		return 0, fmt.Errorf("missing ad fields")
 	}
 
-	res, err := data.Exec(`INSERT INTO advertisements (user_id, level_id, type, image_url) VALUES (?, ?, ?, ?)`, userID, levelID, adType, imageURL)
+	stmt, err := safePrepare(data, "INSERT INTO advertisements (user_id, level_id, type, image_url) VALUES (?, ?, ?, ?)")
+	if err != nil {
+		return 0, err
+	}
+
+	res, err := stmt.Exec(userID, levelID, adType, imageURL)
 	if err != nil {
 		return 0, err
 	}
 
 	id, _ := res.LastInsertId()
 	return id, nil
-}
-
-// extracts the logged-in user's ID from the session cookie via access session map
-func GetSessionUserID(r *http.Request) (string, error) {
-	c, err := r.Cookie("session_id")
-	if err != nil {
-		return "", err
-	}
-
-	u, err := GetSessionFromId(c.Value)
-	if err != nil || u == nil {
-		if err == nil {
-			err = fmt.Errorf("no user in session")
-		}
-
-		return "", err
-	}
-
-	return u.ID, nil
 }
 
 // fetches all ads for a given user
@@ -146,6 +148,7 @@ func GetAdvertisementOwner(adID int64) (string, error) {
 func init() {
 	var err error
 
+	log.Info("Connecting to database with URI: " + os.Getenv("DB_URI"))
 	data, err = sql.Open("mysql", os.Getenv("DB_URI"))
 	if err != nil {
 		log.Error(err.Error())
@@ -155,6 +158,9 @@ func init() {
 	err = data.Ping()
 	if err != nil {
 		log.Error(err.Error())
+		return
+	} else if data == nil {
+		log.Error("Database connection is nil")
 		return
 	}
 

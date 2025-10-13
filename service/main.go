@@ -19,7 +19,7 @@ import (
 func main() {
 	log.Print("Starting server...")
 
-	log.Debug("Starting handlers")
+	log.Debug("Starting handlers...")
 	http.HandleFunc("/api", func(w http.ResponseWriter, r *http.Request) {
 		log.Info("Server pinged!")
 		asciiArt, err := os.ReadFile("../src/assets/aw-ascii.txt")

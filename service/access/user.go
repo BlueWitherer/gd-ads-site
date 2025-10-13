@@ -32,12 +32,29 @@ var sessions = map[string]User{} // session ID -> User{}
 func GetSessionFromId(id string) (*User, error) {
 	user, ok := sessions[id]
 	if !ok {
-		log.Error("User " + id + " not found")
 		return nil, fmt.Errorf("User not found")
 	}
 
-	log.Info("User " + id + " found and authorized")
 	return &user, nil
+}
+
+// extracts the logged-in user's ID from the session cookie via access session map
+func GetSessionUserID(r *http.Request) (string, error) {
+	c, err := r.Cookie("session_id")
+	if err != nil {
+		return "", err
+	}
+
+	u, err := GetSessionFromId(c.Value)
+	if err != nil || u == nil {
+		if err == nil {
+			err = fmt.Errorf("no user in session")
+		}
+
+		return "", err
+	}
+
+	return u.ID, nil
 }
 
 func generateSessionID() string {
@@ -68,7 +85,18 @@ func init() {
 			"&redirect_uri=" + os.Getenv("DISCORD_REDIRECT_URI") +
 			"&response_type=code" +
 			"&scope=identify"
-		http.Redirect(w, r, redirectURL, http.StatusFound)
+
+		user, err := GetSessionUserID(r)
+		if err != nil {
+			log.Error(err.Error())
+			http.Redirect(w, r, redirectURL, http.StatusFound)
+		} else if user != "" {
+			log.Info("Redirecting from login to dashboard")
+			http.Redirect(w, r, "/dashboard", http.StatusFound)
+		} else {
+			log.Debug("panic time ig")
+			http.Redirect(w, r, redirectURL, http.StatusFound)
+		}
 	})
 
 	http.HandleFunc("/callback", func(w http.ResponseWriter, r *http.Request) {
@@ -165,9 +193,11 @@ func init() {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
+
 		if err := UpsertUser(user.ID, user.Username); err != nil {
 			log.Error("Failed to upsert user: " + err.Error())
-			return
+			// http.Error(w, err.Error(), http.StatusInternalServerError)
+			// return
 			// session failed when DB write failed
 		}
 
