@@ -16,15 +16,15 @@ func isInternal(ip string) bool {
 		strings.HasPrefix(ip, "172.")
 }
 
-// Check if the request was received internally (not recommended)
+// Check if the request was received internally (for testing with sensitive data)
 func Restrict(ip string) (int, error) {
-	log.Debug("Checking internal address " + ip)
+	log.Debug("Checking internal address %s", ip)
 
 	if isInternal(ip) {
-		log.Error("Address " + ip + " forbidden for use of internal API")
+		log.Error("Address %s forbidden for use of internal API", ip)
 		return http.StatusForbidden, fmt.Errorf("Forbidden")
 	} else {
-		log.Info("Address " + ip + " authorized for use of internal API")
+		log.Info("Address %s authorized for use of internal API", ip)
 		return http.StatusOK, nil
 	}
 }

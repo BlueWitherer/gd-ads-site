@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
@@ -11,6 +12,7 @@ import (
 	"time"
 
 	_ "service/ads"
+	_ "service/database"
 	"service/log"
 	_ "service/proxy"
 	_ "service/stats"
@@ -24,7 +26,7 @@ func main() {
 		log.Info("Server pinged!")
 		asciiArt, err := os.ReadFile("../src/assets/aw-ascii.txt")
 		if err != nil {
-			log.Error("Failed to read ASCII art: " + err.Error())
+			log.Error("Failed to read ASCII art: %s", err.Error())
 			header := w.Header()
 
 			header.Set("Access-Control-Allow-Origin", "*")
@@ -47,24 +49,35 @@ func main() {
 	fs := http.FileServer(http.Dir(staticDir))
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		scheme := "http"
+		if r.TLS != nil {
+			scheme = "https"
+		}
+
+		fullURL := fmt.Sprintf("%s://%s%s", scheme, r.Host, r.RequestURI)
+		log.Debug("Received request for host %s", fullURL)
+
 		requestedPath := strings.TrimPrefix(filepath.Clean(r.URL.Path), "/")
 		fullPath := filepath.Join(staticDir, requestedPath)
 		if requestedPath == "" || requestedPath == "." {
 			http.ServeFile(w, r, filepath.Join(staticDir, "index.html"))
 			return
 		}
-		if info, err := os.Stat(fullPath); err == nil && !info.IsDir() {
+
+		info, err := os.Stat(fullPath)
+		if err == nil && !info.IsDir() {
 			fs.ServeHTTP(w, r)
 			return
 		}
-		log.Debug("Serving index.html for SPA route: " + r.URL.Path)
+
+		log.Debug("Serving index.html for SPA route: %s", r.URL.Path)
 		http.ServeFile(w, r, filepath.Join(staticDir, "index.html"))
 	})
 
 	srv := &http.Server{Addr: ":8081"}
 
 	go func() {
-		log.Done("Server started successfully on host http://localhost:8081")
+		log.Done("Server started successfully on host http://localhost%s", srv.Addr)
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Error(err.Error())
 		}

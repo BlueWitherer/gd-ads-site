@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"service/access"
+	"service/database"
 	"service/log"
 )
 
@@ -17,9 +18,9 @@ func init() {
 			return
 		}
 
-		ads, err := access.ListAdvertisementsByUser(userID)
+		ads, err := database.ListAdvertisementsByUser(userID)
 		if err != nil {
-			log.Error("List ads failed: " + err.Error())
+			log.Error("List ads failed: %s", err.Error())
 			http.Error(w, "Failed to fetch ads", http.StatusInternalServerError)
 			return
 		}

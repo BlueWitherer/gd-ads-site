@@ -56,7 +56,7 @@ export default function Create() {
     setCheckingLevel(true);
     try {
       const formData = new URLSearchParams();
-      formData.append("levelID", id);
+      formData.append("level-id", id);
 
       const response = await fetch("/proxy/level", {
         // probs change this to a relative path later
@@ -190,7 +190,7 @@ export default function Create() {
       const formData = new FormData();
       formData.append("image-upload", uploadBlob, filename);
       formData.append("type", selectedSize);
-      formData.append("levelID", levelId);
+      formData.append("level-id", levelId);
 
       const resp = await fetch("/ads/submit", {
         method: "POST",

@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"service/access"
+	"service/database"
 	"service/log"
 )
 
@@ -28,28 +28,26 @@ func init() {
 
 		ad, err = strconv.ParseInt(adStr, 10, 64)
 		if err != nil {
-			log.Error("Failed to get ad ID")
-			log.Error(err.Error())
+			log.Error("Failed to get ad ID: %s", err.Error())
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 
 		user, err = strconv.ParseInt(userStr, 10, 64)
 		if err != nil {
-			log.Error("Failed to get user ID")
-			log.Error(err.Error())
+			log.Error("Failed to get user ID: %s", err.Error())
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 
-		err = access.NewStat(access.AdEventClick, ad, user)
+		err = database.NewStat(database.AdEventClick, ad, user)
 		if err != nil {
-			log.Error(err.Error())
+			log.Error("Failed to create database click statistic: %s", err.Error())
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		} else {
-			if ownerID, ownerErr := access.GetAdvertisementOwner(ad); ownerErr == nil && ownerID != "" {
-				if incErr := access.IncrementUserStats(ownerID, 0, 1); incErr != nil {
-					log.Error("Failed to increment total clicks: " + incErr.Error())
+			if ownerID, ownerErr := database.GetAdvertisementOwner(ad); ownerErr == nil && ownerID != "" {
+				if incErr := database.IncrementUserStats(ownerID, 0, 1); incErr != nil {
+					log.Error("Failed to increment total clicks: %s", incErr.Error())
 				}
 			}
 

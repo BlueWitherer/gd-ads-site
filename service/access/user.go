@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"service/database"
 	"service/log"
 
 	"github.com/google/uuid"
@@ -194,7 +195,7 @@ func init() {
 			return
 		}
 
-		if err := UpsertUser(user.ID, user.Username); err != nil {
+		if err := database.UpsertUser(user.ID, user.Username); err != nil {
 			log.Error("Failed to upsert user: " + err.Error())
 			// http.Error(w, err.Error(), http.StatusInternalServerError)
 			// return

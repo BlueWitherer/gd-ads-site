@@ -6,10 +6,10 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"strconv"
 	"strings"
 
 	"service/access"
+	"service/database"
 	"service/log"
 )
 
@@ -35,7 +35,7 @@ func init() {
 
 			defer file.Close()
 
-			var adFolder string = r.Form.Get("type")
+			adFolder := r.Form.Get("type")
 			levelID := r.Form.Get("levelID")
 			if adFolder == "" || levelID == "" {
 				http.Error(w, "Missing type or levelID", http.StatusBadRequest)
@@ -47,18 +47,26 @@ func init() {
 			switch adFolder {
 			case "banner":
 				typeNum = 1
+
 			case "square":
 				typeNum = 2
+
 			case "skyscraper":
 				typeNum = 3
+
 			default:
 				http.Error(w, "Invalid ad type", http.StatusBadRequest)
 				return
 			}
 
 			// Create target folder
-			targetDir := filepath.Join("..", "..", "ads", adFolder)
-			os.MkdirAll(targetDir, os.ModePerm)
+			targetDir := filepath.Join("..", "..", "ad_storage", adFolder)
+			err = os.MkdirAll(targetDir, os.ModePerm)
+			if err != nil {
+				log.Error("Failed to get directory %s", err.Error())
+				http.Error(w, "Failed to get directory", http.StatusInternalServerError)
+				return
+			}
 
 			// Save file
 			// Sanitize filename to prevent path traversal
@@ -66,6 +74,7 @@ func init() {
 			dstPath := filepath.Join(targetDir, baseName)
 			dst, err := os.Create(dstPath)
 			if err != nil {
+				log.Error(err.Error())
 				http.Error(w, "Failed to save image", http.StatusInternalServerError)
 				return
 			}
@@ -73,7 +82,8 @@ func init() {
 			defer dst.Close()
 
 			if _, err := io.Copy(dst, file); err != nil {
-				http.Error(w, "Failed to write image", http.StatusInternalServerError)
+				log.Error(err.Error())
+				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
 
@@ -81,14 +91,14 @@ func init() {
 			imageURL := strings.Join([]string{"/ads", adFolder, baseName}, "/")
 
 			// Create DB row for the advertisement
-			adID, err := access.CreateAdvertisement(userID, levelID, typeNum, imageURL)
+			adID, err := database.CreateAdvertisement(userID, levelID, typeNum, imageURL)
 			if err != nil {
-				log.Error("Failed to create advertisement row: " + err.Error())
-				http.Error(w, "Failed to save advertisement", http.StatusInternalServerError)
+				log.Error("Failed to create advertisement row: %s", err.Error())
+				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
 
-			log.Info("Saved image to " + dstPath + ", ad_id=" + strconv.FormatInt(adID, 10) + ", user_id=" + userID)
+			log.Info("Saved image to %s, ad_id=%v, user_id=%s", dstPath, adID, userID)
 			w.Header().Set("Content-Type", "application/json")
 			w.Write([]byte(fmt.Sprintf(`{"status":"ok","ad_id":%d,"image_url":"%s"}`, adID, imageURL)))
 		} else {

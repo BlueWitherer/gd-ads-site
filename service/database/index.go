@@ -1,4 +1,4 @@
-package access
+package database
 
 import (
 	"database/sql"
@@ -11,6 +11,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
+// Concurrent database connection
 var data *sql.DB
 
 type AdEvent string
