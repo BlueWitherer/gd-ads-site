@@ -28,3 +28,12 @@ func Restrict(ip string) (int, error) {
 		return http.StatusOK, nil
 	}
 }
+
+func FullURL(r *http.Request) string {
+	scheme := "http"
+	if r.TLS != nil {
+		scheme = "https"
+	}
+
+	return fmt.Sprintf("%s://%s%s", scheme, r.Host, r.RequestURI)
+}

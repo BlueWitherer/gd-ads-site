@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
@@ -11,6 +10,7 @@ import (
 	"syscall"
 	"time"
 
+	"service/access"
 	_ "service/ads"
 	_ "service/database"
 	"service/log"
@@ -49,13 +49,7 @@ func main() {
 	fs := http.FileServer(http.Dir(staticDir))
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		scheme := "http"
-		if r.TLS != nil {
-			scheme = "https"
-		}
-
-		fullURL := fmt.Sprintf("%s://%s%s", scheme, r.Host, r.RequestURI)
-		log.Debug("Received request for host %s", fullURL)
+		log.Debug("Received request for host %s", access.FullURL(r))
 
 		requestedPath := strings.TrimPrefix(filepath.Clean(r.URL.Path), "/")
 		fullPath := filepath.Join(staticDir, requestedPath)

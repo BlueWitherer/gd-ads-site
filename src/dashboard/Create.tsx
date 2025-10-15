@@ -208,6 +208,9 @@ export default function Create() {
         setLevelId("");
         setLevelValid(null);
         setLevelName("");
+
+        const r = await resp.json();
+        console.debug(`Ad of ID ${r["ad_id"]} stored at ${r["image_url"]}`);
       } else {
         const txt = await resp.text();
         console.error("Upload failed:", txt);

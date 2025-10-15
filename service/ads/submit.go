@@ -29,6 +29,7 @@ func init() {
 			// Get image file
 			file, handler, err := r.FormFile("image-upload")
 			if err != nil {
+				log.Error(err.Error())
 				http.Error(w, "Image not found", http.StatusBadRequest)
 				return
 			}
@@ -36,7 +37,7 @@ func init() {
 			defer file.Close()
 
 			adFolder := r.Form.Get("type")
-			levelID := r.Form.Get("levelID")
+			levelID := r.Form.Get("level-id")
 			if adFolder == "" || levelID == "" {
 				http.Error(w, "Missing type or levelID", http.StatusBadRequest)
 				return
@@ -60,7 +61,7 @@ func init() {
 			}
 
 			// Create target folder
-			targetDir := filepath.Join("..", "..", "ad_storage", adFolder)
+			targetDir := filepath.Join("..", "ad_storage", adFolder)
 			err = os.MkdirAll(targetDir, os.ModePerm)
 			if err != nil {
 				log.Error("Failed to get directory %s", err.Error())
@@ -68,10 +69,8 @@ func init() {
 				return
 			}
 
-			// Save file
-			// Sanitize filename to prevent path traversal
-			baseName := filepath.Base(handler.Filename)
-			dstPath := filepath.Join(targetDir, baseName)
+			fileName := filepath.Base(handler.Filename)
+			dstPath := filepath.Join(targetDir, fileName)
 			dst, err := os.Create(dstPath)
 			if err != nil {
 				log.Error(err.Error())
@@ -88,14 +87,14 @@ func init() {
 			}
 
 			// Build a URL-ish path for retrieval; adjust base URL if you serve ads statically
-			imageURL := strings.Join([]string{"/ads", adFolder, baseName}, "/")
+			imageURL := strings.Join([]string{access.FullURL(r), "ad_storage", adFolder, fileName}, "/")
 
 			// Create DB row for the advertisement
 			adID, err := database.CreateAdvertisement(userID, levelID, typeNum, imageURL)
 			if err != nil {
 				log.Error("Failed to create advertisement row: %s", err.Error())
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
+				// http.Error(w, err.Error(), http.StatusInternalServerError)
+				// return
 			}
 
 			log.Info("Saved image to %s, ad_id=%v, user_id=%s", dstPath, adID, userID)

@@ -60,23 +60,21 @@ func GetSessionUserID(r *http.Request) (string, error) {
 }
 
 func generateSessionID() string {
-	return uuid.New().String() // v4
+	return uuid.New().String() // uuid v4
 }
 
-func getUserFromSession(r *http.Request) *User {
+func getUserFromSession(r *http.Request) (*User, error) {
 	cookie, err := r.Cookie("session_id")
 	if err != nil {
-		log.Error(err.Error())
-		return nil
+		return nil, err
 	}
 
 	user, err := GetSessionFromId(cookie.Value)
 	if err != nil {
-		log.Error(err.Error())
-		return nil
+		return nil, err
 	}
 
-	return user
+	return user, nil
 }
 
 func init() {
@@ -248,10 +246,9 @@ func init() {
 			log.Debug("/session request no cookie: " + err.Error())
 		}
 
-		user := getUserFromSession(r)
-
-		if user == nil {
-			log.Error("User does not exist")
+		user, err := getUserFromSession(r)
+		if err != nil {
+			log.Error(err.Error())
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}

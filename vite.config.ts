@@ -4,16 +4,16 @@ import tailwindcss from '@tailwindcss/vite'
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [
+  "plugins": [
     react({
-      babel: {
-        plugins: [['babel-plugin-react-compiler']],
+      "babel": {
+        "plugins": [['babel-plugin-react-compiler']],
       },
     }),
     tailwindcss(),
   ],
-  server: {
-    proxy: {
+  "server": {
+    "proxy": {
       '/session': 'http://localhost:8081',
       '/login': 'http://localhost:8081',
       '/logout': 'http://localhost:8081',
@@ -22,5 +22,8 @@ export default defineConfig({
       '/proxy': 'http://localhost:8081',
       '/account': 'http://localhost:8081',
     },
+  },
+  "build": {
+    "chunkSizeWarningLimit": 1024,
   },
 });
