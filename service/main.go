@@ -18,6 +18,28 @@ import (
 	_ "service/stats"
 )
 
+func expiryCleanupRoutine(adFolder string) {
+	go func() {
+		for {
+			adsDir := filepath.Join("..", "ad_storage", adFolder)
+			files, _ := os.ReadDir(adsDir)
+			for _, file := range files {
+				info, err := file.Info()
+				if err != nil {
+					log.Error("Failed to get ad file info for %s: %s", file.Name(), err.Error())
+					continue
+				}
+
+				if time.Since(info.ModTime()) > 7*24*time.Hour {
+					os.Remove(filepath.Join(adsDir, file.Name()))
+				}
+			}
+
+			time.Sleep(12 * time.Hour) // Run twice a day
+		}
+	}()
+}
+
 func main() {
 	log.Print("Starting server...")
 
@@ -71,7 +93,12 @@ func main() {
 	srv := &http.Server{Addr: ":8081"}
 
 	go func() {
+		expiryCleanupRoutine("banner")
+		expiryCleanupRoutine("skyscraper")
+		expiryCleanupRoutine("square")
+
 		log.Done("Server started successfully on host http://localhost%s", srv.Addr)
+
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Error(err.Error())
 		}

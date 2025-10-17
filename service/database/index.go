@@ -39,7 +39,7 @@ type AdRow struct {
 }
 
 // private method to safely prepare the sql statement
-func safePrepare(db *sql.DB, sql string) (*sql.Stmt, error) {
+func prepareStmt(db *sql.DB, sql string) (*sql.Stmt, error) {
 	if db != nil {
 		log.Debug("Preparing connection for statement")
 		return db.Prepare(sql)
@@ -53,7 +53,7 @@ func NewStat(event AdEvent, ad int64, user int64) error {
 	log.Debug("Registering new " + event)
 	sql := fmt.Sprintf("INSERT INTO %s (ad_id, user_id, timestamp) VALUES (?, ?, ?)", event)
 
-	stmt, err := safePrepare(data, sql)
+	stmt, err := prepareStmt(data, sql)
 	if err != nil {
 		return err
 	}
@@ -68,7 +68,7 @@ func UpsertUser(id string, username string) error {
 		return fmt.Errorf("empty user id")
 	}
 
-	stmt, err := safePrepare(data, "INSERT INTO users (username, id) VALUES (?, ?) ON DUPLICATE KEY UPDATE username = VALUES (?), updated_at = CURRENT_TIMESTAMP")
+	stmt, err := prepareStmt(data, "INSERT INTO users (username, id) VALUES (?, ?) ON DUPLICATE KEY UPDATE username = VALUES (username), updated_at = CURRENT_TIMESTAMP")
 	if err != nil {
 		return err
 	}
@@ -83,7 +83,7 @@ func IncrementUserStats(userID string, viewsDelta int, clicksDelta int) error {
 		return fmt.Errorf("empty user id")
 	}
 
-	stmt, err := safePrepare(data, "UPDATE users SET total_views = total_views + ?, total_clicks = total_clicks + ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?")
+	stmt, err := prepareStmt(data, "UPDATE users SET total_views = total_views + ?, total_clicks = total_clicks + ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?")
 	if err != nil {
 		return err
 	}
@@ -98,7 +98,7 @@ func CreateAdvertisement(userID, levelID string, adType int, imageURL string) (i
 		return 0, fmt.Errorf("missing ad fields")
 	}
 
-	stmt, err := safePrepare(data, "INSERT INTO advertisements (user_id, level_id, type, image_url) VALUES (?, ?, ?, ?)")
+	stmt, err := prepareStmt(data, "INSERT INTO advertisements (user_id, level_id, type, image_url) VALUES (?, ?, ?, ?)")
 	if err != nil {
 		return 0, err
 	}
@@ -114,7 +114,12 @@ func CreateAdvertisement(userID, levelID string, adType int, imageURL string) (i
 
 // fetches all ads for a given user
 func ListAdvertisementsByUser(userID string) ([]AdRow, error) {
-	rows, err := data.Query(`SELECT ad_id, user_id, level_id, type, image_url, created_at FROM advertisements WHERE user_id = ? ORDER BY ad_id DESC`, userID)
+	stmt, err := prepareStmt(data, "SELECT ad_id, user_id, level_id, type, image_url, created_at FROM advertisements WHERE user_id = ? ORDER BY ad_id DESC")
+	if err != nil {
+		return nil, err
+	}
+
+	rows, err := stmt.Query(userID)
 	if err != nil {
 		return nil, err
 	}
@@ -138,7 +143,12 @@ func ListAdvertisementsByUser(userID string) ([]AdRow, error) {
 func GetAdvertisementOwner(adID int64) (string, error) {
 	var uid string
 
-	err := data.QueryRow(`SELECT user_id FROM advertisements WHERE ad_id = ?`, adID).Scan(&uid)
+	stmt, err := prepareStmt(data, "SELECT user_id FROM advertisements WHERE ad_id = ?")
+	if err != nil {
+		return "", err
+	}
+
+	err = stmt.QueryRow(adID).Scan(&uid)
 	if err != nil {
 		return "", err
 	}
@@ -146,19 +156,40 @@ func GetAdvertisementOwner(adID int64) (string, error) {
 	return uid, nil
 }
 
+func DeleteAllExpiredAds() error {
+	stmt, err := prepareStmt(data, "DELETE FROM advertisements WHERE created_at < NOW() - INTERVAL 7 DAY")
+	if err != nil {
+		return err
+	}
+
+	_, err = stmt.Exec()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func init() {
 	var err error
 
-	log.Info("Connecting to database with URI: " + os.Getenv("DB_URI"))
-	data, err = sql.Open("mysql", os.Getenv("DB_URI"))
+	uri := fmt.Sprintf("%s:%s@tcp(%s)/%s",
+		os.Getenv("DB_USER"),
+		os.Getenv("DB_PASS"),
+		os.Getenv("DB_HOST"),
+		os.Getenv("DB_NAME"),
+	)
+
+	log.Info("Connecting to database with URI: " + uri)
+	data, err = sql.Open("mysql", uri)
 	if err != nil {
-		log.Error(err.Error())
+		log.Error("Failed to establish MariaDB connection: %s", err.Error())
 		return
 	}
 
 	err = data.Ping()
 	if err != nil {
-		log.Error(err.Error())
+		log.Error("Failed to ping database: %s", err.Error())
 		return
 	} else if data == nil {
 		log.Error("Database connection is nil")
