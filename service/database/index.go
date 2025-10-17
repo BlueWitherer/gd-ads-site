@@ -108,8 +108,7 @@ func CreateAdvertisement(userID, levelID string, adType int, imageURL string) (i
 		return 0, err
 	}
 
-	id, _ := res.LastInsertId()
-	return id, nil
+	return res.LastInsertId()
 }
 
 // fetches all ads for a given user

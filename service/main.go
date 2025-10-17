@@ -21,7 +21,7 @@ import (
 func expiryCleanupRoutine(adFolder string) {
 	go func() {
 		for {
-			log.Info("Scanning for expired %s ads...", adFolder)
+			log.Debug("Scanning for expired %s ads...", adFolder)
 
 			adsDir := filepath.Join("..", "ad_storage", adFolder)
 			files, _ := os.ReadDir(adsDir)
@@ -33,6 +33,7 @@ func expiryCleanupRoutine(adFolder string) {
 				}
 
 				if time.Since(info.ModTime()) > 7*24*time.Hour {
+					log.Info("Removing expired ad %s (%v B)", info.Name(), info.Size())
 					os.Remove(filepath.Join(adsDir, file.Name()))
 				}
 			}
