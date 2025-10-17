@@ -21,6 +21,8 @@ import (
 func expiryCleanupRoutine(adFolder string) {
 	go func() {
 		for {
+			log.Info("Scanning for expired %s ads...", adFolder)
+
 			adsDir := filepath.Join("..", "ad_storage", adFolder)
 			files, _ := os.ReadDir(adsDir)
 			for _, file := range files {
@@ -93,12 +95,12 @@ func main() {
 	srv := &http.Server{Addr: ":8081"}
 
 	go func() {
+		log.Debug("Starting expiry routines...")
 		expiryCleanupRoutine("banner")
 		expiryCleanupRoutine("skyscraper")
 		expiryCleanupRoutine("square")
 
 		log.Done("Server started successfully on host http://localhost%s", srv.Addr)
-
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Error(err.Error())
 		}
