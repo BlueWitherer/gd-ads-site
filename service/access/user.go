@@ -81,196 +81,217 @@ func init() {
 	log.Info("Starting authorization handlers...")
 
 	http.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
-		redirectURL := "https://discord.com/oauth2/authorize?client_id=" + os.Getenv("DISCORD_CLIENT_ID") +
-			"&redirect_uri=" + os.Getenv("DISCORD_REDIRECT_URI") +
-			"&response_type=code" +
-			"&scope=identify"
+		header := w.Header()
 
-		user, err := GetSessionUserID(r)
-		if err != nil {
-			log.Error(err.Error())
-			http.Redirect(w, r, redirectURL, http.StatusFound)
-		} else if user != "" {
-			log.Info("Redirecting from login to dashboard")
-			http.Redirect(w, r, "/dashboard", http.StatusFound)
+		header.Set("Access-Control-Allow-Origin", "*")
+		header.Set("Access-Control-Allow-Methods", "GET")
+		header.Set("Access-Control-Allow-Headers", "Content-Type")
+
+		if r.Method == http.MethodGet {
+			redirectURL := "https://discord.com/oauth2/authorize?client_id=" + os.Getenv("DISCORD_CLIENT_ID") +
+				"&redirect_uri=" + os.Getenv("DISCORD_REDIRECT_URI") +
+				"&response_type=code" +
+				"&scope=identify"
+
+			user, err := GetSessionUserID(r)
+			if err != nil {
+				log.Error(err.Error())
+				http.Redirect(w, r, redirectURL, http.StatusFound)
+			} else if user != "" {
+				log.Info("Redirecting from login to dashboard")
+				http.Redirect(w, r, "/dashboard", http.StatusFound)
+			} else {
+				log.Debug("panic time ig")
+				http.Redirect(w, r, redirectURL, http.StatusFound)
+			}
 		} else {
-			log.Debug("panic time ig")
-			http.Redirect(w, r, redirectURL, http.StatusFound)
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		}
 	})
 
 	http.HandleFunc("/callback", func(w http.ResponseWriter, r *http.Request) {
-		code := r.URL.Query().Get("code")
-		if code == "" {
-			http.Error(w, "Missing code", http.StatusBadRequest)
-			return
-		}
+		header := w.Header()
 
-		log.Info("Received Discord auth code " + code)
+		header.Set("Access-Control-Allow-Origin", "*")
+		header.Set("Access-Control-Allow-Methods", "GET")
+		header.Set("Access-Control-Allow-Headers", "Content-Type")
 
-		data := url.Values{}
-		data.Set("client_id", os.Getenv("DISCORD_CLIENT_ID"))
-		data.Set("client_secret", os.Getenv("DISCORD_CLIENT_SECRET"))
-		data.Set("grant_type", "authorization_code")
-		data.Set("code", code)
-		data.Set("redirect_uri", os.Getenv("DISCORD_REDIRECT_URI"))
+		if r.Method == http.MethodGet {
+			code := r.URL.Query().Get("code")
+			if code == "" {
+				http.Error(w, "Missing code", http.StatusBadRequest)
+				return
+			}
 
-		encoded := data.Encode()
-		redacted := strings.ReplaceAll(encoded, os.Getenv("DISCORD_CLIENT_SECRET"), "<redacted>")
-		log.Debug("Token request body (redacted): " + redacted)
+			log.Info("Received Discord auth code %s", code)
 
-		req, _ := http.NewRequest("POST", "https://discord.com/api/oauth2/token", strings.NewReader(encoded))
-		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+			data := url.Values{}
+			data.Set("client_id", os.Getenv("DISCORD_CLIENT_ID"))
+			data.Set("client_secret", os.Getenv("DISCORD_CLIENT_SECRET"))
+			data.Set("grant_type", "authorization_code")
+			data.Set("code", code)
+			data.Set("redirect_uri", os.Getenv("DISCORD_REDIRECT_URI"))
 
-		log.Debug("Sending data request to Discord...")
+			encoded := data.Encode()
 
-		client := &http.Client{}
-		resp, err := client.Do(req)
-		if err != nil {
-			log.Error(err.Error())
-			http.Error(w, "Token exchange failed", http.StatusInternalServerError)
-			return
-		}
+			req, _ := http.NewRequest(http.MethodPost, "https://discord.com/api/oauth2/token", strings.NewReader(encoded))
+			req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
-		defer resp.Body.Close()
+			log.Debug("Sending data request to Discord...")
 
-		tokenResp := Token{}
+			client := &http.Client{}
+			resp, err := client.Do(req)
+			if err != nil {
+				log.Error(err.Error())
+				http.Error(w, "Token exchange failed", http.StatusInternalServerError)
+				return
+			}
 
-		tokenBody, _ := io.ReadAll(resp.Body)
-		log.Debug("Token endpoint status: " + resp.Status)
+			defer resp.Body.Close()
 
-		if !strings.Contains(resp.Header.Get("Content-Type"), "application/json") {
-			log.Error("Discord returned non-JSON: " + string(tokenBody))
-			http.Error(w, "Discord returned unexpected response", http.StatusInternalServerError)
-			return
-		}
+			tokenResp := Token{}
 
-		if resp.Request != nil {
-			log.Debug("Token endpoint final URL: " + resp.Request.URL.String())
-		}
+			tokenBody, _ := io.ReadAll(resp.Body)
+			log.Debug("Token endpoint status: %s", resp.Status)
 
-		if err := json.Unmarshal(tokenBody, &tokenResp); err != nil {
-			log.Error("Failed to decode token response: " + err.Error())
-			http.Error(w, "Token decode failed", http.StatusInternalServerError)
-			return
-		}
+			if !strings.Contains(resp.Header.Get("Content-Type"), "application/json") {
+				log.Error("Discord returned non-JSON: %s", string(tokenBody))
+				http.Error(w, "Discord returned unexpected response", http.StatusInternalServerError)
+				return
+			}
 
-		if tokenResp.AccessToken == "" {
-			log.Error("No access token returned from Discord")
-			http.Error(w, "No access token", http.StatusInternalServerError)
-			return
-		}
+			if resp.Request != nil {
+				log.Debug("Token endpoint final URL: %s", resp.Request.URL.String())
+			}
 
-		// Fetch user info from Discord
-		req, _ = http.NewRequest("GET", "https://discord.com/api/users/@me", nil)
-		req.Header.Set("Authorization", tokenResp.TokenType+" "+tokenResp.AccessToken)
-		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+			if err := json.Unmarshal(tokenBody, &tokenResp); err != nil {
+				log.Error("Failed to decode token response: %s", err.Error())
+				http.Error(w, "Token decode failed", http.StatusInternalServerError)
+				return
+			}
 
-		log.Debug("Getting user info...")
-		resp, err = client.Do(req)
-		if err != nil {
-			log.Error(err.Error())
-			http.Error(w, "Failed to fetch user info", http.StatusInternalServerError)
-			return
-		}
+			if tokenResp.AccessToken == "" {
+				log.Error("No access token returned from Discord")
+				http.Error(w, "No access token", http.StatusInternalServerError)
+				return
+			}
 
-		defer resp.Body.Close()
+			// Fetch user info from Discord
+			req, _ = http.NewRequest(http.MethodGet, "https://discord.com/api/users/@me", nil)
+			req.Header.Set("Authorization", tokenResp.TokenType+" "+tokenResp.AccessToken)
+			req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
-		user := User{}
+			log.Debug("Getting user info...")
+			resp, err = client.Do(req)
+			if err != nil {
+				log.Error(err.Error())
+				http.Error(w, "Failed to fetch user info", http.StatusInternalServerError)
+				return
+			}
 
-		userBody, _ := io.ReadAll(resp.Body)
-		log.Debug("User endpoint status: " + resp.Status)
-		log.Debug("User endpoint body: " + string(userBody))
-		if err := json.Unmarshal(userBody, &user); err != nil {
-			log.Error("Failed to decode user info: " + err.Error())
-			http.Error(w, "Failed to decode user info", http.StatusInternalServerError)
-			return
-		}
+			defer resp.Body.Close()
 
-		if user.ID == "" {
-			log.Error("Discord returned empty user id")
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
-			return
-		}
+			user := User{}
 
-		if err := database.UpsertUser(user.ID, user.Username); err != nil {
-			log.Error("Failed to upsert user: " + err.Error())
-			// http.Error(w, err.Error(), http.StatusInternalServerError)
-			// return
-			// session failed when DB write failed
-		}
+			userBody, _ := io.ReadAll(resp.Body)
+			log.Debug("User endpoint status: %s", resp.Status)
+			log.Debug("User endpoint body: %s", string(userBody))
+			if err := json.Unmarshal(userBody, &user); err != nil {
+				log.Error("Failed to decode user info: %s", err.Error())
+				http.Error(w, "Failed to decode user info", http.StatusInternalServerError)
+				return
+			}
 
-		sessionID := generateSessionID()
-		sessions[sessionID] = user
+			if user.ID == "" {
+				log.Error("Discord returned empty user id")
+				http.Error(w, "Unauthorized", http.StatusUnauthorized)
+				return
+			}
 
-		// Set cookie attributes depending on whether the connection is secure.
-		secure := false
-		if r.TLS != nil || os.Getenv("ENV") == "production" {
-			secure = true
-		}
+			if err := database.UpsertUser(user.ID, user.Username); err != nil {
+				log.Error("Failed to upsert user: %s", err.Error())
+				// http.Error(w, err.Error(), http.StatusInternalServerError)
+				// return
+				// session failed when DB write failed
+			}
 
-		session := &http.Cookie{
-			Name:     "session_id",
-			Value:    sessionID,
-			Path:     "/",
-			HttpOnly: true,
-			Secure:   secure,
-			Expires:  time.Now().Add(30 * 24 * time.Hour),
-		}
+			sessionID := generateSessionID()
+			sessions[sessionID] = user
 
-		if secure {
-			session.SameSite = http.SameSiteNoneMode
+			// Set cookie attributes depending on whether the connection is secure.
+			secure := false
+			if r.TLS != nil || os.Getenv("ENV") == "production" {
+				secure = true
+			}
+
+			session := &http.Cookie{
+				Name:     "session_id",
+				Value:    sessionID,
+				Path:     "/",
+				HttpOnly: true,
+				Secure:   secure,
+				Expires:  time.Now().Add(30 * 24 * time.Hour),
+			}
+
+			if secure {
+				session.SameSite = http.SameSiteNoneMode
+			} else {
+				session.SameSite = http.SameSiteLaxMode
+			}
+
+			log.Debug("Setting session cookie...")
+			http.SetCookie(w, session)
+
+			// Debug log created session
+			if jb, err := json.Marshal(user); err != nil {
+				log.Debug("Creating session: id=%s (failed to marshal user)", sessionID)
+			} else {
+				log.Debug("Creating session: id=%s user=%s", sessionID, string(jb))
+			}
+
+			log.Info("Redirecting to dashboard")
+			http.Redirect(w, r, "/dashboard", http.StatusFound)
 		} else {
-			session.SameSite = http.SameSiteLaxMode
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		}
-
-		log.Debug("Setting session cookie...")
-		http.SetCookie(w, session)
-
-		// Debug log created session
-		if jb, err := json.Marshal(user); err == nil {
-			log.Debug("Creating session: id=" + sessionID + " user=" + string(jb))
-		} else {
-			log.Debug("Creating session: id=" + sessionID + " (failed to marshal user)")
-		}
-
-		log.Info("Redirecting to dashboard")
-		http.Redirect(w, r, "/dashboard", http.StatusFound)
 	})
 
 	http.HandleFunc("/session", func(w http.ResponseWriter, r *http.Request) {
-		// Log incoming cookie on session request
-		if c, err := r.Cookie("session_id"); err == nil {
-			log.Debug("/session request cookie: " + c.Value)
+		if r.Method == http.MethodGet {
+			if c, err := r.Cookie("session_id"); err == nil {
+				log.Debug("/session request cookie: %s", c.Value)
+			} else {
+				log.Debug("/session request no cookie: %s", err.Error())
+			}
+
+			user, err := GetSession(r)
+			if err != nil {
+				log.Error(err.Error())
+				http.Error(w, "Unauthorized", http.StatusUnauthorized)
+				return
+			}
+
+			header := w.Header()
+
+			w.WriteHeader(http.StatusOK)
+			header.Set("Content-Type", "application/json")
+			if jb, err := json.Marshal(user); err == nil {
+				log.Debug("/session returning user: %s", string(jb))
+			} else {
+				log.Debug("/session returning user: (failed to marshal)")
+			}
+
+			json.NewEncoder(w).Encode(user)
 		} else {
-			log.Debug("/session request no cookie: " + err.Error())
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		}
-
-		user, err := GetSession(r)
-		if err != nil {
-			log.Error(err.Error())
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
-			return
-		}
-
-		header := w.Header()
-
-		w.WriteHeader(http.StatusOK)
-		header.Set("Content-Type", "application/json")
-		if jb, err := json.Marshal(user); err == nil {
-			log.Debug("/session returning user: " + string(jb))
-		} else {
-			log.Debug("/session returning user: (failed to marshal)")
-		}
-
-		json.NewEncoder(w).Encode(user)
 	})
 
 	http.HandleFunc("/logout", func(w http.ResponseWriter, r *http.Request) {
 		cookie, err := r.Cookie("session_id")
 		if err == nil {
 			delete(sessions, cookie.Value)
-			log.Info("User " + cookie.Value + " logged out")
+			log.Info("User %s logged out", cookie.Value)
 		}
 
 		secure := false

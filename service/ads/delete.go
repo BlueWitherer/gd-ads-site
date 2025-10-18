@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"service/access"
 	"service/database"
 	"service/log"
 )
@@ -17,28 +18,51 @@ func init() {
 		header.Set("Access-Control-Allow-Methods", "DELETE")
 		header.Set("Access-Control-Allow-Headers", "Content-Type")
 
-		header.Set("Content-Type", "application/json")
+		if r.Method == http.MethodDelete {
+			header.Set("Content-Type", "application/json")
 
-		idStr := r.URL.Query().Get("ad_id")
-		if idStr == "" {
-			http.Error(w, "Missing ad ID parameter", http.StatusBadRequest)
-			return
+			idStr := r.URL.Query().Get("ad_id")
+			if idStr == "" {
+				http.Error(w, "Missing ad ID parameter", http.StatusBadRequest)
+				return
+			}
+
+			id, err := strconv.ParseInt(idStr, 10, 64)
+			if err != nil {
+				http.Error(w, "Invalid ad ID parameter", http.StatusBadRequest)
+				return
+			}
+
+			ownerid, err := database.GetAdvertisementOwner(id)
+			if err != nil {
+				log.Error("Failed to get advertisement owner: %s", err.Error())
+				http.Error(w, "Failed to get advertisement owner", http.StatusInternalServerError)
+				return
+			}
+
+			uid, err := access.GetSessionUserID(r)
+			if err != nil {
+				log.Error("Unauthorized access to /ads/delete: %s", err.Error())
+				http.Error(w, "Unauthorized", http.StatusUnauthorized)
+				return
+			}
+
+			if ownerid == uid {
+				err = database.DeleteAdvertisement(id)
+				if err != nil {
+					log.Error("Failed to delete advertisement: %s", err.Error())
+					http.Error(w, "Failed to delete advertisement", http.StatusInternalServerError)
+					return
+				}
+
+				w.WriteHeader(http.StatusOK)
+				w.Write([]byte(`{"status":"success","message":"Advertisement deleted successfully"}`))
+			} else {
+				log.Error("Unauthorized deletion attempt for ad ID %d by user %s", id, uid)
+				http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			}
+		} else {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		}
-
-		id, err := strconv.ParseInt(idStr, 10, 64)
-		if err != nil {
-			http.Error(w, "Invalid ad ID parameter", http.StatusBadRequest)
-			return
-		}
-
-		err = database.DeleteAdvertisement(id)
-		if err != nil {
-			log.Error("Failed to delete advertisement: %s", err.Error())
-			http.Error(w, "Failed to delete advertisement", http.StatusInternalServerError)
-			return
-		}
-
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{"status":"success","message":"Advertisement deleted successfully"}`))
 	})
 }

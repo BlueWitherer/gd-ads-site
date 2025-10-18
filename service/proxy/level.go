@@ -24,7 +24,7 @@ func init() {
 		if r.Method == http.MethodPost {
 			err := r.ParseForm()
 			if err != nil {
-				log.Error("Failed to parse form: " + err.Error())
+				log.Error("Failed to parse form: %s", err.Error())
 				http.Error(w, "Invalid request", http.StatusBadRequest)
 				return
 			}
@@ -35,14 +35,14 @@ func init() {
 				return
 			}
 
-			log.Info("Proxying request for level ID: " + levelID)
+			log.Info("Proxying request for level ID: %s", levelID)
 			formData := url.Values{}
 			formData.Set("levelID", levelID)
 			formData.Set("secret", "Wmfd2893gb7")
 
 			req, err := http.NewRequest("POST", "https://www.boomlings.com/database/downloadGJLevel22.php", strings.NewReader(formData.Encode()))
 			if err != nil {
-				log.Error("Failed to create request: " + err.Error())
+				log.Error("Failed to create request: %s", err.Error())
 				http.Error(w, "Failed to create request", http.StatusInternalServerError)
 				return
 			}
@@ -54,7 +54,7 @@ func init() {
 			client := &http.Client{}
 			resp, err := client.Do(req)
 			if err != nil {
-				log.Error("Failed to proxy request: " + err.Error())
+				log.Error("Failed to proxy request: %s", err.Error())
 				http.Error(w, "Failed to fetch level data", http.StatusInternalServerError)
 				return
 			}
@@ -63,7 +63,7 @@ func init() {
 
 			body, err := io.ReadAll(resp.Body)
 			if err != nil {
-				log.Error("Failed to read response: " + err.Error())
+				log.Error("Failed to read response: %s", err.Error())
 				http.Error(w, "Failed to read level data", http.StatusInternalServerError)
 				return
 			}

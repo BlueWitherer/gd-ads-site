@@ -27,26 +27,17 @@ func init() {
 			query := r.URL.Query()
 			adTypeStr := query.Get("type")
 
-			typeNum, err := strconv.ParseInt(adTypeStr, 10, 64)
+			typeNum, err := strconv.Atoi(adTypeStr)
 			if err != nil {
-				log.Error("Failed to get ad type: " + err.Error())
+				log.Error("Failed to get ad type ID: %s", err.Error())
 				http.Error(w, err.Error(), http.StatusBadRequest)
 				return
 			}
 
-			// Map type to number
-			switch typeNum {
-			case 1:
-				adFolder = database.AdTypeBanner
-
-			case 2:
-				adFolder = database.AdTypeSquare
-
-			case 3:
-				adFolder = database.AdTypeSkyscraper
-
-			default:
-				http.Error(w, "Invalid ad type", http.StatusBadRequest)
+			adFolder, err = database.AdTypeFromInt(typeNum)
+			if err != nil {
+				log.Error("Failed to get ad folder: %s", err.Error())
+				http.Error(w, err.Error(), http.StatusBadRequest)
 				return
 			}
 

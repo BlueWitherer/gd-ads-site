@@ -130,7 +130,7 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
 	if err := srv.Shutdown(ctx); err != nil {
-		log.Error("Shutdown error: " + err.Error())
+		log.Error("Shutdown error: %s", err.Error())
 	} else {
 		log.Print("Server stopped")
 	}

@@ -25,7 +25,7 @@ func init() {
 	})
 
 	http.HandleFunc("/admins/get", func(w http.ResponseWriter, r *http.Request) {
-		log.Debug("Admin database API service pinged")
+		log.Debug("Getting admin status for user...")
 		header := w.Header()
 		header.Set("Content-Type", "text/plain")
 
@@ -42,7 +42,7 @@ func init() {
 	})
 
 	http.HandleFunc("/admins/all", func(w http.ResponseWriter, r *http.Request) {
-		log.Debug("Admin full database API service pinged")
+		log.Debug("Getting all admins...")
 		header := w.Header()
 		header.Set("Content-Type", "text/plain")
 

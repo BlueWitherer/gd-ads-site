@@ -46,6 +46,34 @@ type AdRow struct {
 	Created  string `json:"created_at"`
 }
 
+func AdTypeFromInt(t int) (AdType, error) {
+	switch t {
+	case 1:
+		return AdTypeBanner, nil
+	case 2:
+		return AdTypeSquare, nil
+	case 3:
+		return AdTypeSkyscraper, nil
+
+	default:
+		return "", fmt.Errorf("invalid ad type")
+	}
+}
+
+func IntFromAdType(t AdType) (int, error) {
+	switch t {
+	case AdTypeBanner:
+		return 1, nil
+	case AdTypeSquare:
+		return 2, nil
+	case AdTypeSkyscraper:
+		return 3, nil
+
+	default:
+		return 0, fmt.Errorf("invalid ad type")
+	}
+}
+
 // private method to safely prepare the sql statement
 func prepareStmt(db *sql.DB, sql string) (*sql.Stmt, error) {
 	if db != nil {
@@ -57,8 +85,8 @@ func prepareStmt(db *sql.DB, sql string) (*sql.Stmt, error) {
 }
 
 // Register a new client event for an ad
-func NewStat(event AdEvent, ad int64, user int64) error {
-	log.Debug("Registering new " + event)
+func NewStat(event AdEvent, adId int64, user int64) error {
+	log.Debug("Registering new %s", event)
 	sql := fmt.Sprintf("INSERT INTO %s (ad_id, user_id, timestamp) VALUES (?, ?, ?)", event)
 
 	stmt, err := prepareStmt(data, sql)
@@ -66,7 +94,24 @@ func NewStat(event AdEvent, ad int64, user int64) error {
 		return err
 	}
 
-	_, err = stmt.Exec(ad, user, time.Now())
+	var viewsDelta, clicksDelta int = 0, 0
+	switch event {
+	case AdEventView:
+		viewsDelta = 1
+	case AdEventClick:
+		clicksDelta = 1
+
+	default:
+		return fmt.Errorf("invalid ad event")
+	}
+
+	if ownerID, ownerErr := GetAdvertisementOwner(adId); ownerErr == nil && ownerID != "" {
+		if incErr := IncrementUserStats(ownerID, viewsDelta, clicksDelta); incErr != nil {
+			log.Error("Failed to increment total clicks: %s", incErr.Error())
+		}
+	}
+
+	_, err = stmt.Exec(adId, user, time.Now())
 	return err
 }
 
@@ -158,20 +203,9 @@ func FilterAdsByUser(rows []AdRow, userId string) ([]AdRow, error) {
 }
 
 func FilterAdsByType(rows []AdRow, adType AdType) ([]AdRow, error) {
-	// Map type to number
-	typeNum := 0
-	switch adType {
-	case AdTypeBanner:
-		typeNum = 1
-
-	case AdTypeSquare:
-		typeNum = 2
-
-	case AdTypeSkyscraper:
-		typeNum = 3
-
-	default:
-		return nil, fmt.Errorf("invalid ad type")
+	typeNum, err := IntFromAdType(adType)
+	if err != nil {
+		return nil, err
 	}
 
 	var out []AdRow
@@ -182,6 +216,31 @@ func FilterAdsByType(rows []AdRow, adType AdType) ([]AdRow, error) {
 	}
 
 	return out, nil
+}
+
+// get an advertisement by id
+func GetAdvertisement(adId int64) (AdRow, error) {
+	stmt, err := prepareStmt(data, "SELECT ad_id, user_id, level_id, type, image_url, created_at FROM advertisements WHERE ad_id = ?")
+	if err != nil {
+		return AdRow{}, err
+	}
+
+	// QueryRow is more convenient when expecting a single row
+	row := stmt.QueryRow(adId)
+	if row != nil {
+		var r AdRow
+		if err := row.Scan(&r.AdID, &r.UserID, &r.LevelID, &r.Type, &r.ImageURL, &r.Created); err != nil {
+			if err == sql.ErrNoRows {
+				return AdRow{}, nil
+			}
+
+			return AdRow{}, err
+		}
+
+		return r, nil
+	} else {
+		return AdRow{}, fmt.Errorf("ad not found")
+	}
 }
 
 // returns the owning user_id for an ad
@@ -239,7 +298,7 @@ func init() {
 		os.Getenv("DB_NAME"),
 	)
 
-	log.Info("Connecting to database with URI: " + uri)
+	log.Info("Connecting to database with URI: %s", uri)
 	data, err = sql.Open("mysql", uri)
 	if err != nil {
 		log.Error("Failed to establish MariaDB connection: %s", err.Error())
