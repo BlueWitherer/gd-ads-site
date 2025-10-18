@@ -1,7 +1,7 @@
 package api
 
 import (
-	"io"
+	"encoding/json"
 	"math/rand"
 	"net/http"
 	"strconv"
@@ -19,7 +19,7 @@ func init() {
 		header.Set("Access-Control-Allow-Headers", "Content-Type")
 
 		if r.Method == http.MethodGet {
-			header.Set("Content-Type", "image/webp")
+			header.Set("Content-Type", "application/json")
 			header.Set("Cache-Control", "no-store")
 
 			var adFolder database.AdType
@@ -56,21 +56,28 @@ func init() {
 				return
 			}
 
+			if len(ads) <= 0 {
+				log.Info("No ads found for type %s", adFolder)
+				http.Error(w, "No ads found", http.StatusNotFound)
+				return
+			}
+
 			log.Debug("Getting random %s type ad...", adFolder)
 			i := rand.Intn(len(ads))
 			ad := ads[i]
 
-			log.Info("Rendering image %s...", ad.ImageURL)
-			resp, err := http.Get(ad.ImageURL)
-			if err != nil || resp.StatusCode != http.StatusOK {
-				http.Error(w, "Failed to fetch image", http.StatusInternalServerError)
+			log.Info("Returning ad as JSON: %s", ad.ImageURL)
+			respData, err := json.Marshal(ad)
+			if err != nil {
+				log.Error("Failed to marshal ad to JSON: %s", err.Error())
+				http.Error(w, "Failed to encode ad", http.StatusInternalServerError)
 				return
 			}
-			defer resp.Body.Close()
 
-			_, err = io.Copy(w, resp.Body)
+			_, err = w.Write(respData)
 			if err != nil {
-				http.Error(w, "Failed to stream image", http.StatusInternalServerError)
+				log.Error("Failed to write response: %s", err.Error())
+				// connection write failed; nothing more to do
 				return
 			}
 		} else {
