@@ -184,8 +184,8 @@ export default function Create() {
         ext = selectedFile.name.split(".").pop() || "png";
       }
 
-      const sizeNum = selectedSize === "banner" ? 1 : selectedSize === "square" ? 2 : 3;
-      const filename = `${userId}-${levelId}-${sizeNum}.${ext}`;
+      // const sizeNum = selectedSize === "banner" ? 1 : selectedSize === "square" ? 2 : 3;
+      const filename = `${userId}.${ext}`;
 
       const formData = new FormData();
       formData.append("image-upload", uploadBlob, filename);

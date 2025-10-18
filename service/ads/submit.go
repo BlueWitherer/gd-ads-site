@@ -91,12 +91,17 @@ func init() {
 			// Create DB row for the advertisement
 			adID, err := database.CreateAdvertisement(uid, levelID, typeNum, imageURL)
 			if err != nil {
+				e := os.Remove(dstPath)
+				if e != nil {
+					log.Error("Failed to delete advertisement image: %s", e.Error())
+				}
+
 				log.Error("Failed to create advertisement row: %s", err.Error())
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
 
-			log.Info("Saved image to %s, ad_id=%v, user_id=%s", dstPath, adID, uid)
+			log.Info("Saved ad to %s, ad_id=%v, user_id=%s", dstPath, adID, uid)
 			w.Write(fmt.Appendf(nil, `{"status":"ok","ad_id":%d,"image_url":"%s"}`, adID, imageURL))
 		} else {
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)

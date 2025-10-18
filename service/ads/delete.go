@@ -1,7 +1,10 @@
 package ads
 
 import (
+	"fmt"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strconv"
 
 	"service/access"
@@ -21,7 +24,7 @@ func init() {
 		if r.Method == http.MethodDelete {
 			header.Set("Content-Type", "application/json")
 
-			idStr := r.URL.Query().Get("ad_id")
+			idStr := r.URL.Query().Get("id")
 			if idStr == "" {
 				http.Error(w, "Missing ad ID parameter", http.StatusBadRequest)
 				return
@@ -48,12 +51,30 @@ func init() {
 			}
 
 			if ownerid == uid {
-				err = database.DeleteAdvertisement(id)
+				ad, err := database.DeleteAdvertisement(id)
 				if err != nil {
 					log.Error("Failed to delete advertisement: %s", err.Error())
 					http.Error(w, "Failed to delete advertisement", http.StatusInternalServerError)
 					return
 				}
+
+				adFolder, err := database.AdTypeFromInt(ad.Type)
+				if err != nil {
+					log.Error("Failed to get advertisement folder: %s", err.Error())
+					http.Error(w, "Failed to get advertisement folder", http.StatusInternalServerError)
+					return
+				}
+
+				target := filepath.Join("..", "ad_storage", string(adFolder), fmt.Sprintf("%s.webp", ad.UserID))
+
+				err = os.Remove(target)
+				if err != nil {
+					log.Error("Failed to delete advertisement image: %s", err.Error())
+					http.Error(w, "Failed to delete advertisement image", http.StatusInternalServerError)
+					return
+				}
+
+				log.Info("Deleted advertisement of ID %s", idStr)
 
 				w.WriteHeader(http.StatusOK)
 				w.Write([]byte(`{"status":"success","message":"Advertisement deleted successfully"}`))

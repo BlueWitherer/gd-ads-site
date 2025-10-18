@@ -33,6 +33,7 @@ func init() {
 				http.Error(w, "Failed to list ads", http.StatusInternalServerError)
 				return
 			}
+
 			filtered, err := database.FilterAdsByUser(rows, userID)
 			if err != nil {
 				log.Error("List ads failed: %s", err.Error())

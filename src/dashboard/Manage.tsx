@@ -93,7 +93,12 @@ function Manage() {
                 fontSize: '1em',
                 transition: 'background 0.2s',
               }}
-              onClick={() => { /* TODO: implement delete */ }}
+              onClick={() => {
+                fetch(`/ads/delete?id=${advert.id}`, { method: 'DELETE', credentials: 'include' }).then(() => {
+                  adverts.splice(adverts.indexOf(advert), 1);
+                  setAdverts([...adverts]);
+                });
+              }}
             >
               Delete
             </button>

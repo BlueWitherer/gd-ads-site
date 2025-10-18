@@ -37,13 +37,23 @@ const (
 )
 
 // Database row for advertisements listing
-type AdRow struct {
+type Ad struct {
 	AdID     int64  `json:"ad_id"`
 	UserID   string `json:"user_id"`
 	LevelID  string `json:"level_id"`
 	Type     int    `json:"type"`
 	ImageURL string `json:"image_url"`
 	Created  string `json:"created_at"`
+}
+
+// private method to safely prepare the sql statement
+func prepareStmt(db *sql.DB, sql string) (*sql.Stmt, error) {
+	if db != nil {
+		log.Debug("Preparing connection for statement %s", sql)
+		return db.Prepare(sql)
+	} else {
+		return nil, fmt.Errorf("database connection non-existent")
+	}
 }
 
 func AdTypeFromInt(t int) (AdType, error) {
@@ -71,16 +81,6 @@ func IntFromAdType(t AdType) (int, error) {
 
 	default:
 		return 0, fmt.Errorf("invalid ad type")
-	}
-}
-
-// private method to safely prepare the sql statement
-func prepareStmt(db *sql.DB, sql string) (*sql.Stmt, error) {
-	if db != nil {
-		log.Debug("Preparing connection for statement")
-		return db.Prepare(sql)
-	} else {
-		return nil, fmt.Errorf("database connection non-existent")
 	}
 }
 
@@ -151,6 +151,21 @@ func CreateAdvertisement(userId, levelID string, adType int, imageURL string) (i
 		return 0, fmt.Errorf("missing ad fields")
 	}
 
+	if ads, err := ListAllAdvertisements(); err != nil {
+		return 0, err
+	} else {
+		filtered, err := FilterAdsByUser(ads, userId)
+		if err != nil {
+			return 0, err
+		} else {
+			for _, ad := range filtered {
+				if ad.UserID == userId && ad.Type == adType {
+					return ad.AdID, fmt.Errorf("ad type by user already exists")
+				}
+			}
+		}
+	}
+
 	stmt, err := prepareStmt(data, "INSERT INTO advertisements (user_id, level_id, type, image_url) VALUES (?, ?, ?, ?)")
 	if err != nil {
 		return 0, err
@@ -165,7 +180,7 @@ func CreateAdvertisement(userId, levelID string, adType int, imageURL string) (i
 }
 
 // fetches all ads for a given user
-func ListAllAdvertisements() ([]AdRow, error) {
+func ListAllAdvertisements() ([]Ad, error) {
 	stmt, err := prepareStmt(data, "SELECT ad_id, user_id, level_id, type, image_url, created_at FROM advertisements ORDER BY ad_id DESC")
 	if err != nil {
 		return nil, err
@@ -178,9 +193,9 @@ func ListAllAdvertisements() ([]AdRow, error) {
 
 	defer rows.Close()
 
-	var out []AdRow
+	var out []Ad
 	for rows.Next() {
-		var r AdRow
+		var r Ad
 		if err := rows.Scan(&r.AdID, &r.UserID, &r.LevelID, &r.Type, &r.ImageURL, &r.Created); err != nil {
 			return nil, err
 		}
@@ -191,8 +206,8 @@ func ListAllAdvertisements() ([]AdRow, error) {
 	return out, rows.Err()
 }
 
-func FilterAdsByUser(rows []AdRow, userId string) ([]AdRow, error) {
-	var out []AdRow
+func FilterAdsByUser(rows []Ad, userId string) ([]Ad, error) {
+	var out []Ad
 	for _, r := range rows {
 		if r.UserID == userId {
 			out = append(out, r)
@@ -202,13 +217,13 @@ func FilterAdsByUser(rows []AdRow, userId string) ([]AdRow, error) {
 	return out, nil
 }
 
-func FilterAdsByType(rows []AdRow, adType AdType) ([]AdRow, error) {
+func FilterAdsByType(rows []Ad, adType AdType) ([]Ad, error) {
 	typeNum, err := IntFromAdType(adType)
 	if err != nil {
 		return nil, err
 	}
 
-	var out []AdRow
+	var out []Ad
 	for _, r := range rows {
 		if r.Type == typeNum {
 			out = append(out, r)
@@ -219,27 +234,27 @@ func FilterAdsByType(rows []AdRow, adType AdType) ([]AdRow, error) {
 }
 
 // get an advertisement by id
-func GetAdvertisement(adId int64) (AdRow, error) {
+func GetAdvertisement(adId int64) (Ad, error) {
 	stmt, err := prepareStmt(data, "SELECT ad_id, user_id, level_id, type, image_url, created_at FROM advertisements WHERE ad_id = ?")
 	if err != nil {
-		return AdRow{}, err
+		return Ad{}, err
 	}
 
 	// QueryRow is more convenient when expecting a single row
 	row := stmt.QueryRow(adId)
 	if row != nil {
-		var r AdRow
+		var r Ad
 		if err := row.Scan(&r.AdID, &r.UserID, &r.LevelID, &r.Type, &r.ImageURL, &r.Created); err != nil {
 			if err == sql.ErrNoRows {
-				return AdRow{}, nil
+				return Ad{}, nil
 			}
 
-			return AdRow{}, err
+			return Ad{}, err
 		}
 
 		return r, nil
 	} else {
-		return AdRow{}, fmt.Errorf("ad not found")
+		return Ad{}, fmt.Errorf("ad not found")
 	}
 }
 
@@ -260,18 +275,23 @@ func GetAdvertisementOwner(adId int64) (string, error) {
 	return uid, nil
 }
 
-func DeleteAdvertisement(adId int64) error {
+func DeleteAdvertisement(adId int64) (Ad, error) {
+	ad, err := GetAdvertisement(adId)
+	if err != nil {
+		return ad, err
+	}
+
 	stmt, err := prepareStmt(data, "DELETE FROM advertisements WHERE ad_id = ?")
 	if err != nil {
-		return err
+		return ad, err
 	}
 
 	_, err = stmt.Exec(adId)
 	if err != nil {
-		return err
+		return ad, err
 	}
 
-	return nil
+	return ad, nil
 }
 
 func DeleteAllExpiredAds() error {
