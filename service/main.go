@@ -12,6 +12,7 @@ import (
 
 	"service/access"
 	_ "service/ads"
+	_ "service/api"
 	_ "service/database"
 	"service/log"
 	_ "service/proxy"
@@ -35,6 +36,8 @@ func expiryCleanupRoutine(adFolder string) {
 				if time.Since(info.ModTime()) > 7*24*time.Hour {
 					log.Info("Removing expired ad %s (%v B)", info.Name(), info.Size())
 					os.Remove(filepath.Join(adsDir, file.Name()))
+				} else {
+					log.Debug("Ad %s is still valid", info.Name())
 				}
 			}
 
@@ -46,27 +49,7 @@ func expiryCleanupRoutine(adFolder string) {
 func main() {
 	log.Print("Starting server...")
 
-	log.Debug("Starting handlers...")
-	http.HandleFunc("/api", func(w http.ResponseWriter, r *http.Request) {
-		log.Info("Server pinged!")
-		asciiArt, err := os.ReadFile("../src/assets/aw-ascii.txt")
-		if err != nil {
-			log.Error("Failed to read ASCII art: %s", err.Error())
-			header := w.Header()
-
-			header.Set("Access-Control-Allow-Origin", "*")
-			header.Set("Access-Control-Allow-Methods", "GET")
-			header.Set("Access-Control-Allow-Headers", "Content-Type")
-			header.Set("Content-Type", "text/plain")
-
-			w.WriteHeader(http.StatusOK)
-			w.Write([]byte("pong!"))
-		} else {
-			w.Header().Set("Content-Type", "text/plain")
-			w.WriteHeader(http.StatusOK)
-			w.Write(asciiArt)
-		}
-	})
+	srv := &http.Server{Addr: ":8081"}
 
 	// SPA fallback
 	log.Debug("Setting up SPA fallback for client-side routing")
@@ -93,7 +76,37 @@ func main() {
 		http.ServeFile(w, r, filepath.Join(staticDir, "index.html"))
 	})
 
-	srv := &http.Server{Addr: ":8081"}
+	log.Debug("Starting image handler...")
+	http.HandleFunc("/cdn/", func(w http.ResponseWriter, r *http.Request) {
+		requestedPath := strings.TrimPrefix(r.URL.Path, "/cdn/")
+		fullPath := filepath.Join("../ad_storage", requestedPath)
+
+		w.Header().Set("Content-Type", "image/webp")
+
+		http.ServeFile(w, r, fullPath)
+	})
+
+	log.Debug("Starting handlers...")
+	http.HandleFunc("/api", func(w http.ResponseWriter, r *http.Request) {
+		log.Info("Server pinged!")
+		asciiArt, err := os.ReadFile("../src/assets/aw-ascii.txt")
+		if err != nil {
+			log.Error("Failed to read ASCII art: %s", err.Error())
+			header := w.Header()
+
+			header.Set("Access-Control-Allow-Origin", "*")
+			header.Set("Access-Control-Allow-Methods", "GET")
+			header.Set("Access-Control-Allow-Headers", "Content-Type")
+			header.Set("Content-Type", "text/plain")
+
+			w.WriteHeader(http.StatusOK)
+			w.Write([]byte("pong!"))
+		} else {
+			w.Header().Set("Content-Type", "text/plain")
+			w.WriteHeader(http.StatusOK)
+			w.Write(asciiArt)
+		}
+	})
 
 	go func() {
 		log.Debug("Starting expiry routines...")

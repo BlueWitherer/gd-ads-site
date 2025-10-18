@@ -14,16 +14,24 @@ import (
 // Concurrent database connection
 var data *sql.DB
 
-type AdEvent string
+type AdType string // Dimensions of the ad image
 
 const ( // Table to save stats
+	AdTypeBanner     AdType = "banner"     // Horizontal ads
+	AdTypeSquare     AdType = "square"     // Square ads
+	AdTypeSkyscraper AdType = "skyscraper" // Vertical ads
+)
+
+type AdEvent string // Table to save stats to
+
+const (
 	AdEventView  AdEvent = "views"  // For views
 	AdEventClick AdEvent = "clicks" // For clicks
 )
 
-type StatBy string
+type StatBy string // Row to filter through
 
-const ( // Row to filter through
+const (
 	StatByAd   StatBy = "ad_id"   // Filter stats by ad
 	StatByUser StatBy = "user_id" // Filter stats by user
 )
@@ -78,8 +86,8 @@ func UpsertUser(id string, username string) error {
 }
 
 // increments total_views or total_clicks for a user.
-func IncrementUserStats(userID string, viewsDelta int, clicksDelta int) error {
-	if userID == "" {
+func IncrementUserStats(userId string, viewsDelta int, clicksDelta int) error {
+	if userId == "" {
 		return fmt.Errorf("empty user id")
 	}
 
@@ -88,13 +96,13 @@ func IncrementUserStats(userID string, viewsDelta int, clicksDelta int) error {
 		return err
 	}
 
-	_, err = stmt.Exec(viewsDelta, clicksDelta, userID)
+	_, err = stmt.Exec(viewsDelta, clicksDelta, userId)
 	return err
 }
 
 // inserts an ad row
-func CreateAdvertisement(userID, levelID string, adType int, imageURL string) (int64, error) {
-	if userID == "" || levelID == "" || imageURL == "" {
+func CreateAdvertisement(userId, levelID string, adType int, imageURL string) (int64, error) {
+	if userId == "" || levelID == "" || imageURL == "" {
 		return 0, fmt.Errorf("missing ad fields")
 	}
 
@@ -103,7 +111,7 @@ func CreateAdvertisement(userID, levelID string, adType int, imageURL string) (i
 		return 0, err
 	}
 
-	res, err := stmt.Exec(userID, levelID, adType, imageURL)
+	res, err := stmt.Exec(userId, levelID, adType, imageURL)
 	if err != nil {
 		return 0, err
 	}
@@ -112,13 +120,13 @@ func CreateAdvertisement(userID, levelID string, adType int, imageURL string) (i
 }
 
 // fetches all ads for a given user
-func ListAdvertisementsByUser(userID string) ([]AdRow, error) {
-	stmt, err := prepareStmt(data, "SELECT ad_id, user_id, level_id, type, image_url, created_at FROM advertisements WHERE user_id = ? ORDER BY ad_id DESC")
+func ListAllAdvertisements() ([]AdRow, error) {
+	stmt, err := prepareStmt(data, "SELECT ad_id, user_id, level_id, type, image_url, created_at FROM advertisements ORDER BY ad_id DESC")
 	if err != nil {
 		return nil, err
 	}
 
-	rows, err := stmt.Query(userID)
+	rows, err := stmt.Query()
 	if err != nil {
 		return nil, err
 	}
@@ -138,8 +146,46 @@ func ListAdvertisementsByUser(userID string) ([]AdRow, error) {
 	return out, rows.Err()
 }
 
+func FilterAdsByUser(rows []AdRow, userId string) ([]AdRow, error) {
+	var out []AdRow
+	for _, r := range rows {
+		if r.UserID == userId {
+			out = append(out, r)
+		}
+	}
+
+	return out, nil
+}
+
+func FilterAdsByType(rows []AdRow, adType AdType) ([]AdRow, error) {
+	// Map type to number
+	typeNum := 0
+	switch adType {
+	case AdTypeBanner:
+		typeNum = 1
+
+	case AdTypeSquare:
+		typeNum = 2
+
+	case AdTypeSkyscraper:
+		typeNum = 3
+
+	default:
+		return nil, fmt.Errorf("invalid ad type")
+	}
+
+	var out []AdRow
+	for _, r := range rows {
+		if r.Type == typeNum {
+			out = append(out, r)
+		}
+	}
+
+	return out, nil
+}
+
 // returns the owning user_id for an ad
-func GetAdvertisementOwner(adID int64) (string, error) {
+func GetAdvertisementOwner(adId int64) (string, error) {
 	var uid string
 
 	stmt, err := prepareStmt(data, "SELECT user_id FROM advertisements WHERE ad_id = ?")
@@ -147,12 +193,26 @@ func GetAdvertisementOwner(adID int64) (string, error) {
 		return "", err
 	}
 
-	err = stmt.QueryRow(adID).Scan(&uid)
+	err = stmt.QueryRow(adId).Scan(&uid)
 	if err != nil {
 		return "", err
 	}
 
 	return uid, nil
+}
+
+func DeleteAdvertisement(adId int64) error {
+	stmt, err := prepareStmt(data, "DELETE FROM advertisements WHERE ad_id = ?")
+	if err != nil {
+		return err
+	}
+
+	_, err = stmt.Exec(adId)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func DeleteAllExpiredAds() error {

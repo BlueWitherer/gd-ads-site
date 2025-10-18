@@ -18,14 +18,10 @@ func init() {
 	http.HandleFunc("/proxy/level", func(w http.ResponseWriter, r *http.Request) {
 		header := w.Header()
 
-		header.Set("Access-Control-Allow-Methods", "POST, OPTIONS")
+		header.Set("Access-Control-Allow-Methods", "POST")
 		header.Set("Access-Control-Allow-Headers", "Content-Type")
 
-		if r.Method == http.MethodOptions {
-			w.WriteHeader(http.StatusOK)
-		} else if r.Method != http.MethodPost {
-			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		} else {
+		if r.Method == http.MethodPost {
 			err := r.ParseForm()
 			if err != nil {
 				log.Error("Failed to parse form: " + err.Error())
@@ -78,6 +74,8 @@ func init() {
 			w.Write(body)
 
 			log.Debug("Successfully proxied level request")
+		} else {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		}
 	})
 }

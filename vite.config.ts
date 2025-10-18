@@ -14,6 +14,8 @@ export default defineConfig({
   ],
   "server": {
     "proxy": {
+      '/api': 'http://localhost:8081',
+      '/cdn': 'http://localhost:8081',
       '/session': 'http://localhost:8081',
       '/login': 'http://localhost:8081',
       '/logout': 'http://localhost:8081',
