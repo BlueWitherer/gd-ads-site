@@ -1,0 +1,2 @@
+# Enforce LF for shell scripts to avoid CRLF shebang issues on Linux
+*.sh text eol=lf
