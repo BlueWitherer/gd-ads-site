@@ -257,3 +257,24 @@ func init() {
 
 	log.Print("MariaDB connection established.")
 }
+
+// returns total_views and total_clicks for a given user id
+func GetUserTotals(userId string) (int, int, error) {
+	if userId == "" {
+		return 0, 0, fmt.Errorf("empty user id")
+	}
+
+	stmt, err := prepareStmt(data, "SELECT total_views, total_clicks FROM users WHERE id = ?")
+	if err != nil {
+		return 0, 0, err
+	}
+
+	var views int
+	var clicks int
+	err = stmt.QueryRow(userId).Scan(&views, &clicks)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	return views, clicks, nil
+}

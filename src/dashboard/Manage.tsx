@@ -1,40 +1,58 @@
 import "../App.css";
 import square02 from '../assets/square02.png';
+import { useEffect, useState } from 'react';
+
+type Ad = {
+  id: number;
+  type: string;
+  levelId: string;
+  image: string;
+  expiration: string;
+}
 
 function Manage() {
-  // placeholder manage advertisements data
-  const adverts = [
-    {
-      id: 'ad-banner', // likely going to be just a number
-      type: 'Banner', // type of banner, square, skyscraper
-      levelId: '123456', // level id associated with the ad
-      expiration: '3 days left', // time left until expiration (7-6 days is green, 5-3 yellow, 2-0 red)
-      image: 'https://via.placeholder.com/728x90?text=Banner+Ad', // endpoint of the ad image
-    },
-    {
-      id: 'ad-square',
-      type: 'Square',
-      levelId: '654321',
-      expiration: '5 days left',
-      image: 'https://via.placeholder.com/180x180?text=Square+Ad',
-    },
-    {
-      id: 'ad-skyscraper',
-      type: 'Skyscraper',
-      levelId: '112233',
-      expiration: '1 day left',
-      image: 'https://via.placeholder.com/90x728?text=Skyscraper+Ad',
-    },
-  ];
+  const [adverts, setAdverts] = useState<Ad[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const res = await fetch('/ads/get', { credentials: 'include' });
+        if (!res.ok) {
+          setError(`Failed to fetch ads: ${res.status}`);
+          return;
+        }
+
+        const data = await res.json();
+        // Expecting array of { id, type, levelId, image, expiration }
+        setAdverts(data.map((a: any) => ({
+          id: a.id,
+          type: a.type,
+          levelId: a.levelId,
+          image: a.image,
+          expiration: a.expiration || '',
+        })));
+      } catch (err: any) {
+        setError(err.message || String(err));
+      }
+    }
+
+    load();
+  }, []);
 
   return (
     <>
       <h1 className="text-2xl font-bold mb-6">Manage Advertisements</h1>
-      <p className="text-lg">
-        Manage and configure your active advertisements.
-      </p>
+      <p className="text-lg">Manage and configure your active advertisements.</p>
+
+      {error && <div className="text-red-400">{error}</div>}
+
       <div style={{ display: 'flex', flexDirection: 'column', gap: '2em', marginTop: '1em' }}>
-        {adverts.map(advert => (
+        {adverts === null ? (
+          <div>Loading advertisements...</div>
+        ) : adverts.length === 0 ? (
+          <div>No advertisements found.</div>
+        ) : adverts.map(advert => (
           <div
             key={advert.id}
             style={{
@@ -75,7 +93,7 @@ function Manage() {
                 fontSize: '1em',
                 transition: 'background 0.2s',
               }}
-              onClick={() => { }}
+              onClick={() => { /* TODO: implement delete */ }}
             >
               Delete
             </button>

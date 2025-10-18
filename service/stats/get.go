@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"service/access"
+	"service/database"
 	"service/log"
 )
 
@@ -21,24 +23,39 @@ func init() {
 		header.Set("Access-Control-Allow-Methods", "GET")
 		header.Set("Access-Control-Allow-Headers", "Content-Type")
 
-		if r.Method == http.MethodGet {
-			header.Set("Content-Type", "application/json")
-
-			log.Debug("Constructing stats object response...")
-			stats := Stats{
-				Views:  469,
-				Clicks: 167,
-			}
-
-			log.Info("Retrieved stats for user")
-			w.WriteHeader(http.StatusOK)
-			err := json.NewEncoder(w).Encode(stats)
-			if err != nil {
-				log.Error("Failed to encode stats response: " + err.Error())
-				http.Error(w, "Failed to encode response", http.StatusInternalServerError)
-			}
-		} else {
+		if r.Method != http.MethodGet {
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+
+		// Require logged-in user
+		userID, err := access.GetSessionUserID(r)
+		if err != nil || userID == "" {
+			log.Error("Unauthorized access to /stats/get: " + err.Error())
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+
+		header.Set("Content-Type", "application/json")
+
+		views, clicks, err := database.GetUserTotals(userID)
+		if err != nil {
+			log.Error("Failed to fetch user totals: " + err.Error())
+			http.Error(w, "Failed to fetch stats", http.StatusInternalServerError)
+			return
+		}
+
+		stats := Stats{
+			Views:  views,
+			Clicks: clicks,
+		}
+
+		log.Info("Retrieved stats for user: " + userID)
+		w.WriteHeader(http.StatusOK)
+		if err := json.NewEncoder(w).Encode(stats); err != nil {
+			log.Error("Failed to encode stats response: " + err.Error())
+			http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+			return
 		}
 	})
 }
