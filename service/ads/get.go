@@ -86,7 +86,11 @@ func init() {
 			}
 
 			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(out)
+			if err := json.NewEncoder(w).Encode(out); err != nil {
+				log.Error("Failed to encode ad response: %s", err.Error())
+				http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+				return
+			}
 		} else {
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		}

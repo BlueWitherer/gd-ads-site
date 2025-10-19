@@ -67,21 +67,52 @@ func init() {
 			ad := ads[i]
 
 			log.Info("Returning ad as JSON: %s", ad.ImageURL)
-			respData, err := json.Marshal(ad)
-			if err != nil {
-				log.Error("Failed to marshal ad to JSON: %s", err.Error())
-				http.Error(w, "Failed to encode ad", http.StatusInternalServerError)
-				return
-			}
-
-			_, err = w.Write(respData)
-			if err != nil {
-				log.Error("Failed to write response: %s", err.Error())
-				// connection write failed; nothing more to do
+			w.WriteHeader(http.StatusOK)
+			if err := json.NewEncoder(w).Encode(ad); err != nil {
+				log.Error("Failed to encode ad response: %s", err.Error())
+				http.Error(w, "Failed to encode response", http.StatusInternalServerError)
 				return
 			}
 		} else {
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		}
+	})
+
+	http.HandleFunc("/api/ad/get", func(w http.ResponseWriter, r *http.Request) {
+		log.Debug("Getting ad by id...")
+		header := w.Header()
+
+		header.Set("Access-Control-Allow-Methods", "GET")
+		header.Set("Access-Control-Allow-Headers", "Content-Type")
+
+		if r.Method == http.MethodGet {
+			header.Set("Content-Type", "application/json")
+			header.Set("Cache-Control", "no-store")
+
+			query := r.URL.Query()
+			idStr := query.Get("id")
+
+			id, err := strconv.ParseInt(idStr, 10, 64)
+			if err != nil {
+				log.Error("Failed to get ad ID: %s", err.Error())
+				http.Error(w, err.Error(), http.StatusBadRequest)
+				return
+			}
+
+			ad, err := database.GetAdvertisement(id)
+			if err != nil {
+				log.Error("Failed to get ad: %s", err.Error())
+				http.Error(w, "Failed to get ad", http.StatusInternalServerError)
+				return
+			}
+
+			log.Info("Returning ad as JSON: %s", ad.ImageURL)
+			w.WriteHeader(http.StatusOK)
+			if err := json.NewEncoder(w).Encode(ad); err != nil {
+				log.Error("Failed to encode ad response: %s", err.Error())
+				http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+				return
+			}
 		}
 	})
 }
