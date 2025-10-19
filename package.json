@@ -9,7 +9,6 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "start": "npm run build && cd ./build && service.exe",
-    "production": "npm run build && cd ./build && ./service",
     "host": "npm run build && cd ./build && ./service"
   },
   "dependencies": {
