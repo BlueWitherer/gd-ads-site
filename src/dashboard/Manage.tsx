@@ -73,7 +73,7 @@ function Manage() {
             <img
               src={advert.image}
               alt="Advertisement"
-              style={{ width: '160px', height: 'auto', borderRadius: '8px', objectFit: 'cover', background: '#444' }}
+              style={{ width: '160px', height: '160px', overflow: 'hidden', borderRadius: '10px', objectFit: 'contain', background: '#333333' }}
             />
             <div style={{ flex: 1 }}>
               <div><strong>ID:</strong> {advert.id}</div>
