@@ -147,12 +147,13 @@ func IncrementUserStats(userId string, viewsDelta int, clicksDelta int) error {
 	return err
 }
 
-// inserts an ad row
+// inserts or updates an ad row
 func CreateAdvertisement(userId, levelID string, adType int, imageURL string) (int64, error) {
 	if userId == "" || levelID == "" || imageURL == "" {
 		return 0, fmt.Errorf("missing ad fields")
 	}
 
+	// Check if user already has an ad of this type
 	if ads, err := ListAllAdvertisements(); err != nil {
 		return 0, err
 	} else {
@@ -162,12 +163,25 @@ func CreateAdvertisement(userId, levelID string, adType int, imageURL string) (i
 		} else {
 			for _, ad := range filtered {
 				if ad.UserID == userId && ad.Type == adType {
-					return ad.AdID, fmt.Errorf("ad type by user already exists")
+					// Update existing ad instead of rejecting
+					log.Info("Updating existing ad ID %d for user %s", ad.AdID, userId)
+					stmt, err := prepareStmt(data, "UPDATE advertisements SET level_id = ?, image_url = ? WHERE ad_id = ?")
+					if err != nil {
+						return 0, err
+					}
+					
+					_, err = stmt.Exec(levelID, imageURL, ad.AdID)
+					if err != nil {
+						return 0, err
+					}
+					
+					return ad.AdID, nil
 				}
 			}
 		}
 	}
 
+	// Create new ad if none exists
 	stmt, err := prepareStmt(data, "INSERT INTO advertisements (user_id, level_id, type, image_url) VALUES (?, ?, ?, ?)")
 	if err != nil {
 		return 0, err

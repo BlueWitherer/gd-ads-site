@@ -35,7 +35,7 @@ func init() {
 			r.ParseMultipartForm(10 << 20)
 
 			// Get image file
-			file, handler, err := r.FormFile("image-upload")
+			file, _, err := r.FormFile("image-upload")
 			if err != nil {
 				log.Error(err.Error())
 				http.Error(w, "Image not found", http.StatusBadRequest)
@@ -68,8 +68,15 @@ func init() {
 				return
 			}
 
-			fileName := filepath.Base(handler.Filename)
+			fileName := fmt.Sprintf("%s.webp", uid)
 			dstPath := filepath.Join(targetDir, fileName)
+
+			// Delete old image
+			if _, err := os.Stat(dstPath); err == nil {
+				log.Debug("Removing old ad image at %s", dstPath)
+				os.Remove(dstPath)
+			}
+
 			dst, err := os.Create(dstPath)
 			if err != nil {
 				log.Error(err.Error())
