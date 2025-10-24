@@ -19,7 +19,7 @@ func init() {
 		header.Set("Access-Control-Allow-Headers", "Content-Type")
 
 		if r.Method == http.MethodGet {
-			w.Header().Set("Content-Type", "application/json")
+			header.Set("Content-Type", "application/json")
 
 			// require login
 			uid, err := access.GetSessionUserID(r)
@@ -90,7 +90,7 @@ func init() {
 		header.Set("Access-Control-Allow-Headers", "Content-Type")
 
 		if r.Method == http.MethodPost {
-			w.Header().Set("Content-Type", "application/json")
+			header.Set("Content-Type", "application/json")
 
 			// require login
 			uid, err := access.GetSessionUserID(r)

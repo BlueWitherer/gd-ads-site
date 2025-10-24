@@ -151,6 +151,32 @@ func GetUser(id string) (User, error) {
 	return user, nil
 }
 
+func GetAllUsers() ([]User, error) {
+	stmt, err := prepareStmt(data, "SELECT id, username, total_clicks, total_views, is_admin, banned, created_at, updated_at FROM users ORDER BY ad_id DESC")
+	if err != nil {
+		return nil, err
+	}
+
+	users, err := stmt.Query()
+	if err != nil {
+		return nil, err
+	}
+
+	defer users.Close()
+
+	var out []User
+	for users.Next() {
+		var u User
+		if err := users.Scan(&u.ID, &u.Username, &u.TotalClicks, &u.TotalViews, &u.IsAdmin, &u.Banned, &u.Created, &u.Updated); err != nil {
+			return nil, err
+		}
+
+		out = append(out, u)
+	}
+
+	return out, users.Err()
+}
+
 // inserts a new user or updates username if it already exists.
 func UpsertUser(id string, username string) error {
 	if id == "" {
@@ -241,6 +267,20 @@ func ApproveAd(id int64) (Ad, error) {
 	}
 
 	return GetAdvertisement(id)
+}
+
+func BanUser(id string) (User, error) {
+	stmt, err := prepareStmt(data, "UPDATE users SET banned = TRUE WHERE id = ?")
+	if err != nil {
+		return User{}, err
+	}
+
+	_, err = stmt.Exec(id)
+	if err != nil {
+		return User{}, err
+	}
+
+	return GetUser(id)
 }
 
 func GetAdUnixExpiry(ad Ad) (int64, error) {

@@ -93,14 +93,16 @@ func main() {
 
 	log.Debug("Starting image handler...")
 	http.HandleFunc("/cdn/", func(w http.ResponseWriter, r *http.Request) {
+		header := w.Header()
+
 		requestedPath := strings.TrimPrefix(r.URL.Path, "/cdn/")
 		fullPath := filepath.Join("../ad_storage", requestedPath)
 
 		// Set cache control headers to prevent browser caching of ad images
-		w.Header().Set("Content-Type", "image/webp")
-		w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
-		w.Header().Set("Pragma", "no-cache")
-		w.Header().Set("Expires", "0")
+		header.Set("Content-Type", "image/webp")
+		header.Set("Cache-Control", "no-cache, no-store, must-revalidate")
+		header.Set("Pragma", "no-cache")
+		header.Set("Expires", "0")
 
 		http.ServeFile(w, r, fullPath)
 	})
@@ -108,10 +110,11 @@ func main() {
 	log.Debug("Starting handlers...")
 	http.HandleFunc("/api", func(w http.ResponseWriter, r *http.Request) {
 		log.Info("Server pinged!")
+		header := w.Header()
+
 		asciiArt, err := os.ReadFile("../src/assets/aw-ascii.txt")
 		if err != nil {
 			log.Error("Failed to read ASCII art: %s", err.Error())
-			header := w.Header()
 
 			header.Set("Access-Control-Allow-Origin", "*")
 			header.Set("Access-Control-Allow-Methods", "GET")
@@ -121,7 +124,7 @@ func main() {
 			w.WriteHeader(http.StatusOK)
 			w.Write([]byte("pong!"))
 		} else {
-			w.Header().Set("Content-Type", "text/plain")
+			header.Set("Content-Type", "text/plain")
 			w.WriteHeader(http.StatusOK)
 			w.Write(asciiArt)
 		}
@@ -133,6 +136,7 @@ func main() {
 		expiryCleanupRoutine("skyscraper")
 		expiryCleanupRoutine("square")
 
+		log.Debug("Starting expiry routines for database side...")
 		expiryCleanupRoutineSql()
 
 		log.Done("Server started successfully on host http://localhost%s", srv.Addr)
