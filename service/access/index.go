@@ -50,10 +50,10 @@ func init() {
 		header := w.Header()
 
 		header.Set("Access-Control-Allow-Origin", "*")
-		header.Set("Access-Control-Allow-Methods", "POST")
+		header.Set("Access-Control-Allow-Methods", "GET")
 		header.Set("Access-Control-Allow-Headers", "Content-Type")
 
-		if r.Method == http.MethodPost {
+		if r.Method == http.MethodGet {
 			header.Set("Content-Type", "application/json")
 
 			// require login
