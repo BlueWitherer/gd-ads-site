@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
+	"path/filepath"
+	"strings"
 	"time"
 
 	"service/log"
@@ -308,6 +310,36 @@ func DeleteAllExpiredAds() error {
 	return nil
 }
 
+// initializeSchema reads and executes the schema.sql file to create tables if they don't exist
+func initializeSchema() error {
+	schemaPath := filepath.Join("database", "schema.sql")
+	log.Debug("Reading database schema from %s", schemaPath)
+	
+	schemaSQL, err := os.ReadFile(schemaPath)
+	if err != nil {
+		return fmt.Errorf("failed to read schema file: %w", err)
+	}
+
+	// Split the SQL file into individual statements
+	statements := strings.Split(string(schemaSQL), ";")
+	
+	for _, stmt := range statements {
+		stmt = strings.TrimSpace(stmt)
+		if stmt == "" || strings.HasPrefix(stmt, "--") {
+			continue
+		}
+
+		log.Debug("Executing schema statement: %.50s...", stmt)
+		_, err := data.Exec(stmt)
+		if err != nil {
+			return fmt.Errorf("failed to execute schema statement: %w", err)
+		}
+	}
+
+	log.Done("Database schema initialized successfully")
+	return nil
+}
+
 func init() {
 	var err error
 
@@ -335,6 +367,12 @@ func init() {
 	}
 
 	log.Print("MariaDB connection established.")
+
+	// Initialize database schema (create tables if they don't exist)
+	if err := initializeSchema(); err != nil {
+		log.Error("Failed to initialize database schema: %s", err.Error())
+		return
+	}
 }
 
 // returns total_views and total_clicks for a given user id
