@@ -169,12 +169,12 @@ func CreateAdvertisement(userId, levelID string, adType int, imageURL string) (i
 					if err != nil {
 						return 0, err
 					}
-					
+
 					_, err = stmt.Exec(levelID, imageURL, ad.AdID)
 					if err != nil {
 						return 0, err
 					}
-					
+
 					return ad.AdID, nil
 				}
 			}
