@@ -81,7 +81,11 @@ func main() {
 		requestedPath := strings.TrimPrefix(r.URL.Path, "/cdn/")
 		fullPath := filepath.Join("../ad_storage", requestedPath)
 
+		// Set cache control headers to prevent browser caching of ad images
 		w.Header().Set("Content-Type", "image/webp")
+		w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
+		w.Header().Set("Pragma", "no-cache")
+		w.Header().Set("Expires", "0")
 
 		http.ServeFile(w, r, fullPath)
 	})

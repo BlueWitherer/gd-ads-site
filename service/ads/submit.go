@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"strings"
+	"time"
 
 	"service/access"
 	"service/database"
@@ -92,8 +92,9 @@ func init() {
 				return
 			}
 
-			// Build a URL-ish path for retrieval; adjust base URL if you serve ads statically
-			imageURL := strings.Join([]string{access.GetDomain(r), "cdn", adFolder, fileName}, "/")
+			// Build a URL-ish path for retrieval with timestamp for cache busting
+			timestamp := time.Now().Unix()
+			imageURL := fmt.Sprintf("%s/cdn/%s/%s?v=%d", access.GetDomain(r), adFolder, fileName, timestamp)
 
 			// Create DB row for the advertisement
 			adID, err := database.CreateAdvertisement(uid, levelID, typeNum, imageURL)
