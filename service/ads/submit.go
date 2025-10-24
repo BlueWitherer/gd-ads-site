@@ -31,6 +31,19 @@ func init() {
 				return
 			}
 
+			user, err := database.GetUser(uid)
+			if err != nil {
+				log.Error("Failed to get ad owner: %s", err.Error())
+				http.Error(w, "Failed to get ad owner", http.StatusInternalServerError)
+				return
+			}
+
+			if user.Banned {
+				log.Error("User %s is banned", user.Username)
+				http.Error(w, "User is banned", http.StatusForbidden)
+				return
+			}
+
 			// Parse form with 10MB limit
 			r.ParseMultipartForm(10 << 20)
 

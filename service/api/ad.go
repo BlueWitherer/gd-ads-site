@@ -2,7 +2,6 @@ package api
 
 import (
 	"encoding/json"
-	"io"
 	"math/rand"
 	"net/http"
 	"strconv"
@@ -49,8 +48,22 @@ func init() {
 				return
 			}
 
+			safeRows, err := database.FilterAdsFromBannedUsers(rows)
+			if err != nil {
+				log.Error("Failed to filter safe ads: %s", err.Error())
+				http.Error(w, "Failed to filter safe ads", http.StatusInternalServerError)
+				return
+			}
+
+			adList, err := database.FilterAdsByPending(safeRows, false)
+			if err != nil {
+				log.Error("Failed to filter pending ads: %s", err.Error())
+				http.Error(w, "Failed to filter pending ads", http.StatusInternalServerError)
+				return
+			}
+
 			log.Debug("Filtering for %s type ads...", adFolder)
-			ads, err := database.FilterAdsByType(rows, adFolder)
+			ads, err := database.FilterAdsByType(adList, adFolder)
 			if err != nil {
 				log.Error("Failed to filter through ads: %s", err.Error())
 				http.Error(w, "Failed to filter through ads", http.StatusInternalServerError)
@@ -88,92 +101,6 @@ func init() {
 		}
 	})
 
-	http.HandleFunc("/api/ad/cdn", func(w http.ResponseWriter, r *http.Request) {
-		log.Debug("Getting random ad image...")
-		header := w.Header()
-
-		header.Set("Access-Control-Allow-Methods", "GET")
-		header.Set("Access-Control-Allow-Headers", "Content-Type")
-
-		if r.Method == http.MethodGet {
-			header.Set("Content-Type", "image/webp")
-			header.Set("Cache-Control", "no-store")
-
-			query := r.URL.Query()
-			adTypeStr := query.Get("type")
-
-			typeNum, err := strconv.Atoi(adTypeStr)
-			if err != nil {
-				log.Error("Failed to get ad type ID: %s", err.Error())
-				http.Error(w, err.Error(), http.StatusBadRequest)
-				return
-			}
-
-			adFolder, err := database.AdTypeFromInt(typeNum)
-			if err != nil {
-				log.Error("Failed to get ad folder: %s", err.Error())
-				http.Error(w, err.Error(), http.StatusBadRequest)
-				return
-			}
-
-			rows, err := database.ListAllAdvertisements()
-			if err != nil {
-				log.Error("Failed to list ads: %s", err.Error())
-				http.Error(w, "Failed to list ads", http.StatusInternalServerError)
-				return
-			}
-
-			log.Debug("Filtering for %s type ads...", adFolder)
-			ads, err := database.FilterAdsByType(rows, adFolder)
-			if err != nil {
-				log.Error("Failed to filter through ads: %s", err.Error())
-				http.Error(w, "Failed to filter through ads", http.StatusInternalServerError)
-				return
-			}
-
-			if len(ads) <= 0 {
-				log.Info("No ads found for type %s", adFolder)
-				http.Error(w, "No ads found", http.StatusNotFound)
-				return
-			}
-
-			log.Debug("Getting random %s type ad...", adFolder)
-			i := rand.Intn(len(ads))
-			ad := ads[i]
-
-			if ad.ImageURL == "" {
-				log.Error("Ad has no image URL")
-				http.Error(w, "Ad has no image", http.StatusInternalServerError)
-				return
-			}
-
-			// Fetch image from CDN/source and stream it back
-			resp, err := http.Get(ad.ImageURL)
-			if err != nil {
-				log.Error("Failed to fetch image: %s", err.Error())
-				http.Error(w, "Failed to fetch image", http.StatusBadGateway)
-				return
-			}
-			defer resp.Body.Close()
-
-			if resp.StatusCode != http.StatusOK {
-				log.Error("Image fetch returned status: %d", resp.StatusCode)
-				http.Error(w, "Failed to fetch image", http.StatusBadGateway)
-				return
-			}
-
-			log.Info("Returning image for ad: %s", ad.ImageURL)
-			w.WriteHeader(http.StatusOK)
-			if _, err := io.Copy(w, resp.Body); err != nil {
-				log.Error("Failed to write image response: %s", err.Error())
-				// can't do much if streaming fails
-				return
-			}
-		} else {
-			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		}
-	})
-
 	http.HandleFunc("/api/ad/get", func(w http.ResponseWriter, r *http.Request) {
 		log.Debug("Getting ad by id...")
 		header := w.Header()
@@ -199,6 +126,19 @@ func init() {
 			if err != nil {
 				log.Error("Failed to get ad: %s", err.Error())
 				http.Error(w, "Failed to get ad", http.StatusInternalServerError)
+				return
+			}
+
+			user, err := database.GetUser(ad.UserID)
+			if err != nil {
+				log.Error("Failed to get ad owner: %s", err.Error())
+				http.Error(w, "Failed to get ad owner", http.StatusInternalServerError)
+				return
+			}
+
+			if user.Banned {
+				log.Error("Owner %s of advertisement of ID %v is banned", user.Username, ad.AdID)
+				http.Error(w, "Advertisement owner is banned", http.StatusForbidden)
 				return
 			}
 

@@ -39,26 +39,27 @@ const (
 )
 
 type User struct {
-	ID          string `json:"id"`
-	Username    string `json:"username"`
-	TotalViews  int    `json:"total_views"`
-	TotalClicks int    `json:"total_clicks"`
-	IsAdmin     bool   `json:"is_admin"`
-	Banned      bool   `json:"banned"`
-	Created     string `json:"created_at"`
-	Updated     string `json:"updated_at"`
+	ID          string `json:"id"`           // Discord user ID
+	Username    string `json:"username"`     // Discord username
+	TotalViews  int    `json:"total_views"`  // Total registered views on all ads
+	TotalClicks int    `json:"total_clicks"` // Total registered clicks on all ads
+	IsAdmin     bool   `json:"is_admin"`     // Active administrator status
+	Banned      bool   `json:"banned"`       // Banned status
+	Created     string `json:"created_at"`   // First created
+	Updated     string `json:"updated_at"`   // Last updated
 }
 
 // Database row for advertisements listing
 type Ad struct {
-	AdID       int64  `json:"ad_id"`
-	UserID     string `json:"user_id"`
-	LevelID    int64  `json:"level_id"`
-	Type       int    `json:"type"`
-	ImageURL   string `json:"image_url"`
-	Created    string `json:"created_at"`
-	ViewCount  int    `json:"view_count,omitempty"`
-	ClickCount int    `json:"click_count,omitempty"`
+	AdID       int64  `json:"ad_id"`                 // Advertisement ID
+	UserID     string `json:"user_id"`               // Owner Discord user ID
+	LevelID    int64  `json:"level_id"`              // Geometry Dash level ID
+	Type       int    `json:"type"`                  // Type of advertisement
+	ViewCount  int    `json:"view_count,omitempty"`  // Total registered views
+	ClickCount int    `json:"click_count,omitempty"` // Total registered clicks
+	ImageURL   string `json:"image_url"`             // URL to the advertisement image
+	Created    string `json:"created_at"`            // First created
+	Pending    bool   `json:"pending"`               // Under review
 }
 
 // private method to safely prepare the sql statement
@@ -120,7 +121,7 @@ func NewStat(event AdEvent, adId int64, user int64) error {
 		return fmt.Errorf("invalid ad event")
 	}
 
-	if ownerID, ownerErr := GetAdvertisementOwner(adId); ownerErr == nil && ownerID != "" {
+	if ownerID, ownerErr := GetAdvertisementOwnerId(adId); ownerErr == nil && ownerID != "" {
 		if incErr := IncrementUserStats(ownerID, viewsDelta, clicksDelta); incErr != nil {
 			log.Error("Failed to increment total clicks: %s", incErr.Error())
 		}
@@ -180,7 +181,7 @@ func IncrementUserStats(userId string, viewsDelta int, clicksDelta int) error {
 }
 
 // inserts or updates an ad row
-func CreateAdvertisement(userId, levelID string, adType int, imageURL string) (int64, error) {
+func CreateAdvertisement(userId string, levelID string, adType int, imageURL string) (int64, error) {
 	if userId == "" || levelID == "" || imageURL == "" {
 		return 0, fmt.Errorf("missing ad fields")
 	}
@@ -197,12 +198,12 @@ func CreateAdvertisement(userId, levelID string, adType int, imageURL string) (i
 				if ad.UserID == userId && ad.Type == adType {
 					// Update existing ad instead of rejecting
 					log.Info("Updating existing ad ID %d for user %s", ad.AdID, userId)
-					stmt, err := prepareStmt(data, "UPDATE advertisements SET level_id = ?, image_url = ? WHERE ad_id = ?")
+					stmt, err := prepareStmt(data, "UPDATE advertisements SET level_id = ?, image_url = ?, pending = ? WHERE ad_id = ?")
 					if err != nil {
 						return 0, err
 					}
 
-					_, err = stmt.Exec(levelID, imageURL, ad.AdID)
+					_, err = stmt.Exec(levelID, imageURL, true, ad.AdID)
 					if err != nil {
 						return 0, err
 					}
@@ -214,12 +215,12 @@ func CreateAdvertisement(userId, levelID string, adType int, imageURL string) (i
 	}
 
 	// Create new ad if none exists
-	stmt, err := prepareStmt(data, "INSERT INTO advertisements (user_id, level_id, type, image_url) VALUES (?, ?, ?, ?)")
+	stmt, err := prepareStmt(data, "INSERT INTO advertisements (user_id, level_id, type, image_url, pending) VALUES (?, ?, ?, ?, ?)")
 	if err != nil {
 		return 0, err
 	}
 
-	res, err := stmt.Exec(userId, levelID, adType, imageURL)
+	res, err := stmt.Exec(userId, levelID, adType, imageURL, true)
 	if err != nil {
 		return 0, err
 	}
@@ -229,7 +230,7 @@ func CreateAdvertisement(userId, levelID string, adType int, imageURL string) (i
 
 // fetches all ads for a given user
 func ListAllAdvertisements() ([]Ad, error) {
-	stmt, err := prepareStmt(data, "SELECT ad_id, user_id, level_id, type, image_url, created_at FROM advertisements ORDER BY ad_id DESC")
+	stmt, err := prepareStmt(data, "SELECT ad_id, user_id, level_id, type, image_url, created_at, pending FROM advertisements ORDER BY ad_id DESC")
 	if err != nil {
 		return nil, err
 	}
@@ -244,7 +245,7 @@ func ListAllAdvertisements() ([]Ad, error) {
 	var out []Ad
 	for rows.Next() {
 		var r Ad
-		if err := rows.Scan(&r.AdID, &r.UserID, &r.LevelID, &r.Type, &r.ImageURL, &r.Created); err != nil {
+		if err := rows.Scan(&r.AdID, &r.UserID, &r.LevelID, &r.Type, &r.ImageURL, &r.Created, &r.Pending); err != nil {
 			return nil, err
 		}
 
@@ -252,6 +253,33 @@ func ListAllAdvertisements() ([]Ad, error) {
 	}
 
 	return out, rows.Err()
+}
+
+func FilterAdsByPending(rows []Ad, showPending bool) ([]Ad, error) {
+	var out []Ad
+	for _, r := range rows {
+		if r.Pending == showPending {
+			out = append(out, r)
+		}
+	}
+
+	return out, nil
+}
+
+func FilterAdsFromBannedUsers(rows []Ad) ([]Ad, error) {
+	var out []Ad
+	for _, r := range rows {
+		user, err := GetUser(r.UserID)
+		if err != nil {
+			return nil, err
+		}
+
+		if !user.Banned {
+			out = append(out, r)
+		}
+	}
+
+	return out, nil
 }
 
 func FilterAdsByUser(rows []Ad, userId string) ([]Ad, error) {
@@ -283,7 +311,7 @@ func FilterAdsByType(rows []Ad, adType AdType) ([]Ad, error) {
 
 // get an advertisement by id
 func GetAdvertisement(adId int64) (Ad, error) {
-	stmt, err := prepareStmt(data, "SELECT ad_id, user_id, level_id, type, image_url, created_at FROM advertisements WHERE ad_id = ?")
+	stmt, err := prepareStmt(data, "SELECT ad_id, user_id, level_id, type, image_url, created_at, pending FROM advertisements WHERE ad_id = ?")
 	if err != nil {
 		return Ad{}, err
 	}
@@ -292,7 +320,7 @@ func GetAdvertisement(adId int64) (Ad, error) {
 	row := stmt.QueryRow(adId)
 	if row != nil {
 		var r Ad
-		if err := row.Scan(&r.AdID, &r.UserID, &r.LevelID, &r.Type, &r.ImageURL, &r.Created); err != nil {
+		if err := row.Scan(&r.AdID, &r.UserID, &r.LevelID, &r.Type, &r.ImageURL, &r.Created, &r.Pending); err != nil {
 			if err == sql.ErrNoRows {
 				return Ad{}, nil
 			}
@@ -307,7 +335,7 @@ func GetAdvertisement(adId int64) (Ad, error) {
 }
 
 // returns the owning user_id for an ad
-func GetAdvertisementOwner(adId int64) (string, error) {
+func GetAdvertisementOwnerId(adId int64) (string, error) {
 	var uid string
 
 	stmt, err := prepareStmt(data, "SELECT user_id FROM advertisements WHERE ad_id = ?")
@@ -354,6 +382,60 @@ func DeleteAllExpiredAds() error {
 	}
 
 	return nil
+}
+
+// returns total_views and total_clicks for a given user id
+func GetUserTotals(userId string) (int, int, error) {
+	if userId == "" {
+		return 0, 0, fmt.Errorf("empty user id")
+	}
+
+	stmt, err := prepareStmt(data, "SELECT total_views, total_clicks FROM users WHERE id = ?")
+	if err != nil {
+		return 0, 0, err
+	}
+
+	var views int
+	var clicks int
+	err = stmt.QueryRow(userId).Scan(&views, &clicks)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	return views, clicks, nil
+}
+
+// returns total_views and total_clicks for a given ad id
+func GetAdStats(adId int64) (int, int, error) {
+	if adId == 0 {
+		return 0, 0, fmt.Errorf("invalid ad id")
+	}
+
+	// Count views for this ad
+	viewStmt, err := prepareStmt(data, "SELECT COUNT(*) FROM views WHERE ad_id = ?")
+	if err != nil {
+		return 0, 0, err
+	}
+
+	var views int
+	err = viewStmt.QueryRow(adId).Scan(&views)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	// Count clicks for this ad
+	clickStmt, err := prepareStmt(data, "SELECT COUNT(*) FROM clicks WHERE ad_id = ?")
+	if err != nil {
+		return 0, 0, err
+	}
+
+	var clicks int
+	err = clickStmt.QueryRow(adId).Scan(&clicks)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	return views, clicks, nil
 }
 
 // initializeSchema reads and executes the schema.sql file to create tables if they don't exist
@@ -419,58 +501,4 @@ func init() {
 		log.Error("Failed to initialize database schema: %s", err.Error())
 		return
 	}
-}
-
-// returns total_views and total_clicks for a given user id
-func GetUserTotals(userId string) (int, int, error) {
-	if userId == "" {
-		return 0, 0, fmt.Errorf("empty user id")
-	}
-
-	stmt, err := prepareStmt(data, "SELECT total_views, total_clicks FROM users WHERE id = ?")
-	if err != nil {
-		return 0, 0, err
-	}
-
-	var views int
-	var clicks int
-	err = stmt.QueryRow(userId).Scan(&views, &clicks)
-	if err != nil {
-		return 0, 0, err
-	}
-
-	return views, clicks, nil
-}
-
-// returns total_views and total_clicks for a given ad id
-func GetAdStats(adId int64) (int, int, error) {
-	if adId == 0 {
-		return 0, 0, fmt.Errorf("invalid ad id")
-	}
-
-	// Count views for this ad
-	viewStmt, err := prepareStmt(data, "SELECT COUNT(*) FROM views WHERE ad_id = ?")
-	if err != nil {
-		return 0, 0, err
-	}
-
-	var views int
-	err = viewStmt.QueryRow(adId).Scan(&views)
-	if err != nil {
-		return 0, 0, err
-	}
-
-	// Count clicks for this ad
-	clickStmt, err := prepareStmt(data, "SELECT COUNT(*) FROM clicks WHERE ad_id = ?")
-	if err != nil {
-		return 0, 0, err
-	}
-
-	var clicks int
-	err = clickStmt.QueryRow(adId).Scan(&clicks)
-	if err != nil {
-		return 0, 0, err
-	}
-
-	return views, clicks, nil
 }

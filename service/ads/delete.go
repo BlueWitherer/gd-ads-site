@@ -24,6 +24,13 @@ func init() {
 		if r.Method == http.MethodDelete {
 			header.Set("Content-Type", "application/json")
 
+			uid, err := access.GetSessionUserID(r)
+			if err != nil {
+				log.Error("Unauthorized access to /ads/delete: %s", err.Error())
+				http.Error(w, "Unauthorized", http.StatusUnauthorized)
+				return
+			}
+
 			idStr := r.URL.Query().Get("id")
 			if idStr == "" {
 				http.Error(w, "Missing ad ID parameter", http.StatusBadRequest)
@@ -36,21 +43,27 @@ func init() {
 				return
 			}
 
-			ownerid, err := database.GetAdvertisementOwner(id)
+			permission := false // does the user meet the criteria
+
+			ownerid, err := database.GetAdvertisementOwnerId(id)
 			if err != nil {
 				log.Error("Failed to get advertisement owner: %s", err.Error())
 				http.Error(w, "Failed to get advertisement owner", http.StatusInternalServerError)
 				return
 			}
 
-			uid, err := access.GetSessionUserID(r)
+			user, err := database.GetUser(uid)
 			if err != nil {
-				log.Error("Unauthorized access to /ads/delete: %s", err.Error())
-				http.Error(w, "Unauthorized", http.StatusUnauthorized)
+				log.Error("Failed to get user: %s", err.Error())
+				http.Error(w, "Failed to get user:", http.StatusInternalServerError)
 				return
 			}
 
-			if ownerid == uid {
+			if user.IsAdmin || ownerid == user.ID {
+				permission = true
+			}
+
+			if permission {
 				ad, err := database.DeleteAdvertisement(id)
 				if err != nil {
 					log.Error("Failed to delete advertisement: %s", err.Error())

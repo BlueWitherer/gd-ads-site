@@ -16,7 +16,7 @@ import (
 	"github.com/google/uuid"
 )
 
-type User struct {
+type DiscordUser struct {
 	ID            string `json:"id"`
 	Username      string `json:"username"`
 	Discriminator string `json:"discriminator"`
@@ -28,13 +28,13 @@ type Token struct {
 	TokenType   string `json:"token_type"`
 }
 
-var sessions = map[string]User{} // session ID -> User{}
+var sessions = map[string]DiscordUser{} // session ID -> DiscordUser{}
 
 // Get an ongoing user session if found
-func GetSessionFromId(id string) (*User, error) {
+func GetSessionFromId(id string) (*DiscordUser, error) {
 	user, ok := sessions[id]
 	if !ok {
-		return nil, fmt.Errorf("User not found")
+		return nil, fmt.Errorf("user not found")
 	}
 
 	return &user, nil
@@ -59,7 +59,7 @@ func GetSessionUserID(r *http.Request) (string, error) {
 	return u.ID, nil
 }
 
-func GetSession(r *http.Request) (*User, error) {
+func GetSession(r *http.Request) (*DiscordUser, error) {
 	cookie, err := r.Cookie("session_id")
 	if err != nil {
 		return nil, err
@@ -191,7 +191,7 @@ func init() {
 
 			defer resp.Body.Close()
 
-			user := User{}
+			user := DiscordUser{}
 
 			userBody, _ := io.ReadAll(resp.Body)
 			log.Debug("User endpoint status: %s", resp.Status)
@@ -208,11 +208,19 @@ func init() {
 				return
 			}
 
+			u, err := database.GetUser(user.ID)
+			if err != nil {
+				log.Error(err.Error())
+			} else if u.Banned {
+				log.Error("User %s is banned", u.Username)
+				http.Error(w, "User is banned", http.StatusForbidden)
+				return
+			}
+
 			if err := database.UpsertUser(user.ID, user.Username); err != nil {
 				log.Error("Failed to upsert user: %s", err.Error())
-				// http.Error(w, err.Error(), http.StatusInternalServerError)
-				// return
-				// session failed when DB write failed
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
 			}
 
 			sessionID := generateSessionID()

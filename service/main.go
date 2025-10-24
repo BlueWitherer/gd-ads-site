@@ -14,7 +14,6 @@ import (
 	_ "service/ads"
 	_ "service/api"
 	"service/database"
-	_ "service/database"
 	"service/log"
 	_ "service/proxy"
 	_ "service/stats"
@@ -31,14 +30,13 @@ func expiryCleanupRoutine(adFolder string) {
 				info, err := file.Info()
 				if err != nil {
 					log.Error("Failed to get ad file info for %s: %s", file.Name(), err.Error())
-					continue
-				}
-
-				if time.Since(info.ModTime()) > 7*24*time.Hour {
-					log.Info("Removing expired ad %s (%v B)", info.Name(), info.Size())
-					os.Remove(filepath.Join(adsDir, file.Name()))
 				} else {
-					log.Debug("Ad %s is still valid", info.Name())
+					if time.Since(info.ModTime()) > 7*24*time.Hour {
+						log.Info("Removing expired ad %s (%v B)", info.Name(), info.Size())
+						os.Remove(filepath.Join(adsDir, file.Name()))
+					} else {
+						log.Debug("Ad %s is still valid", info.Name())
+					}
 				}
 			}
 
