@@ -38,11 +38,22 @@ const (
 	StatByUser StatBy = "user_id" // Filter stats by user
 )
 
+type User struct {
+	ID          string `json:"id"`
+	Username    string `json:"username"`
+	TotalViews  int    `json:"total_views"`
+	TotalClicks int    `json:"total_clicks"`
+	IsAdmin     bool   `json:"is_admin"`
+	Banned      bool   `json:"banned"`
+	Created     string `json:"created_at"`
+	Updated     string `json:"updated_at"`
+}
+
 // Database row for advertisements listing
 type Ad struct {
 	AdID       int64  `json:"ad_id"`
 	UserID     string `json:"user_id"`
-	LevelID    string `json:"level_id"`
+	LevelID    int64  `json:"level_id"`
 	Type       int    `json:"type"`
 	ImageURL   string `json:"image_url"`
 	Created    string `json:"created_at"`
@@ -117,6 +128,25 @@ func NewStat(event AdEvent, adId int64, user int64) error {
 
 	_, err = stmt.Exec(adId, user, time.Now())
 	return err
+}
+
+func GetUser(id string) (User, error) {
+	if id == "" {
+		return User{}, fmt.Errorf("empty user id")
+	}
+
+	stmt, err := prepareStmt(data, "SELECT username, id, total_views, total_clicks, is_admin, banned, created_at, updated_at FROM users WHERE id = ?")
+	if err != nil {
+		return User{}, err
+	}
+
+	var user User
+	err = stmt.QueryRow(id).Scan(&user.Username, &user.ID, &user.TotalViews, &user.TotalClicks, &user.IsAdmin, &user.Banned, &user.Created, &user.Updated)
+	if err != nil {
+		return User{}, err
+	}
+
+	return user, nil
 }
 
 // inserts a new user or updates username if it already exists.
@@ -328,7 +358,7 @@ func DeleteAllExpiredAds() error {
 
 // initializeSchema reads and executes the schema.sql file to create tables if they don't exist
 func initializeSchema() error {
-	schemaPath := filepath.Join("database", "schema.sql")
+	schemaPath := filepath.Join("service", "database", "schema.sql")
 	log.Debug("Reading database schema from %s", schemaPath)
 
 	schemaSQL, err := os.ReadFile(schemaPath)

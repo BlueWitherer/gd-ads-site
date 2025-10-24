@@ -45,7 +45,7 @@ func init() {
 			type OutAd struct {
 				ID         int64  `json:"id"`
 				Type       string `json:"type"`
-				LevelID    string `json:"levelId"`
+				LevelID    int64  `json:"levelId"`
 				Image      string `json:"image"`
 				Expiration string `json:"expiration"`
 			}

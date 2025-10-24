@@ -13,6 +13,7 @@ import (
 	"service/access"
 	_ "service/ads"
 	_ "service/api"
+	"service/database"
 	_ "service/database"
 	"service/log"
 	_ "service/proxy"
@@ -39,6 +40,22 @@ func expiryCleanupRoutine(adFolder string) {
 				} else {
 					log.Debug("Ad %s is still valid", info.Name())
 				}
+			}
+
+			time.Sleep(12 * time.Hour) // Run twice a day
+		}
+	}()
+}
+
+func expiryCleanupRoutineSql() {
+	go func() {
+		for {
+			log.Debug("Deleting expired ad records...")
+			err := database.DeleteAllExpiredAds()
+			if err != nil {
+				log.Error("Failed to delete expired ad records: %s", err.Error())
+			} else {
+				log.Info("Expired ad records cleanup complete")
 			}
 
 			time.Sleep(12 * time.Hour) // Run twice a day
@@ -117,6 +134,8 @@ func main() {
 		expiryCleanupRoutine("banner")
 		expiryCleanupRoutine("skyscraper")
 		expiryCleanupRoutine("square")
+
+		expiryCleanupRoutineSql()
 
 		log.Done("Server started successfully on host http://localhost%s", srv.Addr)
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
