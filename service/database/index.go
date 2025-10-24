@@ -59,6 +59,7 @@ type Ad struct {
 	ClickCount int    `json:"click_count,omitempty"` // Total registered clicks
 	ImageURL   string `json:"image_url"`             // URL to the advertisement image
 	Created    string `json:"created_at"`            // First created
+	Expiry     int64  `json:"expiry"`                // Date of expiration
 	Pending    bool   `json:"pending"`               // Under review
 }
 
@@ -228,6 +229,31 @@ func CreateAdvertisement(userId string, levelID string, adType int, imageURL str
 	return res.LastInsertId()
 }
 
+func ApproveAd(id int64) (Ad, error) {
+	stmt, err := prepareStmt(data, "UPDATE advertisements SET pending = FALSE WHERE ad_id = ?")
+	if err != nil {
+		return Ad{}, err
+	}
+
+	_, err = stmt.Exec(id)
+	if err != nil {
+		return Ad{}, err
+	}
+
+	return GetAdvertisement(id)
+}
+
+func GetAdUnixExpiry(ad Ad) (int64, error) {
+	t, err := time.Parse("2006-01-02 15:04:05", ad.Created)
+	if err != nil {
+		return 0, err
+	}
+
+	expiry := t.Unix() + int64((7 * 24 * time.Hour).Seconds())
+
+	return expiry, err
+}
+
 // fetches all ads for a given user
 func ListAllAdvertisements() ([]Ad, error) {
 	stmt, err := prepareStmt(data, "SELECT ad_id, user_id, level_id, type, image_url, created_at, pending FROM advertisements ORDER BY ad_id DESC")
@@ -246,6 +272,11 @@ func ListAllAdvertisements() ([]Ad, error) {
 	for rows.Next() {
 		var r Ad
 		if err := rows.Scan(&r.AdID, &r.UserID, &r.LevelID, &r.Type, &r.ImageURL, &r.Created, &r.Pending); err != nil {
+			return nil, err
+		}
+
+		r.Expiry, err = GetAdUnixExpiry(r)
+		if err != nil {
 			return nil, err
 		}
 
@@ -325,6 +356,11 @@ func GetAdvertisement(adId int64) (Ad, error) {
 				return Ad{}, nil
 			}
 
+			return Ad{}, err
+		}
+
+		r.Expiry, err = GetAdUnixExpiry(r)
+		if err != nil {
 			return Ad{}, err
 		}
 

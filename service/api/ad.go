@@ -92,7 +92,7 @@ func init() {
 			log.Info("Returning ad as JSON: %s", ad.ImageURL)
 			w.WriteHeader(http.StatusOK)
 			if err := json.NewEncoder(w).Encode(ad); err != nil {
-				log.Error("Failed to encode ad response: %s", err.Error())
+				log.Error("Failed to encode response: %s", err.Error())
 				http.Error(w, "Failed to encode response", http.StatusInternalServerError)
 				return
 			}
@@ -154,10 +154,12 @@ func init() {
 			log.Info("Returning ad as JSON: %s", ad.ImageURL)
 			w.WriteHeader(http.StatusOK)
 			if err := json.NewEncoder(w).Encode(ad); err != nil {
-				log.Error("Failed to encode ad response: %s", err.Error())
+				log.Error("Failed to encode response: %s", err.Error())
 				http.Error(w, "Failed to encode response", http.StatusInternalServerError)
 				return
 			}
+		} else {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		}
 	})
 }

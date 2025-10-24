@@ -2,9 +2,7 @@ package ads
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
-	"time"
 
 	"service/access"
 	"service/database"
@@ -20,9 +18,11 @@ func init() {
 		header.Set("Access-Control-Allow-Headers", "Content-Type")
 
 		if r.Method == http.MethodGet {
+			w.Header().Set("Content-Type", "application/json")
+
 			// require login
-			userID, err := access.GetSessionUserID(r)
-			if err != nil || userID == "" {
+			uid, err := access.GetSessionUserID(r)
+			if err != nil || uid == "" {
 				http.Error(w, "Unauthorized", http.StatusUnauthorized)
 				return
 			}
@@ -34,60 +34,16 @@ func init() {
 				return
 			}
 
-			filtered, err := database.FilterAdsByUser(rows, userID)
+			filtered, err := database.FilterAdsByUser(rows, uid)
 			if err != nil {
 				log.Error("List ads failed: %s", err.Error())
 				http.Error(w, "Failed to fetch ads", http.StatusInternalServerError)
 				return
 			}
 
-			// Map to client-friendly shape
-			type OutAd struct {
-				ID         int64  `json:"id"`
-				Type       string `json:"type"`
-				LevelID    int64  `json:"levelId"`
-				Image      string `json:"image"`
-				Expiration string `json:"expiration"`
-			}
-
-			var out []OutAd
-			for _, a := range filtered {
-				// map numeric type to string
-				t := "unknown"
-				switch a.Type {
-				case 1:
-					t = "Banner"
-				case 2:
-					t = "Square"
-				case 3:
-					t = "Skyscraper"
-				}
-
-				// expiration is computed as days until 7 days after created_at
-				expiration := ""
-				if parsed, err := time.Parse(time.RFC3339, a.Created); err == nil {
-					daysLeft := 7 - int(time.Since(parsed).Hours()/24)
-					if daysLeft > 1 {
-						expiration = fmt.Sprintf("%d days left", daysLeft)
-					} else if daysLeft == 1 {
-						expiration = "1 day left"
-					} else if daysLeft <= 0 {
-						expiration = "expired"
-					}
-				}
-
-				out = append(out, OutAd{
-					ID:         a.AdID,
-					Type:       t,
-					LevelID:    a.LevelID,
-					Image:      a.ImageURL,
-					Expiration: expiration,
-				})
-			}
-
-			w.Header().Set("Content-Type", "application/json")
-			if err := json.NewEncoder(w).Encode(out); err != nil {
-				log.Error("Failed to encode ad response: %s", err.Error())
+			w.WriteHeader(http.StatusOK)
+			if err := json.NewEncoder(w).Encode(filtered); err != nil {
+				log.Error("Failed to encode response: %s", err.Error())
 				http.Error(w, "Failed to encode response", http.StatusInternalServerError)
 				return
 			}

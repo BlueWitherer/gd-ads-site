@@ -281,7 +281,6 @@ func init() {
 
 			header := w.Header()
 
-			w.WriteHeader(http.StatusOK)
 			header.Set("Content-Type", "application/json")
 			if jb, err := json.Marshal(user); err == nil {
 				log.Debug("/session returning user: %s", string(jb))
@@ -289,7 +288,12 @@ func init() {
 				log.Debug("/session returning user: (failed to marshal)")
 			}
 
-			json.NewEncoder(w).Encode(user)
+			w.WriteHeader(http.StatusOK)
+			if err := json.NewEncoder(w).Encode(user); err != nil {
+				log.Error("Failed to encode response: %s", err.Error())
+				http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+				return
+			}
 		} else {
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		}

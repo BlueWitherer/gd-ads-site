@@ -5,9 +5,9 @@ import { useEffect, useState } from 'react';
 type Ad = {
   id: number;
   type: string;
-  levelId: string;
+  level_id: string;
   image: string;
-  expiration: string;
+  expiration: number;
 }
 
 function Manage() {
@@ -24,13 +24,13 @@ function Manage() {
         }
 
         const data = await res.json();
-        // Expecting array of { id, type, levelId, image, expiration }
+        // Expecting array of { id, type, level_id, image, expiration }
         setAdverts(data.map((a: any) => ({
-          id: a.id,
+          id: a.ad_id,
           type: a.type,
-          levelId: a.levelId,
-          image: a.image,
-          expiration: a.expiration || '',
+          level_id: a.level_id,
+          image: a.image_url,
+          expiration: a.expiry,
         })));
       } catch (err: any) {
         setError(err.message || String(err));
@@ -78,7 +78,7 @@ function Manage() {
             <div style={{ flex: 1 }}>
               <div><strong>ID:</strong> {advert.id}</div>
               <div><strong>Type:</strong> {advert.type}</div>
-              <div><strong>Level ID:</strong> {advert.levelId}</div>
+              <div><strong>Level ID:</strong> {advert.level_id}</div>
               <div><strong>Expiration:</strong> {advert.expiration}</div>
             </div>
             <button

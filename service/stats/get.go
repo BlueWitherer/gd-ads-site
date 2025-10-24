@@ -29,8 +29,8 @@ func init() {
 		}
 
 		// Require logged-in user
-		userID, err := access.GetSessionUserID(r)
-		if err != nil || userID == "" {
+		uid, err := access.GetSessionUserID(r)
+		if err != nil || uid == "" {
 			log.Error("Unauthorized access to /stats/get: %s", err.Error())
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
@@ -38,7 +38,7 @@ func init() {
 
 		header.Set("Content-Type", "application/json")
 
-		views, clicks, err := database.GetUserTotals(userID)
+		views, clicks, err := database.GetUserTotals(uid)
 		if err != nil {
 			log.Error("Failed to fetch user totals: %s", err.Error())
 			http.Error(w, "Failed to fetch stats", http.StatusInternalServerError)
@@ -50,7 +50,7 @@ func init() {
 			Clicks: clicks,
 		}
 
-		log.Info("Retrieved stats for user: %s", userID)
+		log.Info("Retrieved stats for user: %s", uid)
 		w.WriteHeader(http.StatusOK)
 		if err := json.NewEncoder(w).Encode(stats); err != nil {
 			log.Error("Failed to encode stats response: %s", err.Error())
