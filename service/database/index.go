@@ -314,7 +314,7 @@ func DeleteAllExpiredAds() error {
 func initializeSchema() error {
 	schemaPath := filepath.Join("database", "schema.sql")
 	log.Debug("Reading database schema from %s", schemaPath)
-	
+
 	schemaSQL, err := os.ReadFile(schemaPath)
 	if err != nil {
 		return fmt.Errorf("failed to read schema file: %w", err)
@@ -322,7 +322,7 @@ func initializeSchema() error {
 
 	// Split the SQL file into individual statements
 	statements := strings.Split(string(schemaSQL), ";")
-	
+
 	for _, stmt := range statements {
 		stmt = strings.TrimSpace(stmt)
 		if stmt == "" || strings.HasPrefix(stmt, "--") {
