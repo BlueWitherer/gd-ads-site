@@ -67,6 +67,15 @@ func init() {
 			i := rand.Intn(len(ads))
 			ad := ads[i]
 
+			// Get view and click stats for this ad
+			views, clicks, err := database.GetAdStats(ad.AdID)
+			if err != nil {
+				log.Error("Failed to get ad stats: %s", err.Error())
+			} else {
+				ad.ViewCount = views
+				ad.ClickCount = clicks
+			}
+
 			log.Info("Returning ad as JSON: %s", ad.ImageURL)
 			w.WriteHeader(http.StatusOK)
 			if err := json.NewEncoder(w).Encode(ad); err != nil {
@@ -191,6 +200,15 @@ func init() {
 				log.Error("Failed to get ad: %s", err.Error())
 				http.Error(w, "Failed to get ad", http.StatusInternalServerError)
 				return
+			}
+
+			// Get view and click stats for this ad
+			views, clicks, err := database.GetAdStats(ad.AdID)
+			if err != nil {
+				log.Error("Failed to get ad stats: %s", err.Error())
+			} else {
+				ad.ViewCount = views
+				ad.ClickCount = clicks
 			}
 
 			log.Info("Returning ad as JSON: %s", ad.ImageURL)

@@ -40,12 +40,14 @@ const (
 
 // Database row for advertisements listing
 type Ad struct {
-	AdID     int64  `json:"ad_id"`
-	UserID   string `json:"user_id"`
-	LevelID  string `json:"level_id"`
-	Type     int    `json:"type"`
-	ImageURL string `json:"image_url"`
-	Created  string `json:"created_at"`
+	AdID       int64  `json:"ad_id"`
+	UserID     string `json:"user_id"`
+	LevelID    string `json:"level_id"`
+	Type       int    `json:"type"`
+	ImageURL   string `json:"image_url"`
+	Created    string `json:"created_at"`
+	ViewCount  int    `json:"view_count,omitempty"`
+	ClickCount int    `json:"click_count,omitempty"`
 }
 
 // private method to safely prepare the sql statement
@@ -403,6 +405,39 @@ func GetUserTotals(userId string) (int, int, error) {
 	var views int
 	var clicks int
 	err = stmt.QueryRow(userId).Scan(&views, &clicks)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	return views, clicks, nil
+}
+
+// returns total_views and total_clicks for a given ad id
+func GetAdStats(adId int64) (int, int, error) {
+	if adId == 0 {
+		return 0, 0, fmt.Errorf("invalid ad id")
+	}
+
+	// Count views for this ad
+	viewStmt, err := prepareStmt(data, "SELECT COUNT(*) FROM views WHERE ad_id = ?")
+	if err != nil {
+		return 0, 0, err
+	}
+
+	var views int
+	err = viewStmt.QueryRow(adId).Scan(&views)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	// Count clicks for this ad
+	clickStmt, err := prepareStmt(data, "SELECT COUNT(*) FROM clicks WHERE ad_id = ?")
+	if err != nil {
+		return 0, 0, err
+	}
+
+	var clicks int
+	err = clickStmt.QueryRow(adId).Scan(&clicks)
 	if err != nil {
 		return 0, 0, err
 	}
