@@ -109,6 +109,8 @@ func init() {
 			if err != nil || uid == "" {
 				http.Error(w, "Unauthorized", http.StatusUnauthorized)
 				return
+			} else {
+				log.Info("Received user of ID %s", uid)
 			}
 
 			u, err := database.GetUser(uid)
@@ -116,12 +118,16 @@ func init() {
 				log.Error("Failed to get user: %s", err.Error())
 				http.Error(w, "Failed to get user", http.StatusInternalServerError)
 				return
+			} else {
+				log.Info("Fetched user %s (%s)", u.Username, u.ID)
 			}
 
 			if !u.IsAdmin {
 				log.Error("User of ID %s is not admin", u.ID)
 				http.Error(w, "User is not admin", http.StatusUnauthorized)
 				return
+			} else {
+				log.Info("User %s (%s) is an admin", u.Username, u.ID)
 			}
 
 			query := r.URL.Query()
@@ -132,6 +138,8 @@ func init() {
 				log.Error("Failed to ban user: %s", err.Error())
 				http.Error(w, "Failed to ban user", http.StatusInternalServerError)
 				return
+			} else {
+				log.Info("Banned user %s (%s)", banned.Username, banned.ID)
 			}
 
 			w.WriteHeader(http.StatusOK)
@@ -139,6 +147,8 @@ func init() {
 				log.Error("Failed to encode response: %s", err.Error())
 				http.Error(w, "Failed to encode response", http.StatusInternalServerError)
 				return
+			} else {
+				log.Info("Finished ban request to %s by admin %s (%s)", banned.Username, u.Username, u.ID)
 			}
 		} else {
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)

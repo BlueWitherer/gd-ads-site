@@ -122,6 +122,13 @@ func init() {
 				return
 			}
 
+			if user.IsAdmin {
+				_, err = database.ApproveAd(adID)
+				if err != nil {
+					log.Error("Failed to auto-approve new ad by admin: %s", err.Error())
+				}
+			}
+
 			log.Info("Saved ad to %s, ad_id=%v, user_id=%s", dstPath, adID, uid)
 			w.Write(fmt.Appendf(nil, `{"status":"ok","ad_id":%d,"image_url":"%s"}`, adID, imageURL))
 		} else {
