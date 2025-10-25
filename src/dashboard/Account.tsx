@@ -6,6 +6,7 @@ type User = {
   id: string;
   username: string;
   is_admin: boolean;
+  created_at: string;
 };
 
 type Ad = {
@@ -249,9 +250,33 @@ export default function Account() {
   return (
     <>
       <h1 className="text-2xl font-bold mb-6">My Account</h1>
-      <p className="text-lg mb-6">
+      <p className="text-lg">
         Manage your account and view ads pending approval.
       </p>
+      <p className="text-sm mb-6 text-gray-500">
+        If you want to view your stats in-game, copy the User ID into the settings prompted by the popup.
+      </p>
+      {user && (
+        <div
+          style={{
+            marginBottom: "2rem",
+            padding: "1rem",
+            backgroundColor: "rgba(255, 255, 255, 0.05)",
+            borderRadius: "8px",
+            border: "1px solid rgba(255, 255, 255, 0.1)",
+          }}
+        >
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+            <div>
+              <strong>User ID:</strong> {user.id}
+            </div>
+            <div>
+              <strong>Account Created:</strong> {new Date(user.created_at).toLocaleString()}
+            </div>
+          </div>
+        </div>
+      )}
+
       <div
         style={{
           display: "flex",
