@@ -2,6 +2,7 @@ import './App.css';
 import CreditsButton from './Credits';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { FaDiscord } from 'react-icons/fa';
 import './Log.mjs';
 
 export default function App() {
@@ -29,8 +30,14 @@ export default function App() {
         <h1 className="text-3xl font-bold padding-4 mt-4 mb-8">
           Advertisement Manager
         </h1>
-        <button className="nine-slice-button" onClick={handleLogin}>
-          Login
+        <button
+          className="nine-slice-button"
+          onClick={handleLogin}
+          style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", padding: "0.5rem 1rem" }}
+          aria-label="Login with Discord"
+        >
+          <FaDiscord size={25} aria-hidden="true" />
+          <span>Login with Discord</span>
         </button>
       </div>
       <CreditsButton />

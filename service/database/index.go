@@ -152,7 +152,7 @@ func GetUser(id string) (User, error) {
 }
 
 func GetAllUsers() ([]User, error) {
-	stmt, err := prepareStmt(data, "SELECT id, username, total_clicks, total_views, is_admin, banned, created_at, updated_at FROM users ORDER BY ad_id DESC")
+	stmt, err := prepareStmt(data, "SELECT id, username, total_clicks, total_views, is_admin, banned, created_at, updated_at FROM users ORDER BY id DESC")
 	if err != nil {
 		return nil, err
 	}
