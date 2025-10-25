@@ -2,6 +2,9 @@ import "../App.css";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 
+import ReplyIcon from '@mui/icons-material/ReplyOutlined';
+import SearchIcon from '@mui/icons-material/SearchOutlined';
+
 type User = {
   id: string;
   username: string;
@@ -206,7 +209,7 @@ export default function Admin() {
               left: "1rem",
             }}
           >
-            ←
+            <ReplyIcon style={{ "scale": 2.5 }} />
           </button>
 
           <h1 className="text-3xl font-bold" style={{ marginTop: "1rem", marginBottom: "2rem" }}>
@@ -242,194 +245,194 @@ export default function Admin() {
               disabled={searching}
               style={{ opacity: searching ? 0.5 : 1, position: "relative", zIndex: 5 }}
             >
-              Search
+              <SearchIcon /> Search
             </button>
           </div>
 
           <div style={{ marginTop: "1rem" }}>
             {error && <div style={{ color: "#e74c3c", marginBottom: "1rem" }}>{error}</div>}
 
-          {searchResult && (
-            <div
-              style={{
-                marginTop: "1rem",
-                padding: "1.5rem",
-                backgroundColor: "rgba(0, 0, 0, 0.3)",
-                borderRadius: "8px",
-                maxWidth: "100%",
-                maxHeight: "600px",
-                overflow: "auto",
-                display: "flex",
-                gap: "2rem",
-              }}
-            >
-              <div style={{ flex: "0 0 350px" }}>
-                <div 
-                  style={{ 
-                    marginBottom: "1.5rem", 
-                    textAlign: "left",
-                    padding: "1rem",
-                    backgroundColor: "rgba(0, 0, 0, 0.3)",
-                    borderRadius: "8px",
-                  }}
-                >
-                  <div style={{ marginBottom: "0.5rem" }}>
-                    <strong>Username:</strong> {searchResult.user.username}
-                  </div>
-                  <div style={{ marginBottom: "0.5rem" }}>
-                    <strong>User ID:</strong> {searchResult.user.id}
-                  </div>
-                  <div style={{ marginBottom: "0.5rem" }}>
-                    <strong>Total Views:</strong> {searchResult.user.total_views}
-                  </div>
-                  <div style={{ marginBottom: "0.5rem" }}>
-                    <strong>Total Clicks:</strong> {searchResult.user.total_clicks}
-                  </div>
-                  <div style={{ marginBottom: "0.5rem" }}>
-                    <strong>Admin:</strong> {searchResult.user.is_admin ? "Yes" : "No"}
-                  </div>
-                  <div style={{ marginBottom: "0.5rem" }}>
-                    <strong>Banned:</strong> {searchResult.user.banned ? "Yes" : "No"}
-                  </div>
-                </div>
-
-                <div
-                  style={{
-                    display: "flex",
-                    gap: "1rem",
-                    justifyContent: "center",
-                    marginTop: "1.5rem",
-                    flexWrap: "wrap",
-                  }}
-                >
-                  <button
-                    className="nine-slice-button"
-                    onClick={() => 
-                      searchResult.user.banned 
-                        ? handleUnbanUser(searchResult.user.id)
-                        : handleBanUser(searchResult.user.id)
-                    }
-                    style={{ fontSize: "0.9rem", padding: "4px 12px" }}
-                  >
-                    {searchResult.user.banned ? "Unban User" : "Ban User"}
-                  </button>
-                  <button
-                    className="nine-slice-button"
-                    onClick={() => handleDeleteUser(searchResult.user.id)}
-                    style={{ fontSize: "0.9rem", padding: "4px 12px" }}
-                  >
-                    Delete User
-                  </button>
-                </div>
-              </div>
-
-              <div style={{ flex: "1", overflowY: "auto" }}>
-                <h3 style={{ marginBottom: "1rem", marginTop: "0" }}>Advertisements ({searchResult.ads?.length || 0})</h3>
-                {!searchResult.ads || searchResult.ads.length === 0 ? (
-                  <div style={{ color: "rgba(255, 255, 255, 0.7)" }}>No advertisements</div>
-                ) : (
+            {searchResult && (
+              <div
+                style={{
+                  marginTop: "1rem",
+                  padding: "1.5rem",
+                  backgroundColor: "rgba(0, 0, 0, 0.3)",
+                  borderRadius: "8px",
+                  maxWidth: "100%",
+                  maxHeight: "600px",
+                  overflow: "auto",
+                  display: "flex",
+                  gap: "2rem",
+                }}
+              >
+                <div style={{ flex: "0 0 350px" }}>
                   <div
                     style={{
-                      display: "grid",
-                      gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
-                      gap: "1rem",
+                      marginBottom: "1.5rem",
+                      textAlign: "left",
+                      padding: "1rem",
+                      backgroundColor: "rgba(0, 0, 0, 0.3)",
+                      borderRadius: "8px",
                     }}
                   >
-                    {searchResult.ads.map((ad) => (
-                      <div
-                        key={ad.ad_id}
-                        style={{
-                          padding: "0.75rem",
-                          backgroundColor: "rgba(0, 0, 0, 0.3)",
-                          borderRadius: "8px",
-                          fontSize: "0.85rem",
-                          display: "flex",
-                          flexDirection: "column",
-                          gap: "0.5rem",
-                          position: "relative",
-                          pointerEvents: "auto",
-                        }}
-                      >
-                        {ad.pending && (
-                          <div
-                            style={{
-                              position: "absolute",
-                              top: "0.5rem",
-                              right: "0.5rem",
-                              backgroundColor: "#f39c12",
-                              color: "black",
-                              padding: "0.25rem 0.5rem",
-                              borderRadius: "3px",
-                              fontSize: "0.75rem",
-                              fontWeight: "bold",
-                              zIndex: 10,
-                            }}
-                          >
-                            PENDING
-                          </div>
-                        )}
-                        <a
-                          href={ad.image_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
+                    <div style={{ marginBottom: "0.5rem" }}>
+                      <strong>Username:</strong> {searchResult.user.username}
+                    </div>
+                    <div style={{ marginBottom: "0.5rem" }}>
+                      <strong>User ID:</strong> {searchResult.user.id}
+                    </div>
+                    <div style={{ marginBottom: "0.5rem" }}>
+                      <strong>Total Views:</strong> {searchResult.user.total_views}
+                    </div>
+                    <div style={{ marginBottom: "0.5rem" }}>
+                      <strong>Total Clicks:</strong> {searchResult.user.total_clicks}
+                    </div>
+                    <div style={{ marginBottom: "0.5rem" }}>
+                      <strong>Admin:</strong> {searchResult.user.is_admin ? "Yes" : "No"}
+                    </div>
+                    <div style={{ marginBottom: "0.5rem" }}>
+                      <strong>Banned:</strong> {searchResult.user.banned ? "Yes" : "No"}
+                    </div>
+                  </div>
+
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: "1rem",
+                      justifyContent: "center",
+                      marginTop: "1.5rem",
+                      flexWrap: "wrap",
+                    }}
+                  >
+                    <button
+                      className="nine-slice-button"
+                      onClick={() =>
+                        searchResult.user.banned
+                          ? handleUnbanUser(searchResult.user.id)
+                          : handleBanUser(searchResult.user.id)
+                      }
+                      style={{ fontSize: "0.9rem", padding: "4px 12px" }}
+                    >
+                      {searchResult.user.banned ? "Unban User" : "Ban User"}
+                    </button>
+                    <button
+                      className="nine-slice-button"
+                      onClick={() => handleDeleteUser(searchResult.user.id)}
+                      style={{ fontSize: "0.9rem", padding: "4px 12px" }}
+                    >
+                      Delete User
+                    </button>
+                  </div>
+                </div>
+
+                <div style={{ flex: "1", overflowY: "auto" }}>
+                  <h3 style={{ marginBottom: "1rem", marginTop: "0" }}>Advertisements ({searchResult.ads?.length || 0})</h3>
+                  {!searchResult.ads || searchResult.ads.length === 0 ? (
+                    <div style={{ color: "rgba(255, 255, 255, 0.7)" }}>No advertisements</div>
+                  ) : (
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
+                        gap: "1rem",
+                      }}
+                    >
+                      {searchResult.ads.map((ad) => (
+                        <div
+                          key={ad.ad_id}
                           style={{
-                            display: "block",
-                            width: "100%",
-                            textDecoration: "none",
+                            padding: "0.75rem",
+                            backgroundColor: "rgba(0, 0, 0, 0.3)",
+                            borderRadius: "8px",
+                            fontSize: "0.85rem",
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: "0.5rem",
+                            position: "relative",
                             pointerEvents: "auto",
                           }}
                         >
-                          <img
-                            src={ad.image_url}
-                            alt={`Ad ${ad.ad_id}`}
+                          {ad.pending && (
+                            <div
+                              style={{
+                                position: "absolute",
+                                top: "0.5rem",
+                                right: "0.5rem",
+                                backgroundColor: "#f39c12",
+                                color: "black",
+                                padding: "0.25rem 0.5rem",
+                                borderRadius: "3px",
+                                fontSize: "0.75rem",
+                                fontWeight: "bold",
+                                zIndex: 10,
+                              }}
+                            >
+                              PENDING
+                            </div>
+                          )}
+                          <a
+                            href={ad.image_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
                             style={{
-                              width: "100%",
-                              height: "auto",
-                              aspectRatio: "16 / 9",
-                              objectFit: "contain",
-                              backgroundColor: "rgba(0, 0, 0, 0.5)",
-                              cursor: "pointer",
-                              transition: "opacity 0.2s ease",
                               display: "block",
+                              width: "100%",
+                              textDecoration: "none",
+                              pointerEvents: "auto",
                             }}
-                            onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.8")}
-                            onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
-                          />
-                        </a>
-                        <div>
-                          <strong>Ad ID:</strong> {ad.ad_id}
+                          >
+                            <img
+                              src={ad.image_url}
+                              alt={`Ad ${ad.ad_id}`}
+                              style={{
+                                width: "100%",
+                                height: "auto",
+                                aspectRatio: "16 / 9",
+                                objectFit: "contain",
+                                backgroundColor: "rgba(0, 0, 0, 0.5)",
+                                cursor: "pointer",
+                                transition: "opacity 0.2s ease",
+                                display: "block",
+                              }}
+                              onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.8")}
+                              onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
+                            />
+                          </a>
+                          <div>
+                            <strong>Ad ID:</strong> {ad.ad_id}
+                          </div>
+                          <div>
+                            <strong>Level ID:</strong> {ad.level_id}
+                          </div>
+                          <div>
+                            <strong>Type:</strong> {ad.type}
+                          </div>
+                          <div>
+                            <strong>Views:</strong> {ad.view_count || 0} | <strong>Clicks:</strong> {ad.click_count || 0}
+                          </div>
+                          <button
+                            className="nine-slice-button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              handleDeleteAd(ad.ad_id);
+                            }}
+                            style={{
+                              fontSize: "0.75rem",
+                              padding: "2px 8px",
+                              marginTop: "0.25rem",
+                              width: "100%",
+                            }}
+                          >
+                            Delete Ad
+                          </button>
                         </div>
-                        <div>
-                          <strong>Level ID:</strong> {ad.level_id}
-                        </div>
-                        <div>
-                          <strong>Type:</strong> {ad.type}
-                        </div>
-                        <div>
-                          <strong>Views:</strong> {ad.view_count || 0} | <strong>Clicks:</strong> {ad.click_count || 0}
-                        </div>
-                        <button
-                          className="nine-slice-button"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            handleDeleteAd(ad.ad_id);
-                          }}
-                          style={{
-                            fontSize: "0.75rem",
-                            padding: "2px 8px",
-                            marginTop: "0.25rem",
-                            width: "100%",
-                          }}
-                        >
-                          Delete Ad
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          )}
+            )}
           </div>
         </div>
       ) : null}

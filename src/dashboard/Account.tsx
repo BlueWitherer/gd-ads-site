@@ -1,6 +1,9 @@
 import "../App.css";
 import { useEffect, useState } from "react";
 import square02 from "../assets/square02.png";
+import { copyText } from "../App";
+
+import ContentCopyIcon from "@mui/icons-material/ContentCopyOutlined";
 
 type User = {
   id: string;
@@ -26,6 +29,8 @@ export default function Account() {
   const [pendingAds, setPendingAds] = useState<Ad[] | null>(null);
   const [showingPending, setShowingPending] = useState(false);
 
+  const [copied, setCopied] = useState(false);
+
   useEffect(() => {
     async function fetchUser() {
       try {
@@ -33,14 +38,18 @@ export default function Account() {
         if (res.ok) {
           const data = await res.json();
           setUser(data);
-        }
+        };
       } catch (err) {
         console.error("Failed to fetch user:", err);
-      }
-    }
+      };
+    };
 
     fetchUser();
   }, []);
+
+  const handleCopyUserId = async () => {
+    await copyText(user?.id, setCopied);
+  };
 
   const handlePendingAds = async () => {
     try {
@@ -59,11 +68,11 @@ export default function Account() {
         const txt = await res.text();
         console.warn("Pending ads endpoint:", res.status, txt);
         alert("Failed to fetch pending ads: " + txt);
-      }
+      };
     } catch (err) {
       console.error(err);
       alert("Failed to fetch pending ads.");
-    }
+    };
   };
 
   const handleApproveAd = async (adId: number) => {
@@ -250,12 +259,14 @@ export default function Account() {
             border: "1px solid rgba(255, 255, 255, 0.1)",
           }}
         >
-          <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "0.5rem" }}>
             <div>
-              <strong>User ID:</strong> {user.id}
+              <strong>User ID: </strong> {user.id} <button onClick={handleCopyUserId} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
+                <ContentCopyIcon />{copied && <span> Copied! </span>}
+              </button>
             </div>
             <div>
-              <strong>Account Created:</strong> {new Date(user.created_at).toLocaleString()}
+              <strong>Account Created: </strong> {new Date(user.created_at).toLocaleString()}
             </div>
           </div>
         </div>

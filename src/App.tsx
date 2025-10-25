@@ -5,6 +5,20 @@ import { useNavigate } from 'react-router-dom';
 import { FaDiscord } from 'react-icons/fa';
 import './Log.mjs';
 
+export async function copyText(text: string | undefined, setState: React.Dispatch<React.SetStateAction<any | null>>) {
+  try {
+    if (text) {
+      await navigator.clipboard.writeText(text);
+      setState(true);
+      setTimeout(() => setState(false), 2000); // Reset after 2s
+    } else {
+      console.error("No text provided to copy");
+    };
+  } catch (err) {
+    console.error("Copy failed:", err);
+  };
+};
+
 export default function App() {
   const navigate = useNavigate();
 

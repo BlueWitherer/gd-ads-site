@@ -9,7 +9,7 @@ type Ad = {
   image: string;
   expiration: number;
   pending?: boolean;
-}
+};
 
 function getDaysRemaining(expirationTimestamp: number): { days: number; color: string } {
   const now = Date.now();
@@ -22,10 +22,10 @@ function getDaysRemaining(expirationTimestamp: number): { days: number; color: s
     color = '#27ae60'; // Green (7-5 days)
   } else if (days >= 2) {
     color = '#f39c12'; // Orange (4-2 days)
-  }
+  };
 
   return { days: Math.max(0, days), color };
-}
+};
 
 function Manage() {
   const [adverts, setAdverts] = useState<Ad[] | null>(null);
@@ -38,7 +38,7 @@ function Manage() {
         if (!res.ok) {
           setError(`Failed to fetch ads: ${res.status}`);
           return;
-        }
+        };
 
         const data = await res.json();
         // Expecting array of { id, type, level_id, image, expiration }
@@ -52,8 +52,8 @@ function Manage() {
         })));
       } catch (err: any) {
         setError(err.message || String(err));
-      }
-    }
+      };
+    };
 
     load();
   }, []);
