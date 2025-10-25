@@ -10,7 +10,7 @@ export async function copyText(text: string | undefined, setState: React.Dispatc
     if (text) {
       await navigator.clipboard.writeText(text);
       setState(true);
-      setTimeout(() => setState(false), 2000); // Reset after 2s
+      setTimeout(() => setState(false), 2500);
     } else {
       console.error("No text provided to copy");
     };

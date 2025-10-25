@@ -1,9 +1,20 @@
 import "../App.css";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { copyText } from "../App";
 
 import ReplyIcon from '@mui/icons-material/ReplyOutlined';
 import SearchIcon from '@mui/icons-material/SearchOutlined';
+import ContentCopyIcon from "@mui/icons-material/ContentCopyOutlined";
+import DoneIcon from "@mui/icons-material/DoneOutlined";
+import PersonPinIcon from '@mui/icons-material/PersonPinOutlined';
+import BadgeIcon from '@mui/icons-material/BadgeOutlined';
+import VisibilityIcon from '@mui/icons-material/VisibilityOutlined';
+import MouseIcon from '@mui/icons-material/MouseOutlined';
+import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
+import GavelIcon from '@mui/icons-material/GavelOutlined';
+import AccessTimeIcon from '@mui/icons-material/AccessTimeOutlined';
+import DeleteForeverIcon from '@mui/icons-material/DeleteForeverOutlined';
 
 type User = {
   id: string;
@@ -44,6 +55,8 @@ export default function Admin() {
   const [searching, setSearching] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [copied, setCopied] = useState(false);
+
   useEffect(() => {
     async function checkAdmin() {
       try {
@@ -53,21 +66,25 @@ export default function Admin() {
           if (!user.is_admin) {
             navigate("/dashboard");
             return;
-          }
+          };
           setIsAdmin(true);
         } else {
           navigate("/");
-        }
+        };
       } catch (err) {
         console.error("Failed to fetch user:", err);
         navigate("/");
       } finally {
         setLoading(false);
-      }
-    }
+      };
+    };
 
     checkAdmin();
   }, [navigate]);
+
+  const handleCopyUserId = async () => {
+    await copyText(searchResult?.user.id, setCopied);
+  };
 
   const handleSearch = async () => {
     if (!searchInput.trim()) {
@@ -277,22 +294,34 @@ export default function Admin() {
                     }}
                   >
                     <div style={{ marginBottom: "0.5rem" }}>
-                      <strong>Username:</strong> {searchResult.user.username}
+                      <PersonPinIcon /><strong>Username:</strong> {searchResult.user.username}
                     </div>
                     <div style={{ marginBottom: "0.5rem" }}>
-                      <strong>User ID:</strong> {searchResult.user.id}
+                      <BadgeIcon /><strong>User ID:</strong> {searchResult.user.id} <button
+                        onClick={handleCopyUserId}
+                        style={{ background: "none", border: "none", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "0.25rem" }}
+                        aria-label="Copy user id"
+                      >
+                        {copied ? (
+                          <>
+                            <DoneIcon />
+                          </>
+                        ) : (
+                          <ContentCopyIcon />
+                        )}
+                      </button>
                     </div>
                     <div style={{ marginBottom: "0.5rem" }}>
-                      <strong>Total Views:</strong> {searchResult.user.total_views}
+                      <VisibilityIcon /><strong>Total Views:</strong> {searchResult.user.total_views}
                     </div>
                     <div style={{ marginBottom: "0.5rem" }}>
-                      <strong>Total Clicks:</strong> {searchResult.user.total_clicks}
+                      <MouseIcon /><strong>Total Clicks:</strong> {searchResult.user.total_clicks}
                     </div>
                     <div style={{ marginBottom: "0.5rem" }}>
-                      <strong>Admin:</strong> {searchResult.user.is_admin ? "Yes" : "No"}
+                      <AdminPanelSettingsIcon /><strong>Admin:</strong> {searchResult.user.is_admin ? "Yes" : "No"}
                     </div>
                     <div style={{ marginBottom: "0.5rem" }}>
-                      <strong>Banned:</strong> {searchResult.user.banned ? "Yes" : "No"}
+                      <GavelIcon /><strong>Banned:</strong> {searchResult.user.banned ? "Yes" : "No"}
                     </div>
                   </div>
 
@@ -314,7 +343,7 @@ export default function Admin() {
                       }
                       style={{ fontSize: "0.9rem", padding: "4px 12px" }}
                     >
-                      {searchResult.user.banned ? "Unban User" : "Ban User"}
+                      <GavelIcon /> {searchResult.user.banned ? "Unban" : "Ban"}
                     </button>
                     <button
                       className="nine-slice-button"
@@ -368,7 +397,7 @@ export default function Admin() {
                                 zIndex: 10,
                               }}
                             >
-                              PENDING
+                              <AccessTimeIcon /> PENDING
                             </div>
                           )}
                           <a
@@ -424,7 +453,7 @@ export default function Admin() {
                               width: "100%",
                             }}
                           >
-                            Delete Ad
+                            <DeleteForeverIcon /> Delete
                           </button>
                         </div>
                       ))}
@@ -434,8 +463,9 @@ export default function Admin() {
               </div>
             )}
           </div>
-        </div>
-      ) : null}
+        </div >
+      ) : null
+      }
     </>
   );
 }

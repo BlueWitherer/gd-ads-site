@@ -16,6 +16,7 @@ import QueryStatsIcon from '@mui/icons-material/QueryStatsOutlined';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEventsOutlined';
 import AppSettingsAltIcon from '@mui/icons-material/AppSettingsAltOutlined';
 import AccountCircleIcon from '@mui/icons-material/AccountCircleOutlined';
+import Avatar from "@mui/material/Avatar";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -155,7 +156,7 @@ export default function Dashboard() {
         >
           <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
             {(() => {
-              if (!user) return null;
+              if (!user) return <Avatar alt="Guest" sx={{ "width": 64, "height": 64 }}>G</Avatar>;
               const avatarUrl =
                 user.avatar && user.id
                   ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=64`
@@ -164,11 +165,7 @@ export default function Dashboard() {
                     }.png`
                     : null;
               return avatarUrl ? (
-                <img
-                  src={avatarUrl}
-                  alt="avatar"
-                  style={{ width: 64, height: 64, borderRadius: 9999 }}
-                />
+                <Avatar alt={user.username} src={avatarUrl} sx={{ "width": 64, "height": 64 }} />
               ) : null;
             })()}
 

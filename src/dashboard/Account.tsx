@@ -4,6 +4,7 @@ import square02 from "../assets/square02.png";
 import { copyText } from "../App";
 
 import ContentCopyIcon from "@mui/icons-material/ContentCopyOutlined";
+import DoneIcon from "@mui/icons-material/DoneOutlined";
 
 type User = {
   id: string;
@@ -262,7 +263,13 @@ export default function Account() {
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "0.5rem" }}>
             <div>
               <strong>User ID: </strong> {user.id} <button onClick={handleCopyUserId} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
-                <ContentCopyIcon />{copied && <span> Copied! </span>}
+                {copied ? (
+                  <>
+                    <DoneIcon />
+                  </>
+                ) : (
+                  <ContentCopyIcon />
+                )}
               </button>
             </div>
             <div>
