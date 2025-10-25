@@ -270,6 +270,18 @@ func ApproveAd(id int64) (Ad, error) {
 }
 
 func BanUser(id string) (User, error) {
+	// delete all advertisements associated with the user
+	deleteAdsStmt, err := prepareStmt(data, "DELETE FROM advertisements WHERE user_id = ?")
+	if err != nil {
+		return User{}, err
+	}
+
+	_, err = deleteAdsStmt.Exec(id)
+	if err != nil {
+		return User{}, err
+	}
+
+	// ban the user
 	stmt, err := prepareStmt(data, "UPDATE users SET banned = TRUE WHERE id = ?")
 	if err != nil {
 		return User{}, err

@@ -351,6 +351,12 @@ func init() {
 				return
 			}
 
+			// if user is banned
+			if u.Banned {
+				http.Error(w, "User is banned", http.StatusForbidden)
+				return
+			}
+
 			w.WriteHeader(http.StatusOK)
 			if err := json.NewEncoder(w).Encode(u); err != nil {
 				log.Error("Failed to encode response: %s", err.Error())

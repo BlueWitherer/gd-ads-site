@@ -75,7 +75,8 @@
 /* Allow interactive children inside the centered container to receive pointer events */
 #centered-container .nine-slice-button,
 #centered-container button,
-#centered-container a {
+#centered-container a,
+#centered-container input {
   pointer-events: auto;
 }
 

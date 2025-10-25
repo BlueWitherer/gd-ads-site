@@ -154,4 +154,114 @@ func init() {
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		}
 	})
+
+	http.HandleFunc("/users/", func(w http.ResponseWriter, r *http.Request) {
+		header := w.Header()
+
+		header.Set("Access-Control-Allow-Origin", "*")
+		header.Set("Access-Control-Allow-Methods", "GET")
+		header.Set("Access-Control-Allow-Headers", "Content-Type")
+
+		if r.Method == http.MethodGet {
+			header.Set("Content-Type", "application/json")
+
+			// require login and admin status
+			uid, err := GetSessionUserID(r)
+			if err != nil || uid == "" {
+				http.Error(w, "Unauthorized", http.StatusUnauthorized)
+				return
+			}
+
+			u, err := database.GetUser(uid)
+			if err != nil {
+				log.Error("Failed to get user: %s", err.Error())
+				http.Error(w, "Failed to get user", http.StatusInternalServerError)
+				return
+			}
+
+			if !u.IsAdmin {
+				log.Error("User of ID %s is not admin", u.ID)
+				http.Error(w, "User is not admin", http.StatusUnauthorized)
+				return
+			}
+
+			// Extract user ID or username from URL path
+			searchQuery := strings.TrimPrefix(r.URL.Path, "/users/")
+			if searchQuery == "" {
+				http.Error(w, "Missing user ID or username", http.StatusBadRequest)
+				return
+			}
+
+			log.Debug("Searching for user: %s", searchQuery)
+
+			// Try to get user by ID first
+			targetUser, err := database.GetUser(searchQuery)
+			if err != nil {
+				// If not found by ID, try to find by username
+				allUsers, err := database.GetAllUsers()
+				if err != nil {
+					log.Error("Failed to get all users: %s", err.Error())
+					http.Error(w, "User not found", http.StatusNotFound)
+					return
+				}
+
+				found := false
+				for _, user := range allUsers {
+					if user.Username == searchQuery {
+						targetUser = user
+						found = true
+						break
+					}
+				}
+
+				if !found {
+					log.Error("User not found by ID or username: %s", searchQuery)
+					http.Error(w, "User not found", http.StatusNotFound)
+					return
+				}
+			}
+
+			// Get all ads and filter by user
+			allAds, err := database.ListAllAdvertisements()
+			if err != nil {
+				log.Error("Failed to list ads: %s", err.Error())
+				http.Error(w, "Failed to list ads", http.StatusInternalServerError)
+				return
+			}
+
+			userAds, err := database.FilterAdsByUser(allAds, targetUser.ID)
+			if err != nil {
+				log.Error("Failed to filter ads: %s", err.Error())
+				http.Error(w, "Failed to filter ads", http.StatusInternalServerError)
+				return
+			}
+
+			// Populate view/click counts for each ad
+			for i := range userAds {
+				views, clicks, err := database.GetAdStats(userAds[i].AdID)
+				if err != nil {
+					log.Debug("Failed to get ad stats: %s", err.Error())
+				} else {
+					userAds[i].ViewCount = views
+					userAds[i].ClickCount = clicks
+				}
+			}
+
+			response := map[string]interface{}{
+				"user": targetUser,
+				"ads":  userAds,
+			}
+
+			w.WriteHeader(http.StatusOK)
+			if err := json.NewEncoder(w).Encode(response); err != nil {
+				log.Error("Failed to encode response: %s", err.Error())
+				http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+				return
+			}
+
+			log.Info("Admin %s fetched user %s info", u.Username, targetUser.ID)
+		} else {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		}
+	})
 }
