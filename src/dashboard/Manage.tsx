@@ -62,7 +62,7 @@ function Manage() {
     <>
       <h1 className="text-2xl font-bold mb-6">Manage Advertisements</h1>
       <p className="text-lg">Manage and configure your active advertisements.</p>
-      <p className="text-sm text-gray-500">You can only submit one advertisement per type and adding a new advertisement requires an admin to approve it.</p>
+      <p className="text-sm text-gray-500">You can manually delete your advertisement or wait until the expiration date if you want to make a new one.</p>
 
       {error && <div className="text-red-400">{error}</div>}
 

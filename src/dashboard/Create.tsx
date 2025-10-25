@@ -34,7 +34,7 @@ export default function Create() {
         };
       };
       reader.readAsDataURL(file);
-    };
+    }
   };
 
   useEffect(() => {
@@ -51,7 +51,7 @@ export default function Create() {
     if (!id || id.trim() === "") {
       setLevelValid(null);
       return;
-    };
+    }
 
     setCheckingLevel(true);
     try {
@@ -81,14 +81,14 @@ export default function Create() {
           setLevelName(parts[levelNameIndex + 1]);
         } else {
           setLevelName("");
-        };
-      };
+        }
+      }
     } catch (error) {
       console.error("Error checking level validity:", error);
       setLevelValid(false);
     } finally {
       setCheckingLevel(false);
-    };
+    }
   };
 
   const handleLevelIdChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -97,7 +97,7 @@ export default function Create() {
     if (newLevelId.trim() === "") {
       setLevelValid(null);
       setLevelName("");
-    };
+    }
   };
 
   async function handleSubmit() {
@@ -156,7 +156,8 @@ export default function Create() {
       img.src = imagePreview;
       await new Promise<void>((resolve, reject) => {
         img.onload = () => resolve();
-        img.onerror = () => reject(new Error("Failed to load image for conversion"));
+        img.onerror = () =>
+          reject(new Error("Failed to load image for conversion"));
       });
 
       const canvas = document.createElement("canvas");
@@ -167,11 +168,7 @@ export default function Create() {
       ctx.drawImage(img, 0, 0);
 
       const webpBlob: Blob | null = await new Promise((resolve) =>
-        canvas.toBlob(
-          (b) => resolve(b),
-          "image/webp",
-          0.92
-        )
+        canvas.toBlob((b) => resolve(b), "image/webp", 0.92)
       );
 
       let uploadBlob: Blob;
@@ -227,13 +224,30 @@ export default function Create() {
   return (
     <>
       <h1 className="text-2xl font-bold mb-6">Create Advertisement</h1>
-      <p className="text-lg mb-6">
+      <p className="text-lg">
         Select the size and upload an image for your advertisement.
       </p>
-      <p className="text-lg mb-6">
-        You can only upload one advertisement each size and it expires after 7
-        days.
+      <p className="text-sm mb-6 text-gray-500">
+        Each advertisement expires after 7 days and you can only make one
+        advertisement per type. (Max of 3 active advertisements at a time). You
+        must wait for admin approval before it can be shown in game.
       </p>
+      {/* Rules */}
+      <div className="text-sm text-orange-500 mb-6">
+        <p>
+          ⚠️ Do not upload inappropriate content including but not limited to:
+        </p>
+        <ul className="list-disc list-inside mb-2">
+          <li>NSFW or adult content</li>
+          <li>Hate speech or discriminatory content</li>
+          <li>Malicious or misleading content</li>
+        </ul>
+        <p>
+          ⚠️ Do not promote any harmful, illegal, or offensive material
+          including both your Geometry Dash level and your advertisement!
+        </p>
+        <p>⚠️ Violating this may result in a ban. <b>No appeals!</b></p>
+      </div>
       <div className="form-group mb-6">
         <label className="text-lg font-bold mb-2 block">
           Advertisement Size
@@ -242,7 +256,9 @@ export default function Create() {
           className="custom-select"
           value={selectedSize}
           onChange={(e) =>
-            setSelectedSize(e.target.value as "banner" | "square" | "skyscraper")
+            setSelectedSize(
+              e.target.value as "banner" | "square" | "skyscraper"
+            )
           }
         >
           <option value="banner">Banner (1456 x 180)</option>
