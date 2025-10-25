@@ -14,6 +14,7 @@ export default function Dashboard() {
   const [selectedView, setSelectedView] = useState<
     "statistics" | "create" | "leaderboard" | "manage" | "account"
   >("statistics");
+  const [isBanned, setIsBanned] = useState<boolean>(false);
 
   const [user, setUser] = useState<{
     id: string;
@@ -33,6 +34,21 @@ export default function Dashboard() {
             avatar: data.avatar ?? null,
             discriminator: data.discriminator ?? null,
           });
+
+          // Check if user is banned
+          fetch("/account/user", { credentials: "include" })
+            .then((res) => {
+              if (res.status === 403) {
+                setIsBanned(true);
+              } else if (res.ok) {
+                res.json().then((userData) => {
+                  if (userData.banned) {
+                    setIsBanned(true);
+                  }
+                });
+              }
+            })
+            .catch(() => console.error("Failed to fetch user status"));
         } else {
           navigate("/");
         }
@@ -55,6 +71,19 @@ export default function Dashboard() {
   };
 
   const renderContent = () => {
+    if (isBanned) {
+      return (
+        <>
+          <h1 className="text-2xl font-bold mb-6" style={{ color: "#e74c3c" }}>
+            Account Banned
+          </h1>
+          <p className="text-lg" style={{ color: "#e74c3c" }}>
+            Your account has been banned. You no longer have access to this service.
+          </p>
+        </>
+      );
+    }
+
     switch (selectedView) {
       case "statistics":
         return <Statistics />;

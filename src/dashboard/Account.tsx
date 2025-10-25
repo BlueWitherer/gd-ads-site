@@ -23,7 +23,6 @@ type Ad = {
 
 export default function Account() {
   const [user, setUser] = useState<User | null>(null);
-  const [isBanned, setIsBanned] = useState<boolean>(false);
   const [pendingAds, setPendingAds] = useState<Ad[] | null>(null);
   const [showingPending, setShowingPending] = useState(false);
 
@@ -34,8 +33,6 @@ export default function Account() {
         if (res.ok) {
           const data = await res.json();
           setUser(data);
-        } else if (res.status === 403) {
-          setIsBanned(true);
         }
       } catch (err) {
         console.error("Failed to fetch user:", err);
@@ -108,19 +105,6 @@ export default function Account() {
       alert("Failed to reject advertisement");
     }
   };
-
-  if (isBanned) {
-    return (
-      <>
-        <h1 className="text-2xl font-bold mb-6" style={{ color: "#e74c3c" }}>
-          Account Banned
-        </h1>
-        <p className="text-lg mb-6" style={{ color: "#e74c3c" }}>
-          Your account has been banned. You no longer have access to this service.
-        </p>
-      </>
-    );
-  }
 
   if (showingPending) {
     return (

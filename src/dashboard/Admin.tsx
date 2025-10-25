@@ -119,6 +119,28 @@ export default function Admin() {
     }
   };
 
+  const handleUnbanUser = async (userId: string) => {
+    if (!confirm("Are you sure you want to unban this user?")) return;
+
+    try {
+      const res = await fetch(`/unban?id=${userId}`, {
+        method: "POST",
+        credentials: "include",
+      });
+
+      if (res.ok) {
+        alert("User unbanned successfully");
+        setSearchResult(null);
+        setSearchInput("");
+      } else {
+        alert("Failed to unban user");
+      }
+    } catch (err) {
+      console.error("Unban failed:", err);
+      alert("Failed to unban user");
+    }
+  };
+
   const handleDeleteUser = async (userId: string) => {
     if (!confirm("Are you sure you want to delete this user? This cannot be undone."))
       return;
@@ -282,10 +304,14 @@ export default function Admin() {
                 >
                   <button
                     className="nine-slice-button"
-                    onClick={() => handleBanUser(searchResult.user.id)}
+                    onClick={() => 
+                      searchResult.user.banned 
+                        ? handleUnbanUser(searchResult.user.id)
+                        : handleBanUser(searchResult.user.id)
+                    }
                     style={{ fontSize: "0.9rem", padding: "4px 12px" }}
                   >
-                    Ban User
+                    {searchResult.user.banned ? "Unban User" : "Ban User"}
                   </button>
                   <button
                     className="nine-slice-button"

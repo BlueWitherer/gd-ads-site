@@ -295,6 +295,21 @@ func BanUser(id string) (User, error) {
 	return GetUser(id)
 }
 
+func UnbanUser(id string) (User, error) {
+	// unban the user
+	stmt, err := prepareStmt(data, "UPDATE users SET banned = FALSE WHERE id = ?")
+	if err != nil {
+		return User{}, err
+	}
+
+	_, err = stmt.Exec(id)
+	if err != nil {
+		return User{}, err
+	}
+
+	return GetUser(id)
+}
+
 func GetAdUnixExpiry(ad Ad) (int64, error) {
 	t, err := time.Parse("2006-01-02 15:04:05", ad.Created)
 	if err != nil {

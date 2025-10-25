@@ -155,6 +155,67 @@ func init() {
 		}
 	})
 
+	http.HandleFunc("/unban", func(w http.ResponseWriter, r *http.Request) {
+		header := w.Header()
+
+		header.Set("Access-Control-Allow-Origin", "*")
+		header.Set("Access-Control-Allow-Methods", "POST")
+		header.Set("Access-Control-Allow-Headers", "Content-Type")
+
+		if r.Method == http.MethodPost {
+			header.Set("Content-Type", "application/json")
+
+			// require login
+			uid, err := GetSessionUserID(r)
+			if err != nil || uid == "" {
+				http.Error(w, "Unauthorized", http.StatusUnauthorized)
+				return
+			} else {
+				log.Info("Received user of ID %s", uid)
+			}
+
+			u, err := database.GetUser(uid)
+			if err != nil {
+				log.Error("Failed to get user: %s", err.Error())
+				http.Error(w, "Failed to get user", http.StatusInternalServerError)
+				return
+			} else {
+				log.Info("Fetched user %s (%s)", u.Username, u.ID)
+			}
+
+			if !u.IsAdmin {
+				log.Error("User of ID %s is not admin", u.ID)
+				http.Error(w, "User is not admin", http.StatusUnauthorized)
+				return
+			} else {
+				log.Info("User %s (%s) is an admin", u.Username, u.ID)
+			}
+
+			query := r.URL.Query()
+			idStr := query.Get("id")
+
+			unbanned, err := database.UnbanUser(idStr)
+			if err != nil {
+				log.Error("Failed to unban user: %s", err.Error())
+				http.Error(w, "Failed to unban user", http.StatusInternalServerError)
+				return
+			} else {
+				log.Info("Unbanned user %s (%s)", unbanned.Username, unbanned.ID)
+			}
+
+			w.WriteHeader(http.StatusOK)
+			if err := json.NewEncoder(w).Encode(unbanned); err != nil {
+				log.Error("Failed to encode response: %s", err.Error())
+				http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+				return
+			} else {
+				log.Info("Finished unban request to %s by admin %s (%s)", unbanned.Username, u.Username, u.ID)
+			}
+		} else {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		}
+	})
+
 	http.HandleFunc("/users/", func(w http.ResponseWriter, r *http.Request) {
 		header := w.Header()
 
