@@ -8,6 +8,7 @@ type Ad = {
   level_id: string;
   image: string;
   expiration: number;
+  pending?: boolean;
 }
 
 function getDaysRemaining(expirationTimestamp: number): { days: number; color: string } {
@@ -47,6 +48,7 @@ function Manage() {
           level_id: a.level_id,
           image: a.image_url,
           expiration: a.expiry,
+          pending: a.pending,
         })));
       } catch (err: any) {
         setError(err.message || String(err));
@@ -85,8 +87,44 @@ function Manage() {
               padding: '1em',
               boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
               maxWidth: '800px',
+              position: 'relative',
             }}
           >
+            {advert.pending ? (
+              <div
+                style={{
+                  position: 'absolute',
+                  top: '1rem',
+                  right: '1rem',
+                  backgroundColor: '#f39c12',
+                  color: 'black',
+                  padding: '0.25rem 0.75rem',
+                  borderRadius: '4px',
+                  fontSize: '0.85rem',
+                  fontWeight: 'bold',
+                  zIndex: 10,
+                }}
+              >
+                PENDING
+              </div>
+            ) : (
+              <div
+                style={{
+                  position: 'absolute',
+                  top: '1rem',
+                  right: '1rem',
+                  backgroundColor: '#27ae60',
+                  color: 'white',
+                  padding: '0.25rem 0.75rem',
+                  borderRadius: '4px',
+                  fontSize: '0.85rem',
+                  fontWeight: 'bold',
+                  zIndex: 10,
+                }}
+              >
+                APPROVED
+              </div>
+            )}
             <img
               src={advert.image}
               alt="Advertisement"

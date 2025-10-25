@@ -1,5 +1,6 @@
 import "../App.css";
 import { useEffect, useState } from "react";
+import square02 from "../assets/square02.png";
 
 type User = {
   id: string;
@@ -67,6 +68,46 @@ export default function Account() {
     }
   };
 
+  const handleApproveAd = async (adId: number) => {
+    try {
+      const res = await fetch(`/ads/pending/accept?id=${adId}`, {
+        method: "POST",
+        credentials: "include",
+      });
+      if (res.ok) {
+        alert("Advertisement approved successfully");
+        // Refresh the pending ads list
+        handlePendingAds();
+      } else {
+        alert("Failed to approve advertisement");
+      }
+    } catch (err) {
+      console.error("Approve failed:", err);
+      alert("Failed to approve advertisement");
+    }
+  };
+
+  const handleRejectAd = async (adId: number) => {
+    if (!confirm("Are you sure you want to reject and delete this advertisement?")) return;
+
+    try {
+      const res = await fetch(`/ads/delete?id=${adId}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      if (res.ok) {
+        alert("Advertisement rejected and deleted successfully");
+        // Refresh the pending ads list
+        handlePendingAds();
+      } else {
+        alert("Failed to reject advertisement");
+      }
+    } catch (err) {
+      console.error("Reject failed:", err);
+      alert("Failed to reject advertisement");
+    }
+  };
+
   if (isBanned) {
     return (
       <>
@@ -105,8 +146,11 @@ export default function Account() {
                 key={ad.ad_id}
                 style={{
                   padding: "1rem",
-                  backgroundColor: "rgba(0, 0, 0, 0.3)",
-                  borderRadius: "8px",
+                  borderStyle: "solid",
+                  borderWidth: "12px",
+                  borderImage: `url(${square02}) 24 fill stretch`,
+                  background: "transparent",
+                  borderRadius: "0px",
                   display: "flex",
                   gap: "1rem",
                   alignItems: "center",
@@ -155,6 +199,44 @@ export default function Account() {
                   <div>
                     <strong>Created:</strong> {new Date(ad.created_at).toLocaleString()}
                   </div>
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                  <button
+                    onClick={() => handleApproveAd(ad.ad_id)}
+                    style={{
+                      fontSize: "0.85rem",
+                      padding: "8px 20px",
+                      backgroundColor: "#27ae60",
+                      color: "#fff",
+                      border: "none",
+                      borderRadius: "6px",
+                      cursor: "pointer",
+                      fontWeight: "bold",
+                      transition: "background 0.2s",
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#229954")}
+                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#27ae60")}
+                  >
+                    Approve
+                  </button>
+                  <button
+                    onClick={() => handleRejectAd(ad.ad_id)}
+                    style={{
+                      fontSize: "0.85rem",
+                      padding: "8px 20px",
+                      backgroundColor: "#e74c3c",
+                      color: "#fff",
+                      border: "none",
+                      borderRadius: "6px",
+                      cursor: "pointer",
+                      fontWeight: "bold",
+                      transition: "background 0.2s",
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#c0392b")}
+                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#e74c3c")}
+                  >
+                    Reject
+                  </button>
                 </div>
               </div>
             ))}
