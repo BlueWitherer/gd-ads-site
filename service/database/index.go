@@ -338,8 +338,40 @@ func ListAllAdvertisements() ([]Ad, error) {
 	return out, rows.Err()
 }
 
+func ListPendingAdvertisements() ([]Ad, error) {
+	// Use != 0 to match tinyint(1) values in MySQL/MariaDB
+	stmt, err := prepareStmt(data, "SELECT ad_id, user_id, level_id, type, image_url, created_at, pending FROM advertisements WHERE pending != 0 ORDER BY ad_id DESC")
+	if err != nil {
+		return nil, err
+	}
+
+	rows, err := stmt.Query()
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	out := make([]Ad, 0)
+	for rows.Next() {
+		var r Ad
+		if err := rows.Scan(&r.AdID, &r.UserID, &r.LevelID, &r.Type, &r.ImageURL, &r.Created, &r.Pending); err != nil {
+			return nil, err
+		}
+
+		r.Expiry, err = GetAdUnixExpiry(r)
+		if err != nil {
+			return nil, err
+		}
+
+		out = append(out, r)
+	}
+
+	return out, rows.Err()
+}
+
 func FilterAdsByPending(rows []Ad, showPending bool) ([]Ad, error) {
-	var out []Ad
+	out := make([]Ad, 0)
 	for _, r := range rows {
 		if r.Pending == showPending {
 			out = append(out, r)

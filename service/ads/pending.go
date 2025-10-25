@@ -41,35 +41,28 @@ func init() {
 				return
 			}
 
-			rows, err := database.ListAllAdvertisements()
+			// Get pending ads directly from database with WHERE pending != 0
+			adList, err := database.ListPendingAdvertisements()
 			if err != nil {
-				log.Error("Failed to list ads: %s", err.Error())
-				http.Error(w, "Failed to list ads", http.StatusInternalServerError)
-				return
-			}
-
-			var adList []database.Ad
-
-			list, err := database.FilterAdsByPending(rows, true)
-			if err != nil {
-				log.Error("Failed to filter pending ads: %s", err.Error())
-				http.Error(w, "Failed to filter pending ads", http.StatusInternalServerError)
+				log.Error("Failed to list pending ads: %s", err.Error())
+				http.Error(w, "Failed to list pending ads", http.StatusInternalServerError)
 				return
 			}
 
 			query := r.URL.Query()
 			user := query.Get("user")
 
+			// Optional: filter by specific user if user parameter is provided
 			if user != "" {
-				list, err = database.FilterAdsByUser(adList, user)
+				adList, err = database.FilterAdsByUser(adList, user)
 				if err != nil {
-					log.Error("List ads failed: %s", err.Error())
-					http.Error(w, "Failed to fetch ads", http.StatusInternalServerError)
+					log.Error("Failed to filter ads by user: %s", err.Error())
+					http.Error(w, "Failed to filter ads", http.StatusInternalServerError)
 					return
 				}
 			}
 
-			adList = append(adList, list...)
+			log.Info("Returning %d pending advertisements", len(adList))
 
 			w.WriteHeader(http.StatusOK)
 			if err := json.NewEncoder(w).Encode(adList); err != nil {

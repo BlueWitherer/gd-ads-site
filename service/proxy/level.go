@@ -29,7 +29,12 @@ func init() {
 				return
 			}
 
+			// Try both parameter names for compatibility
 			levelID := r.FormValue("levelID")
+			if levelID == "" {
+				levelID = r.FormValue("level-id")
+			}
+
 			if levelID == "" {
 				http.Error(w, "levelID is required", http.StatusBadRequest)
 				return
