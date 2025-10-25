@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import "./index.css";
 import App from "./App.tsx";
 import Dashboard from "./Dashboard.tsx";
+import Admin from "./dashboard/Admin.tsx";
 import NotFound from "./NotFound.tsx";
 import MobileWarning from "./MobileWarning";
 
@@ -14,6 +15,7 @@ createRoot(document.getElementById("root")!).render(
       <Routes>
         <Route path="/" element={<App />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/admin" element={<Admin />} />
 
         {/* 404 page */}
         <Route path="*" element={<NotFound />} />

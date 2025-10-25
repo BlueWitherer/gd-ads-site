@@ -10,6 +10,22 @@ type Ad = {
   expiration: number;
 }
 
+function getDaysRemaining(expirationTimestamp: number): { days: number; color: string } {
+  const now = Date.now();
+  const expirationMs = expirationTimestamp * 1000; // Convert seconds to milliseconds
+  const diffMs = expirationMs - now;
+  const days = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+
+  let color = '#e74c3c'; // Red (1 day or less)
+  if (days >= 5) {
+    color = '#27ae60'; // Green (7-5 days)
+  } else if (days >= 2) {
+    color = '#f39c12'; // Orange (4-2 days)
+  }
+
+  return { days: Math.max(0, days), color };
+}
+
 function Manage() {
   const [adverts, setAdverts] = useState<Ad[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -44,6 +60,7 @@ function Manage() {
     <>
       <h1 className="text-2xl font-bold mb-6">Manage Advertisements</h1>
       <p className="text-lg">Manage and configure your active advertisements.</p>
+      <p className="text-sm text-gray-500">You can only submit one advertisement per type and adding a new advertisement requires an admin to approve it.</p>
 
       {error && <div className="text-red-400">{error}</div>}
 
@@ -79,7 +96,17 @@ function Manage() {
               <div><strong>ID:</strong> {advert.id}</div>
               <div><strong>Type:</strong> {advert.type}</div>
               <div><strong>Level ID:</strong> {advert.level_id}</div>
-              <div><strong>Expiration:</strong> {advert.expiration}</div>
+              <div>
+                <strong>Expiration:</strong>{' '}
+                {(() => {
+                  const { days, color } = getDaysRemaining(advert.expiration);
+                  return (
+                    <span style={{ color, fontWeight: 'bold' }}>
+                      {days} day{days !== 1 ? 's' : ''}
+                    </span>
+                  );
+                })()}
+              </div>
             </div>
             <button
               style={{
