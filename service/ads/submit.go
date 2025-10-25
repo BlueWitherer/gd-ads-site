@@ -123,9 +123,11 @@ func init() {
 			}
 
 			if user.IsAdmin {
-				_, err = database.ApproveAd(adID)
+				newAd, err := database.ApproveAd(adID)
 				if err != nil {
 					log.Error("Failed to auto-approve new ad by admin: %s", err.Error())
+				} else {
+					log.Info("Auto-approved ad %s (%v) by admin %s (%s)", newAd.ImageURL, newAd.AdID, user.Username, user.ID)
 				}
 			}
 
