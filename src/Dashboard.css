@@ -48,7 +48,6 @@
     pointer-events: auto !important;
     background: transparent !important;
     box-sizing: border-box;
-    font-size: 13px;
   }
 
   #centered-container .nine-slice-button,
@@ -62,11 +61,10 @@
   #mobile-menu-btn {
     display: block !important;
     position: fixed !important;
-    top: 2rem !important;
-    left: 2rem !important;
+    top: 1rem !important;
+    left: 1rem !important;
     z-index: 1000 !important;
-    padding: 4px 8px !important;
-    font-size: 12px !important;
+    padding: 0 8px !important;
   }
 
   .sidebar-container {
@@ -74,9 +72,9 @@
     top: 9rem !important;
     left: 50% !important;
     transform: translateX(-50%) !important;
-    width: 90% !important;
+    width: 100% !important;
     min-height: auto !important;
-    max-height: calc(100vh - 350px) !important;
+    max-height: 100% !important;
     margin: 0 !important;
     border-style: solid !important;
     border-width: 10px !important;
@@ -101,7 +99,6 @@
     width: 100%;
     margin: 0 !important;
     padding: 4px 8px !important;
-    font-size: 12px !important;
     pointer-events: auto;
     white-space: nowrap;
   }
@@ -148,7 +145,6 @@
   }
 
   .user-container > div:first-child span {
-    font-size: 0.9rem !important;
     white-space: nowrap;
     overflow: visible !important;
     text-overflow: clip !important;
@@ -167,7 +163,6 @@
   .user-container .nine-slice-button {
     transform: none !important;
     padding: 6px 8px !important;
-    font-size: 11px !important;
     margin: 0 !important;
     pointer-events: auto;
     flex-shrink: 0;
@@ -179,7 +174,7 @@
     top: 9rem !important;
     bottom: 10rem !important;
     transform: translateX(-50%) !important;
-    width: calc(100% - 4rem) !important;
+    width: 100% !important;
     height: auto !important;
     max-height: none !important;
     margin: 0 !important;
@@ -192,7 +187,6 @@
     overflow-x: hidden;
     pointer-events: auto;
     box-sizing: border-box;
-    font-size: 1em;
     display: flex !important;
     flex-direction: column !important;
   }
@@ -229,7 +223,6 @@
     display: flex !important;
     flex-direction: column !important;
     gap: 0.25rem !important;
-    font-size: 0.85rem !important;
     overflow: hidden !important;
     text-align: center !important;
     width: 100% !important;
@@ -240,13 +233,30 @@
     align-self: stretch !important;
     flex-shrink: 0 !important;
     padding: 0.5em 1em !important;
-    font-size: 0.9em !important;
   }
 
   .ad-card-badge {
     margin-top: 0 !important;
     display: flex !important;
     justify-content: center !important;
+  }
+
+  /* Statistics component mobile styles */
+  .stat-box {
+    width: 100% !important;
+    min-width: 0 !important;
+    overflow: hidden !important;
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+  }
+
+  .stat-box h2 {
+    margin-bottom: 0.5rem !important;
+  }
+
+  .stat-box p {
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
   }
 
   .sprite-button {

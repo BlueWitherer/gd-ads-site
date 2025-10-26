@@ -75,6 +75,22 @@
   background: transparent;
 }
 
+#login-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 600px;
+}
+
+#login-section h1 {
+  font-size: 2rem;
+  font-weight: bold;
+  margin: 0;
+  text-align: center;
+}
+
 /* Allow interactive children inside the centered container to receive pointer events */
 #centered-container .nine-slice-button,
 #centered-container button,
@@ -285,6 +301,14 @@
   padding: 15px;
 }
 
+
+.login-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+}
+
 /* Mobile responsive styles */
 @media (max-width: 1024px) {
   * {
@@ -317,8 +341,8 @@
     transform: none !important;
     max-height: none !important;
     border-style: solid !important;
-    border-width: 32px !important;
-    border-image: url('./assets/square03.png') 32 fill stretch !important;
+    border-width: 10px !important;
+    border-image: url('./assets/square03.png') 10 fill stretch !important;
     padding: 1rem !important;
     margin: 0 !important;
     display: flex !important;
@@ -355,13 +379,7 @@
   }
 
   /* Statistics component mobile layout */
-  h1 {
-    font-size: 1.5rem !important;
-    margin-bottom: 1rem !important;
-  }
-
-  h2 {
-    font-size: 1.25rem !important;
+  .stat-box h2 {
     margin-bottom: 0.75rem !important;
   }
 
@@ -370,17 +388,37 @@
     overflow-wrap: break-word;
   }
 
-  /* Ensure flex containers don't cause overflow */
   div[style*="display: flex"] {
     width: 100%;
     min-width: 0;
   }
-}
 
-/* Login button styles */
-.login-button {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1rem;
+  #centered-container > h1 {
+    text-align: center !important;
+    width: 100% !important;
+    margin-top: 0 !important;
+    margin-bottom: 2rem !important;
+  }
+
+  #login-section {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+    height: 100% !important;
+    max-width: none !important;
+  }
+
+  #login-section h1 {
+    margin: 0 !important;
+    margin-bottom: 2rem !important;
+    text-align: center !important;
+  }
+
+  #centered-container > .login-button {
+    align-self: center !important;
+    font-size: 24px !important;
+    padding: 8px 24px !important;
+  }
 }

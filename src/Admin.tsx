@@ -55,6 +55,7 @@ export default function Admin() {
   const [searchResult, setSearchResult] = useState<SearchResult | null>(null);
   const [searching, setSearching] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<'info' | 'ads'>('info');
 
   const [copied, setCopied] = useState(false);
 
@@ -219,15 +220,16 @@ export default function Admin() {
       ) : isAdmin ? (
         <div id="centered-container">
           <button
-            className="nine-slice-button"
+            className="nine-slice-button back-button"
             onClick={() => navigate("/dashboard")}
             style={{
               position: "absolute",
               top: "1rem",
               left: "1rem",
+              zIndex: 100,
             }}
           >
-            <ReplyIcon style={{ "scale": 2.5 }} />
+            <ReplyIcon style={{ scale: 2.5 }} />
           </button>
 
           <h1 className="text-3xl font-bold" style={{ marginTop: "1rem", marginBottom: "2rem" }}>
@@ -252,7 +254,24 @@ export default function Admin() {
             </button>
           </div>
 
-          <div className="results-container">
+          {searchResult && (
+            <div className="mobile-tabs">
+              <button
+                className={`mobile-tab ${activeTab === 'info' ? 'active' : ''}`}
+                onClick={() => setActiveTab('info')}
+              >
+                User Info
+              </button>
+              <button
+                className={`mobile-tab ${activeTab === 'ads' ? 'active' : ''}`}
+                onClick={() => setActiveTab('ads')}
+              >
+                Advertisements
+              </button>
+            </div>
+          )}
+
+          <div className="results-container" data-active-tab={activeTab}>
             {error && (
               <div style={{ color: "#e74c3c", width: "100%", textAlign: "center", padding: "2rem" }}>
                 {error}
@@ -267,7 +286,7 @@ export default function Admin() {
 
             {searchResult && (
               <>
-                <div style={{ flex: "0 0 350px", width: "100%" }}>
+                <div style={{ flex: "0 0 350px", width: "100%" }} className="user-info-section">
                   <div
                     style={{
                       marginBottom: "1.5rem",
@@ -339,7 +358,7 @@ export default function Admin() {
                   </div>
                 </div>
 
-                <div style={{ flex: "1", width: "100%" }}>
+                <div style={{ flex: "1", width: "100%" }} className="advertisements-section">
                   <h3 style={{ marginBottom: "1rem", marginTop: "0" }}>Advertisements ({searchResult.ads?.length || 0})</h3>
                   {!searchResult.ads || searchResult.ads.length === 0 ? (
                     <div style={{ color: "rgba(255, 255, 255, 0.7)" }}>No advertisements</div>
