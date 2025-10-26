@@ -34,27 +34,27 @@ func init() {
 			header.Set("Content-Type", "application/json")
 
 			query := r.URL.Query()
-			startStr := query.Get("start")
-			endStr := query.Get("end")
+			pageStr := query.Get("page")
+			maxStr := query.Get("max")
 
-			start, err := strconv.ParseUint(startStr, 10, 64)
+			page, err := strconv.ParseUint(pageStr, 10, 64)
 			if err != nil {
 				log.Error("Failed to get starting position: %s", err.Error())
 				http.Error(w, "Failed to get starting position", http.StatusBadRequest)
 				return
 			}
 
-			end, err := strconv.ParseUint(endStr, 10, 64)
+			max, err := strconv.ParseUint(maxStr, 10, 64)
 			if err != nil {
 				log.Error("Failed to get ending position: %s", err.Error())
 				http.Error(w, "Failed to get ending position", http.StatusBadRequest)
 				return
 			}
 
-			users, err := database.UserLeaderboard(database.StatByViews, start, end)
+			users, err := database.UserLeaderboard(database.StatByViews, page, max)
 			if err != nil {
-				log.Error("Failed to get leaderboard: %s", err.Error())
-				http.Error(w, "Failed to get leaderboard", http.StatusInternalServerError)
+				log.Error("Failed to get views leaderboard: %s", err.Error())
+				http.Error(w, "Failed to get views leaderboard", http.StatusInternalServerError)
 				return
 			}
 
@@ -80,27 +80,27 @@ func init() {
 			header.Set("Content-Type", "application/json")
 
 			query := r.URL.Query()
-			startStr := query.Get("start")
-			endStr := query.Get("end")
+			pageStr := query.Get("page")
+			maxStr := query.Get("max")
 
-			start, err := strconv.ParseUint(startStr, 10, 64)
+			page, err := strconv.ParseUint(pageStr, 10, 64)
 			if err != nil {
 				log.Error("Failed to get starting position: %s", err.Error())
 				http.Error(w, "Failed to get starting position", http.StatusBadRequest)
 				return
 			}
 
-			end, err := strconv.ParseUint(endStr, 10, 64)
+			max, err := strconv.ParseUint(maxStr, 10, 64)
 			if err != nil {
 				log.Error("Failed to get ending position: %s", err.Error())
 				http.Error(w, "Failed to get ending position", http.StatusBadRequest)
 				return
 			}
 
-			users, err := database.UserLeaderboard(database.StatByClicks, start, end)
+			users, err := database.UserLeaderboard(database.StatByClicks, page, max)
 			if err != nil {
-				log.Error("Failed to get leaderboard: %s", err.Error())
-				http.Error(w, "Failed to get leaderboard", http.StatusInternalServerError)
+				log.Error("Failed to get clicks leaderboard: %s", err.Error())
+				http.Error(w, "Failed to get clicks leaderboard", http.StatusInternalServerError)
 				return
 			}
 

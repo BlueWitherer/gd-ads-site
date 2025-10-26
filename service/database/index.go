@@ -439,7 +439,7 @@ func FilterAdsByType(rows []Ad, adType AdType) ([]Ad, error) {
 	return out, nil
 }
 
-func UserLeaderboard(stat StatBy, start uint64, end uint64) ([]User, error) {
+func UserLeaderboard(stat StatBy, page uint64, maxPerPage uint64) ([]User, error) {
 	stmt, err := prepareStmt(data, fmt.Sprintf("SELECT * FROM users WHERE banned = FALSE ORDER BY %s DESC", stat))
 	if err != nil {
 		return nil, err
@@ -461,11 +461,14 @@ func UserLeaderboard(stat StatBy, start uint64, end uint64) ([]User, error) {
 		out = append(out, r)
 	}
 
-	if int(start) >= len(out) || start >= end {
+	start := page * maxPerPage
+	end := start + maxPerPage
+
+	if start >= uint64(len(out)) {
 		return []User{}, nil
 	}
 
-	if int(end) > len(out) {
+	if end > uint64(len(out)) {
 		end = uint64(len(out))
 	}
 
