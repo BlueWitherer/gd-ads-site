@@ -253,16 +253,17 @@ export default function Admin() {
               style={{
                 position: "relative",
                 zIndex: 5,
-                maxWidth: "300px",
+                maxWidth: "800px",
+                minWidth: "400px",
               }}
             />
             <button
               className="nine-slice-button"
               onClick={handleSearch}
               disabled={searching}
-              style={{ opacity: searching ? 0.5 : 1, position: "relative", zIndex: 5 }}
+              style={{ opacity: searching ? 0.5 : 1, position: "relative", zIndex: 5, fontSize: "0.9rem", padding: "4px 12px" }}
             >
-              <SearchIcon /> Search
+              <SearchIcon />
             </button>
           </div>
 
