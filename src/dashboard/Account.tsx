@@ -83,8 +83,6 @@ export default function Account() {
         credentials: "include",
       });
       if (res.ok) {
-        alert("Advertisement approved successfully");
-        // Refresh the pending ads list
         handlePendingAds();
       } else {
         alert("Failed to approve advertisement");
@@ -104,7 +102,6 @@ export default function Account() {
         credentials: "include",
       });
       if (res.ok) {
-        alert("Advertisement rejected and deleted successfully");
         // Refresh the pending ads list
         handlePendingAds();
       } else {
