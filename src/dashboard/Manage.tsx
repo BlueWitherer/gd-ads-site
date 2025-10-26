@@ -173,10 +173,12 @@ function Manage() {
               className="ad-card-delete"
               style={{ backgroundColor: '#e74c3c' }}
               onClick={() => {
-                fetch(`/ads/delete?id=${advert.id}`, { method: 'DELETE', credentials: 'include' }).then(() => {
-                  adverts.splice(adverts.indexOf(advert), 1);
-                  setAdverts([...adverts]);
-                });
+                if (confirm('Are you sure you want to delete this advertisement? This action cannot be undone.')) {
+                  fetch(`/ads/delete?id=${advert.id}`, { method: 'DELETE', credentials: 'include' }).then(() => {
+                    adverts.splice(adverts.indexOf(advert), 1);
+                    setAdverts([...adverts]);
+                  });
+                }
               }}
             >
               Delete
