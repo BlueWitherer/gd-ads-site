@@ -1,9 +1,8 @@
-import "../App.css";
+import "./App.css";
+import "./Admin.css";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { copyText } from "../App";
-import square03 from '../assets/square03.png';
-import blacksquare from '../assets/blacksquare.png';
+import { copyText } from "./App";
 
 import ReplyIcon from '@mui/icons-material/ReplyOutlined';
 import SearchIcon from '@mui/icons-material/SearchOutlined';
@@ -235,16 +234,7 @@ export default function Admin() {
             Admin Panel
           </h1>
 
-          <div
-            style={{
-              display: "flex",
-              gap: "0.5rem",
-              marginBottom: "1.5rem",
-              width: "auto",
-              justifyContent: "center",
-              zIndex: 10,
-            }}
-          >
+          <div className="search-container">
             <input
               type="text"
               placeholder="Enter user ID or username"
@@ -252,41 +242,17 @@ export default function Admin() {
               onChange={(e) => setSearchInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSearch()}
               className="custom-select"
-              style={{
-                position: "relative",
-                zIndex: 5,
-                maxWidth: "800px",
-                minWidth: "400px",
-              }}
             />
             <button
               className="nine-slice-button"
               onClick={handleSearch}
               disabled={searching}
-              style={{ opacity: searching ? 0.5 : 1, position: "relative", zIndex: 5, fontSize: "0.9rem", padding: "4px 12px" }}
             >
-              <SearchIcon />
+              <SearchIcon /> Search
             </button>
           </div>
 
-          <div
-            style={{
-              marginTop: "1rem",
-              padding: "1.5rem",
-              borderStyle: "solid",
-              borderWidth: "24px",
-              borderImage: `url('${blacksquare}') 24 fill stretch`,
-              maxWidth: "100%",
-              width: "100%",
-              maxHeight: "70vh",
-              overflow: "auto",
-              display: "flex",
-              gap: "2rem",
-              backgroundColor: "transparent",
-              boxSizing: "border-box",
-              flexDirection: "row",
-            }}
-          >
+          <div className="results-container">
             {error && (
               <div style={{ color: "#e74c3c", width: "100%", textAlign: "center", padding: "2rem" }}>
                 {error}
@@ -484,86 +450,6 @@ export default function Admin() {
         </div >
       ) : null
       }
-      <style>{`
-        @media (max-width: 1024px) {
-          * {
-            box-sizing: border-box;
-          }
-
-          body {
-            margin: 0;
-            padding: 0;
-            overflow: hidden;
-          }
-
-          #root {
-            width: 100vw;
-            height: 100vh;
-            padding: 0;
-            margin: 0;
-          }
-
-          #background-scroll {
-            z-index: 0 !important;
-          }
-
-          #centered-container {
-            position: fixed !important;
-            top: 0 !important;
-            left: 0 !important;
-            width: 100vw !important;
-            height: 100vh !important;
-            transform: none !important;
-            max-height: none !important;
-            border-style: solid !important;
-            border-width: 32px !important;
-            border-image: url('${square03}') 32 fill stretch !important;
-            padding: 1rem !important;
-            margin: 0 !important;
-            display: flex !important;
-            flex-direction: column !important;
-            justify-content: flex-start !important;
-            align-items: center !important;
-            gap: 0 !important;
-            z-index: 10 !important;
-            pointer-events: auto !important;
-            background: transparent !important;
-            box-sizing: border-box;
-            overflow-y: auto;
-          }
-
-          #centered-container .nine-slice-button,
-          #centered-container button,
-          #centered-container a,
-          #centered-container input,
-          #centered-container select {
-            pointer-events: auto !important;
-          }
-
-          #centered-container > div:last-of-type {
-            display: flex !important;
-            flex-direction: column !important;
-            gap: 2rem !important;
-          }
-
-          #centered-container > div:last-of-type > div {
-            display: flex !important;
-            flex-direction: column !important;
-          }
-
-          #centered-container > div:last-of-type > div:nth-child(3) {
-            flex-direction: column !important;
-          }
-
-          .sprite-button {
-            position: fixed !important;
-            top: 2rem !important;
-            right: 2rem !important;
-            bottom: auto !important;
-            z-index: 1001 !important;
-          }
-        }
-      `}</style>
     </>
   );
 }

@@ -1,6 +1,6 @@
 import { useState } from "react";
-import "./App.css";
-import newsIcon from "./assets/newsIcon.png";
+import "../App.css";
+import newsIcon from "../assets/newsIcon.png";
 
 export default function CreditsButton() {
   const [open, setOpen] = useState(false);
@@ -32,17 +32,6 @@ export default function CreditsButton() {
           style={{ width: "100%", height: "100%", objectFit: "contain" }}
         />
       </button>
-      <style>{`
-        @media (max-width: 1024px) {
-          .sprite-button {
-            position: fixed !important;
-            top: 3rem !important;
-            right: 3rem !important;
-            bottom: auto !important;
-            z-index: 1001 !important;
-          }
-        }
-      `}</style>
       {open && (
         <>
           <div

@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import CreditsButton from "./Credits";
+import CreditsButton from "./popup/Credits";
 import "./App.css";
 import "./Log.mjs";
 

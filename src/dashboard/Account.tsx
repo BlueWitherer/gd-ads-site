@@ -147,38 +147,41 @@ export default function Account() {
                   background: "transparent",
                   borderRadius: "0px",
                   display: "flex",
+                  flexDirection: "column",
                   gap: "1rem",
                   alignItems: "center",
                 }}
               >
-                <a
-                  href={ad.image_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{
-                    display: "block",
-                    flexShrink: 0,
-                    textDecoration: "none",
-                  }}
-                >
-                  <img
-                    src={ad.image_url}
-                    alt={`Ad ${ad.ad_id}`}
+                <div style={{ display: "flex", justifyContent: "center", alignItems: "center", flexShrink: 0 }}>
+                  <a
+                    href={ad.image_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     style={{
-                      width: "200px",
-                      height: "auto",
-                      aspectRatio: "16 / 9",
-                      objectFit: "contain",
-                      backgroundColor: "rgba(0, 0, 0, 0.5)",
-                      cursor: "pointer",
-                      transition: "opacity 0.2s ease",
-                      borderRadius: "4px",
+                      display: "block",
+                      flexShrink: 0,
+                      textDecoration: "none",
                     }}
-                    onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.8")}
-                    onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
-                  />
-                </a>
-                <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                  >
+                    <img
+                      src={ad.image_url}
+                      alt={`Ad ${ad.ad_id}`}
+                      style={{
+                        width: "200px",
+                        height: "auto",
+                        aspectRatio: "16 / 9",
+                        objectFit: "contain",
+                        backgroundColor: "rgba(0, 0, 0, 0.5)",
+                        cursor: "pointer",
+                        transition: "opacity 0.2s ease",
+                        borderRadius: "4px",
+                      }}
+                      onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.8")}
+                      onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
+                    />
+                  </a>
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", textAlign: "center", width: "100%" }}>
                   <div>
                     <strong>Ad ID:</strong> {ad.ad_id}
                   </div>
@@ -195,7 +198,7 @@ export default function Account() {
                     <strong>Created:</strong> {new Date(ad.created_at).toLocaleString()}
                   </div>
                 </div>
-                <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", width: "100%" }}>
                   <button
                     onClick={() => handleApproveAd(ad.ad_id)}
                     style={{
@@ -208,6 +211,7 @@ export default function Account() {
                       cursor: "pointer",
                       fontWeight: "bold",
                       transition: "background 0.2s",
+                      width: "100%",
                     }}
                     onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#229954")}
                     onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#27ae60")}
@@ -226,6 +230,7 @@ export default function Account() {
                       cursor: "pointer",
                       fontWeight: "bold",
                       transition: "background 0.2s",
+                      width: "100%",
                     }}
                     onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#c0392b")}
                     onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#e74c3c")}

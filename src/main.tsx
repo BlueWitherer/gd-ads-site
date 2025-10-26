@@ -1,7 +1,7 @@
 import "./index.css";
 import App from "./App.tsx";
 import Dashboard from "./Dashboard.tsx";
-import Admin from "./dashboard/Admin.tsx";
+import Admin from "./Admin.tsx";
 import NotFound from "./NotFound.tsx";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";

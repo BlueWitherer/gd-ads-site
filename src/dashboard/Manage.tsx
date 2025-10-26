@@ -74,10 +74,11 @@ function Manage() {
         ) : adverts.map(advert => (
           <div
             key={advert.id}
+            className="ad-card"
             style={{
               display: 'flex',
-              alignItems: 'center',
-              gap: '1.5em',
+              flexDirection: 'column',
+              gap: '1rem',
               color: '#fff',
               borderStyle: 'solid',
               borderWidth: '12px',
@@ -90,74 +91,87 @@ function Manage() {
               position: 'relative',
             }}
           >
-            {advert.pending ? (
-              <div
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
+              <a
+                href={advert.image}
+                target="_blank"
+                rel="noopener noreferrer"
                 style={{
-                  position: 'absolute',
-                  top: '1rem',
-                  right: '1rem',
-                  backgroundColor: '#f39c12',
-                  color: 'black',
-                  padding: '0.25rem 0.75rem',
-                  borderRadius: '4px',
-                  fontSize: '0.85rem',
-                  fontWeight: 'bold',
-                  zIndex: 10,
+                  display: 'block',
+                  flexShrink: 0,
+                  textDecoration: 'none',
+                  cursor: 'pointer',
                 }}
               >
-                PENDING
-              </div>
-            ) : (
-              <div
-                style={{
-                  position: 'absolute',
-                  top: '1rem',
-                  right: '1rem',
-                  backgroundColor: '#27ae60',
-                  color: 'white',
-                  padding: '0.25rem 0.75rem',
-                  borderRadius: '4px',
-                  fontSize: '0.85rem',
-                  fontWeight: 'bold',
-                  zIndex: 10,
-                }}
-              >
-                APPROVED
-              </div>
-            )}
-            <img
-              src={advert.image}
-              alt="Advertisement"
-              style={{ width: '160px', height: '160px', overflow: 'hidden', borderRadius: '10px', objectFit: 'contain', background: '#333333' }}
-            />
-            <div style={{ flex: 1 }}>
-              <div><strong>ID:</strong> {advert.id}</div>
-              <div><strong>Type:</strong> {advert.type}</div>
-              <div><strong>Level ID:</strong> {advert.level_id}</div>
-              <div>
-                <strong>Expiration:</strong>{' '}
-                {(() => {
-                  const { days, color } = getDaysRemaining(advert.expiration);
-                  return (
-                    <span style={{ color, fontWeight: 'bold' }}>
-                      {days} day{days !== 1 ? 's' : ''}
-                    </span>
-                  );
-                })()}
+                <img
+                  src={advert.image}
+                  alt="Advertisement"
+                  className="ad-card-image"
+                  style={{
+                    width: '200px',
+                    height: 'auto',
+                    aspectRatio: '16 / 9',
+                    objectFit: 'contain',
+                    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                    cursor: 'pointer',
+                    transition: 'opacity 0.2s ease',
+                    borderRadius: '4px',
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.8')}
+                  onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
+                />
+              </a>
+              <div className="ad-card-info" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', textAlign: 'center', width: '100%' }}>
+                <div><strong>Ad ID:</strong> {advert.id}</div>
+                <div><strong>Type:</strong> {advert.type}</div>
+                <div><strong>Level ID:</strong> {advert.level_id}</div>
+                <div>
+                  <strong>Expiration:</strong>{' '}
+                  {(() => {
+                    const { days, color } = getDaysRemaining(advert.expiration);
+                    return (
+                      <span style={{ color, fontWeight: 'bold' }}>
+                        {days} day{days !== 1 ? 's' : ''}
+                      </span>
+                    );
+                  })()}
+                </div>
               </div>
             </div>
+            <div className="ad-card-badge" style={{ display: 'flex', justifyContent: 'center' }}>
+              {advert.pending ? (
+                <div
+                  style={{
+                    backgroundColor: '#f39c12',
+                    color: 'black',
+                    padding: '0.25rem 0.75rem',
+                    borderRadius: '4px',
+                    fontSize: '0.85rem',
+                    fontWeight: 'bold',
+                    width: 'fit-content',
+                  }}
+                >
+                  PENDING
+                </div>
+              ) : (
+                <div
+                  style={{
+                    backgroundColor: '#27ae60',
+                    color: 'white',
+                    padding: '0.25rem 0.75rem',
+                    borderRadius: '4px',
+                    fontSize: '0.85rem',
+                    fontWeight: 'bold',
+                    width: 'fit-content',
+                  }}
+                >
+                  APPROVED
+                </div>
+              )}
+            </div>
             <button
-              style={{
-                background: '#e74c3c',
-                color: '#fff',
-                border: 'none',
-                borderRadius: '6px',
-                padding: '0.5em 1em',
-                cursor: 'pointer',
-                fontWeight: 'bold',
-                fontSize: '1em',
-                transition: 'background 0.2s',
-              }}
+              className="ad-card-delete"
+              style={{ backgroundColor: '#e74c3c' }}
               onClick={() => {
                 fetch(`/ads/delete?id=${advert.id}`, { method: 'DELETE', credentials: 'include' }).then(() => {
                   adverts.splice(adverts.indexOf(advert), 1);

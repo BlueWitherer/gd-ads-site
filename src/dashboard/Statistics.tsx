@@ -40,8 +40,14 @@ export default function Statistics() {
     <>
       <h1 className="text-2xl font-bold mb-6">Statistics</h1>
 
-      <div style={{ display: "flex", gap: "24px", alignItems: "flex-start" }}>
-        <div className="stat-box" style={{ flex: "0 0 auto" }}>
+      <div style={{ 
+        display: "flex", 
+        gap: "24px", 
+        alignItems: "flex-start",
+        flexWrap: "wrap",
+        justifyContent: "center"
+      }}>
+        <div className="stat-box" style={{ flex: "0 0 auto", minWidth: 0 }}>
           {views !== null && clicks !== null ? (
             <PieChart
               series={[
@@ -71,7 +77,8 @@ export default function Statistics() {
             display: "flex",
             flexDirection: "column",
             gap: "16px",
-            flex: "1",
+            flex: "1 1 auto",
+            minWidth: "200px",
           }}
         >
           <div className="stat-box">
