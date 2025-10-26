@@ -34,8 +34,8 @@ const (
 type StatBy string // Row to filter through
 
 const (
-	StatByAd   StatBy = "ad_id"   // Filter stats by ad
-	StatByUser StatBy = "user_id" // Filter stats by user
+	StatByViews  StatBy = "total_views"  // Filter stats by ad
+	StatByClicks StatBy = "total_clicks" // Filter stats by user
 )
 
 type User struct {
@@ -355,7 +355,7 @@ func ListAllAdvertisements() ([]Ad, error) {
 
 func ListPendingAdvertisements() ([]Ad, error) {
 	// Use != 0 to match tinyint(1) values in MySQL/MariaDB
-	stmt, err := prepareStmt(data, "SELECT ad_id, user_id, level_id, type, image_url, created_at, pending FROM advertisements WHERE pending != 0 ORDER BY ad_id DESC")
+	stmt, err := prepareStmt(data, "SELECT ad_id, user_id, level_id, type, image_url, created_at, pending FROM advertisements WHERE pending = TRUE ORDER BY ad_id DESC")
 	if err != nil {
 		return nil, err
 	}
@@ -437,6 +437,39 @@ func FilterAdsByType(rows []Ad, adType AdType) ([]Ad, error) {
 	}
 
 	return out, nil
+}
+
+func UserLeaderboard(stat StatBy, start uint64, end uint64) ([]User, error) {
+	stmt, err := prepareStmt(data, fmt.Sprintf("SELECT * FROM users WHERE banned = FALSE ORDER BY %s DESC", stat))
+	if err != nil {
+		return nil, err
+	}
+
+	rows, err := stmt.Query()
+	if err != nil {
+		return nil, err
+	}
+
+	var out []User
+	for rows.Next() {
+		var r User
+
+		if err := rows.Scan(&r.ID, &r.Username, &r.TotalViews, &r.TotalClicks, &r.IsAdmin, &r.Banned, &r.Created, &r.Updated); err != nil {
+			return nil, err
+		}
+
+		out = append(out, r)
+	}
+
+	if int(start) >= len(out) || start >= end {
+		return []User{}, nil
+	}
+
+	if int(end) > len(out) {
+		end = uint64(len(out))
+	}
+
+	return out[start:end], nil
 }
 
 // get an advertisement by id
