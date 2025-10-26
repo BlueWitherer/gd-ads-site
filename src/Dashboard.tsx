@@ -373,10 +373,12 @@ export default function Dashboard() {
           .dashboard-container {
             position: fixed !important;
             left: 50% !important;
-            top: 10rem !important;
+            top: calc(7.5rem + 60px) !important;
+            bottom: calc(1.5rem + 32px) !important;
             transform: translateX(-50%) !important;
             width: calc(100% - 8rem) !important;
-            height: calc(100vh - 9rem) !important;
+            height: auto !important;
+            max-height: calc(100vh - 7.5rem - 60px - 1.5rem - 32px - 64px) !important;
             margin: 0 !important;
             border-style: solid !important;
             border-width: 24px !important;

@@ -269,27 +269,39 @@ export default function Admin() {
             </button>
           </div>
 
-          <div style={{ marginTop: "1rem" }}>
-            {error && <div style={{ color: "#e74c3c", marginBottom: "1rem" }}>{error}</div>}
+          <div
+            style={{
+              marginTop: "1rem",
+              padding: "1.5rem",
+              borderStyle: "solid",
+              borderWidth: "24px",
+              borderImage: `url('${blacksquare}') 24 fill stretch`,
+              maxWidth: "100%",
+              width: "100%",
+              maxHeight: "70vh",
+              overflow: "auto",
+              display: "flex",
+              gap: "2rem",
+              backgroundColor: "transparent",
+              boxSizing: "border-box",
+              flexDirection: "row",
+            }}
+          >
+            {error && (
+              <div style={{ color: "#e74c3c", width: "100%", textAlign: "center", padding: "2rem" }}>
+                {error}
+              </div>
+            )}
+
+            {!error && !searchResult && (
+              <div style={{ color: "rgba(255, 255, 255, 0.7)", width: "100%", textAlign: "center", padding: "2rem" }}>
+                Search for a user to get started
+              </div>
+            )}
 
             {searchResult && (
-              <div
-                style={{
-                  marginTop: "1rem",
-                  padding: "1.5rem",
-                  borderStyle: "solid",
-                  borderWidth: "24px",
-                  borderImage: `url('${blacksquare}') 24 fill stretch`,
-                  maxWidth: "100%",
-                  maxHeight: "600px",
-                  overflow: "auto",
-                  display: "flex",
-                  gap: "2rem",
-                  backgroundColor: "transparent",
-                  boxSizing: "border-box",
-                }}
-              >
-                <div style={{ flex: "0 0 350px" }}>
+              <>
+                <div style={{ flex: "0 0 350px", width: "100%" }}>
                   <div
                     style={{
                       marginBottom: "1.5rem",
@@ -361,7 +373,7 @@ export default function Admin() {
                   </div>
                 </div>
 
-                <div style={{ flex: "1", overflowY: "auto" }}>
+                <div style={{ flex: "1", width: "100%" }}>
                   <h3 style={{ marginBottom: "1rem", marginTop: "0" }}>Advertisements ({searchResult.ads?.length || 0})</h3>
                   {!searchResult.ads || searchResult.ads.length === 0 ? (
                     <div style={{ color: "rgba(255, 255, 255, 0.7)" }}>No advertisements</div>
@@ -466,7 +478,7 @@ export default function Admin() {
                     </div>
                   )}
                 </div>
-              </div>
+              </>
             )}
           </div>
         </div >
@@ -526,6 +538,21 @@ export default function Admin() {
           #centered-container input,
           #centered-container select {
             pointer-events: auto !important;
+          }
+
+          #centered-container > div:last-of-type {
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 2rem !important;
+          }
+
+          #centered-container > div:last-of-type > div {
+            display: flex !important;
+            flex-direction: column !important;
+          }
+
+          #centered-container > div:last-of-type > div:nth-child(3) {
+            flex-direction: column !important;
           }
 
           .sprite-button {
