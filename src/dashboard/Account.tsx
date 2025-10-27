@@ -186,7 +186,22 @@ export default function Account() {
                     <strong>User ID:</strong> {ad.user_id}
                   </div>
                   <div>
-                    <strong>Level ID:</strong> {ad.level_id}
+                    <strong>Level ID:</strong>{" "}
+                    <a
+                      href={`https://gdbrowser.com/${ad.level_id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        color: "#60a5fa",
+                        textDecoration: "none",
+                        cursor: "pointer",
+                        transition: "color 0.2s ease",
+                      }}
+                      onMouseEnter={(e) => (e.currentTarget.style.color = "#3b82f6")}
+                      onMouseLeave={(e) => (e.currentTarget.style.color = "#60a5fa")}
+                    >
+                      {ad.level_id}
+                    </a>
                   </div>
                   <div>
                     <strong>Type:</strong> {ad.type}

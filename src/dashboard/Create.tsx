@@ -250,6 +250,9 @@ export default function Create() {
           <WarningIcon /> Do not self-promote anything non-Geometry Dash related. Memes or well-known creators are allowed.
         </p>
         <p>
+          <WarningIcon /> No profanity or excessive text in the advertisement.
+        </p>
+        <p>
           <WarningIcon /> Do not promote any harmful, illegal, or offensive
           material including both your Geometry Dash level and your
           advertisement!
