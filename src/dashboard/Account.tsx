@@ -116,8 +116,24 @@ export default function Account() {
   if (showingPending) {
     return (
       <>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "1.5rem" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "1rem" }}>
           <h1 className="text-2xl font-bold">Pending Advertisements</h1>
+        </div>
+        <div style={{ display: "flex", gap: "0.5rem", justifyContent: "center", marginBottom: "1.5rem" }}>
+          <button
+            className="nine-slice-button small"
+            onClick={handlePendingAds}
+            style={{ fontSize: "0.75rem", padding: "4px 12px" }}
+          >
+            Refresh
+          </button>
+          <button
+            className="nine-slice-button small"
+            onClick={() => setShowingPending(false)}
+            style={{ fontSize: "0.75rem", padding: "4px 12px" }}
+          >
+            Back
+          </button>
         </div>
         {!pendingAds || pendingAds.length === 0 ? (
           <div style={{ color: "rgba(255, 255, 255, 0.7)", fontSize: "1.1rem", textAlign: "center" }}>
@@ -262,7 +278,7 @@ export default function Account() {
     <>
       <h1 className="text-2xl font-bold mb-6">My Account</h1>
       <p className="text-lg">
-        Manage your account and view ads pending approval.
+        Manage your account information here.
       </p>
       <p className="text-sm mb-6 text-gray-500">
         If you want to view your stats in-game, copy the User ID into the settings prompted by the popup.

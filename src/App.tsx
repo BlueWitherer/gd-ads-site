@@ -45,12 +45,12 @@ export default function App() {
       <div id="background-scroll"></div>
       <div id="centered-container">
         <div id="login-section">
-          <h1 style={{ marginBottom: "2rem" }}>GD Advertisement Manager</h1>
+          <h1 style={{ marginBottom: "2rem", color: "white" }}>GD Advertisement Manager</h1>
           <h2>
             Welcome to the GD Advertisement Manager! Manage all your Geometry
             Dash Advertisements here!
           </h2>
-          <h2 style={{ marginBottom: "2rem" }}>Login using your Discord Account to get started!</h2>
+          <h2 style={{ marginBottom: "2rem", color: "white" }}>Login using your Discord Account to get started!</h2>
           <button
             className="nine-slice-button login-button"
             onClick={handleLogin}
