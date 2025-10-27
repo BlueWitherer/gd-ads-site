@@ -1,6 +1,9 @@
 import "../App.css";
 import { useState, useEffect } from "react";
+
 import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
+import BuildIcon from '@mui/icons-material/Build';
+import VerifiedIcon from '@mui/icons-material/Verified';
 
 interface User {
   id: string;
@@ -8,6 +11,8 @@ interface User {
   total_views: number;
   total_clicks: number;
   is_admin: boolean;
+  is_staff: boolean;
+  verified: boolean;
   banned: boolean;
   created_at: string;
   updated_at: string;
@@ -103,7 +108,7 @@ export default function Leaderboard() {
                     </td>
                     <td className="px-4 py-3 flex items-center gap-2">
                       {user.username}
-                      {user.is_admin && <AdminPanelSettingsIcon />}
+                      {user.is_admin && <AdminPanelSettingsIcon /> || user.is_staff && <BuildIcon /> || user.verified && <VerifiedIcon />}
                     </td>
                     <td className="px-4 py-3 text-right">
                       {sortBy === "views" ? user.total_views : user.total_clicks}

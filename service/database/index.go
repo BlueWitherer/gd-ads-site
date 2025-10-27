@@ -44,6 +44,8 @@ type User struct {
 	TotalViews  int    `json:"total_views"`  // Total registered views on all ads
 	TotalClicks int    `json:"total_clicks"` // Total registered clicks on all ads
 	IsAdmin     bool   `json:"is_admin"`     // Active administrator status
+	IsStaff     bool   `json:"is_staff"`     // Active staff status
+	Verified    bool   `json:"verified"`     // Trusted status
 	Banned      bool   `json:"banned"`       // Banned status
 	Created     string `json:"created_at"`   // First created
 	Updated     string `json:"updated_at"`   // Last updated
