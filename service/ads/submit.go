@@ -44,6 +44,20 @@ func init() {
 				return
 			}
 
+			// Check if user has reached the maximum number of active ads (10)
+			activeAdCount, err := database.CountActiveAdvertisementsByUser(uid)
+			if err != nil {
+				log.Error("Failed to count active advertisements: %s", err.Error())
+				http.Error(w, "Failed to check advertisement limit", http.StatusInternalServerError)
+				return
+			}
+
+			if activeAdCount >= 10 {
+				log.Warn("User %s attempted to submit ad but has reached maximum (10) active advertisements", user.Username)
+				http.Error(w, "You have reached the maximum number of active advertisements (10)", http.StatusBadRequest)
+				return
+			}
+
 			// Parse form with 10MB limit
 			r.ParseMultipartForm(10 << 20)
 
@@ -84,12 +98,6 @@ func init() {
 			fileName := fmt.Sprintf("%s.webp", uid)
 			dstPath := filepath.Join(targetDir, fileName)
 
-			// Delete old image
-			if _, err := os.Stat(dstPath); err == nil {
-				log.Debug("Removing old ad image at %s", dstPath)
-				os.Remove(dstPath)
-			}
-
 			dst, err := os.Create(dstPath)
 			if err != nil {
 				log.Error(err.Error())
@@ -97,20 +105,20 @@ func init() {
 				return
 			}
 
-			defer dst.Close()
-
 			if _, err := io.Copy(dst, file); err != nil {
+				dst.Close()
 				log.Error(err.Error())
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
 
-			// Build a URL-ish path for retrieval with timestamp for cache busting
-			timestamp := time.Now().Unix()
-			imageURL := fmt.Sprintf("%s/cdn/%s/%s?v=%d", access.GetDomain(r), adFolder, fileName, timestamp)
+			// Close the file before renaming
+			dst.Close()
 
-			// Create DB row for the advertisement
-			adID, err := database.CreateAdvertisement(uid, levelID, typeNum, imageURL)
+			// Create DB row for the advertisement first (to get the ad ID)
+			// Use a placeholder URL initially
+			placeholderURL := fmt.Sprintf("%s/cdn/%s/placeholder?v=%d", access.GetDomain(r), adFolder, time.Now().Unix())
+			adID, err := database.CreateAdvertisement(uid, levelID, typeNum, placeholderURL)
 			if err != nil {
 				e := os.Remove(dstPath)
 				if e != nil {
@@ -119,6 +127,43 @@ func init() {
 
 				log.Error("Failed to create advertisement row: %s", err.Error())
 				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			// Now rename the file to include the ad ID
+			newFileName := fmt.Sprintf("%s-%d.webp", uid, adID)
+			newDstPath := filepath.Join(targetDir, newFileName)
+			err = os.Rename(dstPath, newDstPath)
+			if err != nil {
+				_, delErr := database.DeleteAdvertisement(adID)
+				if delErr != nil {
+					log.Error("Failed to delete advertisement row: %s", delErr.Error())
+				}
+				e := os.Remove(dstPath)
+				if e != nil {
+					log.Error("Failed to delete advertisement image: %s", e.Error())
+				}
+
+				log.Error("Failed to rename advertisement image: %s", err.Error())
+				http.Error(w, "Failed to rename advertisement image", http.StatusInternalServerError)
+				return
+			}
+
+			// Update the image URL with the correct filename
+			imageURL := fmt.Sprintf("%s/cdn/%s/%s?v=%d", access.GetDomain(r), adFolder, newFileName, time.Now().Unix())
+			err = database.UpdateAdvertisementImageURL(adID, imageURL)
+			if err != nil {
+				_, delErr := database.DeleteAdvertisement(adID)
+				if delErr != nil {
+					log.Error("Failed to delete advertisement row: %s", delErr.Error())
+				}
+				e := os.Remove(newDstPath)
+				if e != nil {
+					log.Error("Failed to delete advertisement image: %s", e.Error())
+				}
+
+				log.Error("Failed to update advertisement image URL: %s", err.Error())
+				http.Error(w, "Failed to update advertisement image URL", http.StatusInternalServerError)
 				return
 			}
 
@@ -131,7 +176,7 @@ func init() {
 				}
 			}
 
-			log.Info("Saved ad to %s, ad_id=%v, user_id=%s", dstPath, adID, uid)
+			log.Info("Saved ad to %s, ad_id=%v, user_id=%s", newDstPath, adID, uid)
 			w.Write(fmt.Appendf(nil, `{"status":"ok","ad_id":%d,"image_url":"%s"}`, adID, imageURL))
 		} else {
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)

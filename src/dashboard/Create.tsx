@@ -24,6 +24,7 @@ export default function Create() {
   const [levelValid, setLevelValid] = useState<boolean | null>(null);
   const [levelName, setLevelName] = useState<string>("");
   const [checkingLevel, setCheckingLevel] = useState<boolean>(false);
+  const [activeAdCount, setActiveAdCount] = useState<number | null>(null);
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -52,6 +53,30 @@ export default function Create() {
       })
       .catch(() => setUserId(null));
   }, []);
+
+  useEffect(() => {
+    // Fetch active ad count for the user
+    async function fetchActiveAdCount() {
+      try {
+        const res = await fetch("/ads/get", { credentials: "include" });
+        if (res.ok) {
+          const data = await res.json();
+          // Count only non-expired ads (pending or approved)
+          const now = Date.now() / 1000; // current time in seconds
+          const activeCount = data.filter(
+            (ad: any) => ad.expiry && ad.expiry > now
+          ).length;
+          setActiveAdCount(activeCount);
+        }
+      } catch (err) {
+        console.error("Failed to fetch active ad count:", err);
+      }
+    }
+
+    if (userId) {
+      fetchActiveAdCount();
+    }
+  }, [userId]);
 
   const checkLevelValidity = async (id: string) => {
     if (!id || id.trim() === "") {
@@ -154,6 +179,11 @@ export default function Create() {
       return;
     }
 
+    if (activeAdCount !== null && activeAdCount >= 10) {
+      alert("You have reached the maximum number of active advertisements (10). Please delete some existing ads first.");
+      return;
+    }
+
     setUploading(true);
 
     try {
@@ -234,12 +264,21 @@ export default function Create() {
         Select the size and upload an image for your advertisement.
       </p>
       <p className="text-sm mb-6 text-gray-500">
-        You're only allowed to create 1 advertisement per type. Each
-        advertisement expires after 7 days.{" "}
-        <b>You may have a maximum of 3 active advertisements at a time.</b>{" "}
-        Before it can be shown in game, your advertisement must first be
+        Each advertisement expires after 7 days.{" "}
+        <b>You may have a maximum of 10 active advertisements at a time.</b>{" "}
+        You can create multiple advertisements per type. Before it can be shown in game, your advertisement must first be
         approved by an admin.
       </p>
+      {activeAdCount !== null && (
+        <div className="text-sm mb-6 p-3 rounded bg-blue-900/30 border border-blue-500">
+          <p>Active advertisements: <b>{activeAdCount}/10</b></p>
+        </div>
+      )}
+      {activeAdCount === 10 && (
+        <div className="text-sm mb-6 p-3 rounded bg-red-900/30 border border-red-500 text-red-300">
+          <p><WarningIcon /> You have reached the maximum number of active advertisements. Delete some to submit new ones.</p>
+        </div>
+      )}
       {/* Rules */}
       <div className="text-sm text-orange-500 mb-6">
         <p>

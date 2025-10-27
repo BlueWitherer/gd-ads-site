@@ -78,7 +78,7 @@ func init() {
 					return
 				}
 
-				target := filepath.Join("..", "ad_storage", string(adFolder), fmt.Sprintf("%s.webp", ad.UserID))
+				target := filepath.Join("..", "ad_storage", string(adFolder), fmt.Sprintf("%s-%d.webp", ad.UserID, ad.AdID))
 
 				err = os.Remove(target)
 				if err != nil {

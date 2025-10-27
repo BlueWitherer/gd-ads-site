@@ -213,35 +213,7 @@ func CreateAdvertisement(userId string, levelID string, adType int, imageURL str
 		return 0, fmt.Errorf("missing ad fields")
 	}
 
-	// Check if user already has an ad of this type
-	if ads, err := ListAllAdvertisements(); err != nil {
-		return 0, err
-	} else {
-		filtered, err := FilterAdsByUser(ads, userId)
-		if err != nil {
-			return 0, err
-		} else {
-			for _, ad := range filtered {
-				if ad.UserID == userId && ad.Type == adType {
-					// Update existing ad instead of rejecting
-					log.Info("Updating existing ad ID %d for user %s", ad.AdID, userId)
-					stmt, err := prepareStmt(data, "UPDATE advertisements SET level_id = ?, image_url = ?, pending = ? WHERE ad_id = ?")
-					if err != nil {
-						return 0, err
-					}
-
-					_, err = stmt.Exec(levelID, imageURL, true, ad.AdID)
-					if err != nil {
-						return 0, err
-					}
-
-					return ad.AdID, nil
-				}
-			}
-		}
-	}
-
-	// Create new ad if none exists
+	// Create new ad - allow multiple ads per user per type
 	stmt, err := prepareStmt(data, "INSERT INTO advertisements (user_id, level_id, type, image_url, pending) VALUES (?, ?, ?, ?, ?)")
 	if err != nil {
 		return 0, err
@@ -522,6 +494,20 @@ func GetAdvertisementOwnerId(adId int64) (string, error) {
 	return uid, nil
 }
 
+func UpdateAdvertisementImageURL(adId int64, imageURL string) error {
+	if imageURL == "" {
+		return fmt.Errorf("empty image url")
+	}
+
+	stmt, err := prepareStmt(data, "UPDATE advertisements SET image_url = ? WHERE ad_id = ?")
+	if err != nil {
+		return err
+	}
+
+	_, err = stmt.Exec(imageURL, adId)
+	return err
+}
+
 func DeleteAdvertisement(adId int64) (Ad, error) {
 	ad, err := GetAdvertisement(adId)
 	if err != nil {
@@ -553,6 +539,26 @@ func DeleteAllExpiredAds() error {
 	}
 
 	return nil
+}
+
+// CountActiveAdvertisementsByUser returns the count of active (non-expired) advertisements for a user
+func CountActiveAdvertisementsByUser(userId string) (int, error) {
+	if userId == "" {
+		return 0, fmt.Errorf("empty user id")
+	}
+
+	stmt, err := prepareStmt(data, "SELECT COUNT(*) FROM advertisements WHERE user_id = ? AND created_at > NOW() - INTERVAL 7 DAY")
+	if err != nil {
+		return 0, err
+	}
+
+	var count int
+	err = stmt.QueryRow(userId).Scan(&count)
+	if err != nil {
+		return 0, err
+	}
+
+	return count, nil
 }
 
 // returns total_views and total_clicks for a given user id
