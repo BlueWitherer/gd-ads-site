@@ -2,10 +2,10 @@ import "../App.css";
 import { useEffect, useState } from "react";
 
 import WarningIcon from "@mui/icons-material/WarningOutlined";
-import UploadFileIcon from '@mui/icons-material/UploadFileOutlined';
-import SearchIcon from '@mui/icons-material/SearchOutlined';
-import SyncIcon from '@mui/icons-material/SyncOutlined';
-import CheckCircleIcon from '@mui/icons-material/CheckCircleOutlined';
+import UploadFileIcon from "@mui/icons-material/UploadFileOutlined";
+import SearchIcon from "@mui/icons-material/SearchOutlined";
+import SyncIcon from "@mui/icons-material/SyncOutlined";
+import CheckCircleIcon from "@mui/icons-material/CheckCircleOutlined";
 
 export default function Create() {
   const [selectedSize, setSelectedSize] = useState<
@@ -57,7 +57,7 @@ export default function Create() {
     if (!id || id.trim() === "") {
       setLevelValid(null);
       return;
-    };
+    }
 
     setCheckingLevel(true);
     try {
@@ -87,14 +87,14 @@ export default function Create() {
           setLevelName(parts[levelNameIndex + 1]);
         } else {
           setLevelName("");
-        };
-      };
+        }
+      }
     } catch (error) {
       console.error("Error checking level validity:", error);
       setLevelValid(false);
     } finally {
       setCheckingLevel(false);
-    };
+    }
   };
 
   const handleLevelIdChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -103,24 +103,24 @@ export default function Create() {
     if (newLevelId.trim() === "") {
       setLevelValid(null);
       setLevelName("");
-    };
+    }
   };
 
   async function handleSubmit() {
     if (!selectedFile || !imagePreview) {
       alert("Please select an image.");
       return;
-    };
+    }
 
     if (levelValid !== true) {
       alert("Please enter a valid Level ID.");
       return;
-    };
+    }
 
     if (!imageDimensions) {
       alert("Image dimensions unknown. Please re-import the image.");
       return;
-    };
+    }
 
     // validate expected dimensions
     const dims = imageDimensions;
@@ -147,12 +147,12 @@ export default function Create() {
         )}`
       );
       return;
-    };
+    }
 
     if (!userId) {
       alert("You must be logged in to submit an advertisement.");
       return;
-    };
+    }
 
     setUploading(true);
 
@@ -185,7 +185,7 @@ export default function Create() {
         // fallback: use original file
         uploadBlob = selectedFile;
         ext = selectedFile.name.split(".").pop() || "png";
-      };
+      }
 
       // const sizeNum = selectedSize === "banner" ? 1 : selectedSize === "square" ? 2 : 3;
       const filename = `${userId}.${ext}`;
@@ -218,14 +218,14 @@ export default function Create() {
         const txt = await resp.text();
         console.error("Upload failed:", txt);
         alert("Failed to submit advertisement.");
-      };
+      }
     } catch (err) {
       console.error(err);
       alert("An error occurred while processing the image.");
     } finally {
       setUploading(false);
-    };
-  };
+    }
+  }
 
   return (
     <>
@@ -234,22 +234,32 @@ export default function Create() {
         Select the size and upload an image for your advertisement.
       </p>
       <p className="text-sm mb-6 text-gray-500">
-        You're only allowed to create 1 advertisement per type. Each advertisement expires after 7 days. <b>You may have a maximum of 3 active advertisements at a time.</b> Before it can be shown in game, your advertisement must first be approved by an admin.
+        You're only allowed to create 1 advertisement per type. Each
+        advertisement expires after 7 days.{" "}
+        <b>You may have a maximum of 3 active advertisements at a time.</b>{" "}
+        Before it can be shown in game, your advertisement must first be
+        approved by an admin.
       </p>
       {/* Rules */}
       <div className="text-sm text-orange-500 mb-6">
         <p>
-          <WarningIcon /> Do not upload inappropriate content including but not limited to:
+          <WarningIcon /> Do not upload inappropriate or controversial
+          advertisements.
         </p>
-        <ul className="list-disc list-inside mb-2">
-          <li>NSFW or adult content</li>
-          <li>Hate speech or discriminatory content</li>
-          <li>Malicious or misleading content</li>
-        </ul>
         <p>
-          <WarningIcon /> Do not promote any harmful, illegal, or offensive material including both your Geometry Dash level and your advertisement!
+          <WarningIcon /> Do not self-promote anything non-Geometry Dash related. Memes or well-known creators are allowed.
         </p>
-        <p><WarningIcon /> Violating this may result in a ban. <b>No appeals!</b></p>
+        <p>
+          <WarningIcon /> Do not promote any harmful, illegal, or offensive
+          material including both your Geometry Dash level and your
+          advertisement!
+        </p>
+        <p>
+          <WarningIcon /> AI Generated Advertisements are hard rejection. 
+        </p>
+        <p>
+          <WarningIcon /> Violating this may result in a ban. <b>No appeals!</b>
+        </p>
       </div>
       <div className="form-group mb-6">
         <label className="text-lg font-bold mb-2 block">
@@ -340,7 +350,7 @@ export default function Create() {
             onClick={() => checkLevelValidity(levelId)}
             disabled={checkingLevel || !levelId.trim()}
           >
-            <SearchIcon style={{ "scale": 1.5 }} />
+            <SearchIcon style={{ scale: 1.5 }} />
           </button>
         </div>
         <div style={{ marginTop: "8px", fontSize: "0.9em" }}>
@@ -366,7 +376,8 @@ export default function Create() {
           onClick={handleSubmit}
           disabled={uploading}
         >
-          {uploading ? <SyncIcon /> : <CheckCircleIcon />} {uploading ? "Uploading..." : "Submit"}
+          {uploading ? <SyncIcon /> : <CheckCircleIcon />}{" "}
+          {uploading ? "Uploading..." : "Submit"}
         </button>
       </div>
     </>
