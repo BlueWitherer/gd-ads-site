@@ -232,10 +232,6 @@ export default function Admin() {
             <ReplyIcon style={{ scale: 2.5 }} />
           </button>
 
-          <h1 className="text-3xl font-bold" style={{ marginTop: "1rem", marginBottom: "2rem" }}>
-            Admin Panel
-          </h1>
-
           <div className="search-container">
             <input
               type="text"
@@ -250,7 +246,7 @@ export default function Admin() {
               onClick={handleSearch}
               disabled={searching}
             >
-              <SearchIcon /> Search
+              <SearchIcon />
             </button>
           </div>
 

@@ -15,5 +15,13 @@
     </noscript>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+      setTimeout(() => {
+        const root = document.getElementById('root');
+        if (root && root.innerHTML.trim() === '') {
+          root.innerHTML = '<h1>Please disable your ad blocker... i know ironic</h1>';
+        }
+      }, 2000);
+    </script>
   </body>
 </html>
