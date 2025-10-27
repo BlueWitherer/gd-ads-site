@@ -8,6 +8,9 @@ export default function Statistics() {
 
   const [views, setViews] = useState<number | null>(null);
   const [clicks, setClicks] = useState<number | null>(null);
+  const [globalViews, setGlobalViews] = useState<number | null>(null);
+  const [globalClicks, setGlobalClicks] = useState<number | null>(null);
+  const [adCount, setAdCount] = useState<number | null>(null);
 
   useEffect(() => {
     async function fetchStats(): Promise<number> {
@@ -30,6 +33,24 @@ export default function Statistics() {
     fetchStats();
   }, []);
 
+  useEffect(() => {
+    async function fetchGlobalStats(): Promise<void> {
+      try {
+        const res = await fetch(`/stats/global`);
+        if (res.ok) {
+          const data = await res.json();
+          setGlobalViews(data.total_views);
+          setGlobalClicks(data.total_clicks);
+          setAdCount(data.ad_count);
+        }
+      } catch (err) {
+        console.error("Error fetching global stats:", err);
+      }
+    }
+
+    fetchGlobalStats();
+  }, []);
+
   const settings = {
     width: 200,
     height: 200,
@@ -45,16 +66,19 @@ export default function Statistics() {
         gap: "24px", 
         alignItems: "flex-start",
         flexWrap: "wrap",
-        justifyContent: "center"
+        justifyContent: "center",
+        marginBottom: "48px"
       }}>
         <div className="stat-box" style={{ flex: "0 0 auto", minWidth: 0 }}>
-          {views !== null && clicks !== null ? (
+          {views !== null && clicks !== null && globalViews !== null && globalClicks !== null ? (
             <PieChart
               series={[
                 {
                   data: [
-                    { id: 0, value: views, label: "Views", color: "#2196f3" },
-                    { id: 1, value: clicks, label: "Clicks", color: "#4caf50" },
+                    { id: 0, value: views, label: "My Views", color: "#2196f3" },
+                    { id: 1, value: clicks, label: "My Clicks", color: "#4caf50" },
+                    { id: 2, value: Math.max(0, globalViews - views), label: "Other Views", color: "#ff9800" },
+                    { id: 3, value: Math.max(0, globalClicks - clicks), label: "Other Clicks", color: "#e91e63" },
                   ],
                   highlightScope: { fade: "global", highlight: "item" },
                   faded: {
@@ -66,7 +90,7 @@ export default function Statistics() {
               ]}
               {...settings}
               width={300}
-              height={200}
+              height={250}
             />
           ) : (
             <p>Loading chart...</p>
@@ -82,13 +106,13 @@ export default function Statistics() {
           }}
         >
           <div className="stat-box">
-            <h2 className="text-xl font-bold mb-2">Total Views</h2>
+            <h2 className="text-xl font-bold mb-2">Your Total Views</h2>
             <p className="text-4xl font-bold">
               {views !== null ? views.toLocaleString() : "Loading..."}
             </p>
           </div>
           <div className="stat-box">
-            <h2 className="text-xl font-bold mb-2">Total Clicks</h2>
+            <h2 className="text-xl font-bold mb-2">Your Total Clicks</h2>
             <p className="text-4xl font-bold">
               {clicks !== null ? clicks.toLocaleString() : "Loading..."}
             </p>
@@ -108,6 +132,33 @@ export default function Statistics() {
               )}
             </div>
           </div>
+        </div>
+      </div>
+
+      <h1 className="text-2xl font-bold mb-6">Global Statistics</h1>
+      <div style={{ 
+        display: "flex", 
+        gap: "24px", 
+        flexWrap: "wrap",
+        justifyContent: "center"
+      }}>
+        <div className="stat-box">
+          <h3 className="text-xl font-bold mb-2">Total Views</h3>
+          <p className="text-4xl font-bold">
+            {globalViews !== null ? globalViews.toLocaleString() : "Loading..."}
+          </p>
+        </div>
+        <div className="stat-box">
+          <h3 className="text-xl font-bold mb-2">Total Clicks</h3>
+          <p className="text-4xl font-bold">
+            {globalClicks !== null ? globalClicks.toLocaleString() : "Loading..."}
+          </p>
+        </div>
+        <div className="stat-box">
+          <h3 className="text-xl font-bold mb-2">Active Advertisements</h3>
+          <p className="text-4xl font-bold">
+            {adCount !== null ? adCount.toLocaleString() : "Loading..."}
+          </p>
         </div>
       </div>
     </>

@@ -639,6 +639,31 @@ func initializeSchema() error {
 	return nil
 }
 
+// GetGlobalStats returns the total views, total clicks, and count of active advertisements
+func GetGlobalStats() (int, int, int, error) {
+	if data == nil {
+		return 0, 0, 0, fmt.Errorf("database connection non-existent")
+	}
+
+	var totalViews, totalClicks, adCount int
+
+	// Get sum of total_views and total_clicks from users table
+	err := data.QueryRow("SELECT COALESCE(SUM(total_views), 0), COALESCE(SUM(total_clicks), 0) FROM users").Scan(&totalViews, &totalClicks)
+	if err != nil {
+		log.Error("Failed to fetch user stats: %s", err.Error())
+		return 0, 0, 0, err
+	}
+
+	// Get count of active (non-pending) advertisements
+	err = data.QueryRow("SELECT COUNT(*) FROM advertisements WHERE pending = FALSE").Scan(&adCount)
+	if err != nil {
+		log.Error("Failed to fetch ad count: %s", err.Error())
+		return 0, 0, 0, err
+	}
+
+	return totalViews, totalClicks, adCount, nil
+}
+
 func init() {
 	var err error
 

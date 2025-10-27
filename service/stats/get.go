@@ -14,6 +14,12 @@ type Stats struct {
 	Clicks int `json:"clicks"`
 }
 
+type GlobalStats struct {
+	TotalViews  int `json:"total_views"`
+	TotalClicks int `json:"total_clicks"`
+	AdCount     int `json:"ad_count"`
+}
+
 func init() {
 	http.HandleFunc("/stats/get", func(w http.ResponseWriter, r *http.Request) {
 		log.Debug("Getting advertisement stats for user...")
@@ -54,6 +60,43 @@ func init() {
 		w.WriteHeader(http.StatusOK)
 		if err := json.NewEncoder(w).Encode(stats); err != nil {
 			log.Error("Failed to encode stats response: %s", err.Error())
+			http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+			return
+		}
+	})
+
+	http.HandleFunc("/stats/global", func(w http.ResponseWriter, r *http.Request) {
+		log.Debug("Getting global advertisement statistics...")
+		header := w.Header()
+
+		header.Set("Access-Control-Allow-Origin", "*")
+		header.Set("Access-Control-Allow-Methods", "GET")
+		header.Set("Access-Control-Allow-Headers", "Content-Type")
+		header.Set("Content-Type", "application/json")
+
+		if r.Method != http.MethodGet {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+
+		// Get global stats from database
+		totalViews, totalClicks, adCount, err := database.GetGlobalStats()
+		if err != nil {
+			log.Error("Failed to fetch global stats: %s", err.Error())
+			http.Error(w, "Failed to fetch stats", http.StatusInternalServerError)
+			return
+		}
+
+		globalStats := GlobalStats{
+			TotalViews:  totalViews,
+			TotalClicks: totalClicks,
+			AdCount:     adCount,
+		}
+
+		log.Info("Retrieved global stats - Views: %d, Clicks: %d, Ads: %d", totalViews, totalClicks, adCount)
+		w.WriteHeader(http.StatusOK)
+		if err := json.NewEncoder(w).Encode(globalStats); err != nil {
+			log.Error("Failed to encode global stats response: %s", err.Error())
 			http.Error(w, "Failed to encode response", http.StatusInternalServerError)
 			return
 		}
