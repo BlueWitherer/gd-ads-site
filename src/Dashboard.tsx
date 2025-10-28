@@ -28,8 +28,6 @@ export default function Dashboard() {
   >("statistics");
   const [isBanned, setIsBanned] = useState<boolean>(false);
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
-  const [isStaff, setIsStaff] = useState<boolean>(false);
-  const [verified, setVerified] = useState<boolean>(false);
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
 
   const [user, setUser] = useState<{
@@ -59,16 +57,15 @@ export default function Dashboard() {
               } else if (res.ok) {
                 res.json().then((userData) => {
                   setIsBanned(userData.banned);
+                  setIsBanned(userData.banned);
                   setIsAdmin(userData.is_admin);
-                  setIsStaff(userData.is_staff);
-                  setVerified(userData.verified);
                 });
-              };
+              }
             })
             .catch(() => console.error("Failed to fetch user status"));
         } else {
           navigate("/");
-        };
+        }
       })
       .catch(() => navigate("/"))
       .finally(() => console.log("User authorized"));
