@@ -18,14 +18,6 @@ func init() {
 		header.Set("Access-Control-Allow-Headers", "Content-Type")
 
 		if r.Method == http.MethodPost {
-			// Validate user agent is from the game client
-			userAgent := r.Header.Get("User-Agent")
-			if userAgent != "PlayerAdvertisements/1.0" {
-				log.Warn("Click rejected: invalid user agent '%s'", userAgent)
-				http.Error(w, "Unauthorized user agent", http.StatusForbidden)
-				return
-			}
-
 			var body struct {
 				AdID   int64  `json:"ad_id"`
 				UserID string `json:"user_id"`
