@@ -711,10 +711,15 @@ func GetGlobalStats() (int, int, int, error) {
 
 	var totalViews, totalClicks, adCount int
 
-	// Get sum of total_views and total_clicks from users table
-	err := data.QueryRow("SELECT COALESCE(SUM(total_views), 0), COALESCE(SUM(total_clicks), 0) FROM users").Scan(&totalViews, &totalClicks)
+	err := data.QueryRow("SELECT COUNT(*) FROM views").Scan(&totalViews)
 	if err != nil {
-		log.Error("Failed to fetch user stats: %s", err.Error())
+		log.Error("Failed to fetch view stats: %s", err.Error())
+		return 0, 0, 0, err
+	}
+
+	err = data.QueryRow("SELECT COUNT(*) FROM clicks").Scan(&totalClicks)
+	if err != nil {
+		log.Error("Failed to fetch click stats: %s", err.Error())
 		return 0, 0, 0, err
 	}
 
