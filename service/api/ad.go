@@ -89,7 +89,7 @@ func init() {
 				ad.ClickCount = clicks
 			}
 
-			log.Info("Returning ad as JSON: %s", ad.ImageURL)
+			log.Debug("Returning ad as JSON: %s", ad.ImageURL)
 			w.WriteHeader(http.StatusOK)
 			if err := json.NewEncoder(w).Encode(ad); err != nil {
 				log.Error("Failed to encode response: %s", err.Error())

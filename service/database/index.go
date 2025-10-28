@@ -105,7 +105,7 @@ func IntFromAdType(t AdType) (int, error) {
 
 // Register a new client event for an ad
 func NewStat(event AdEvent, adId int64, user int64) error {
-	log.Debug("Registering new %s", event)
+	log.Debug("Registering new %s on ad %d for user %d", event, adId, user)
 	sql := fmt.Sprintf("INSERT INTO %s (ad_id, user_id, timestamp) VALUES (?, ?, ?)", event)
 
 	stmt, err := prepareStmt(data, sql)
@@ -125,17 +125,33 @@ func NewStat(event AdEvent, adId int64, user int64) error {
 	}
 
 	if ownerID, ownerErr := GetAdvertisementOwnerId(adId); ownerErr == nil && ownerID != "" {
+		log.Info("Incrementing stats for owner %s: views +%d, clicks +%d", ownerID, viewsDelta, clicksDelta)
 		if incErr := IncrementUserStats(ownerID, viewsDelta, clicksDelta); incErr != nil {
 			log.Error("Failed to increment total clicks: %s", incErr.Error())
 		}
+	} else {
+		log.Warn("Could not find owner for ad %d: %v", adId, ownerErr)
 	}
 
 	_, err = stmt.Exec(adId, user, time.Now())
+	if err != nil {
+		log.Error("Failed to insert %s record: %s", event, err.Error())
+		return err
+	}
+
+	log.Debug("Successfully registered %s for ad %d", event, adId)
 	return err
 }
 
 func NewStatWithUserID(event AdEvent, adId int64, userID string) error {
-	log.Debug("Registering new %s for user %s", event, userID)
+	log.Debug("Registering new %s for user %s on ad %d", event, userID, adId)
+
+	_, err := GetAdvertisement(adId)
+	if err != nil {
+		log.Error("Failed to get advertisement %d: %s", adId, err.Error())
+		return err
+	}
+
 	sql := fmt.Sprintf("INSERT INTO %s (ad_id, user_id, timestamp) VALUES (?, ?, ?)", event)
 
 	stmt, err := prepareStmt(data, sql)
@@ -154,14 +170,24 @@ func NewStatWithUserID(event AdEvent, adId int64, userID string) error {
 		return fmt.Errorf("invalid ad event")
 	}
 
+	// Get the ad owner and increment their stats
 	if ownerID, ownerErr := GetAdvertisementOwnerId(adId); ownerErr == nil && ownerID != "" {
+		log.Debug("Incrementing stats for owner %s: views +%d, clicks +%d", ownerID, viewsDelta, clicksDelta)
 		if incErr := IncrementUserStats(ownerID, viewsDelta, clicksDelta); incErr != nil {
-			log.Error("Failed to increment total stats: %s", incErr.Error())
+			log.Error("Failed to increment total stats for user %s: %s", ownerID, incErr.Error())
 		}
+	} else {
+		log.Warn("Could not find owner for ad %d: %v", adId, ownerErr)
 	}
 
 	_, err = stmt.Exec(adId, userID, time.Now())
-	return err
+	if err != nil {
+		log.Error("Failed to insert %s record: %s", event, err.Error())
+		return err
+	}
+
+	log.Debug("Successfully registered %s for ad %d", event, adId)
+	return nil
 }
 
 func GetUser(id string) (User, error) {
