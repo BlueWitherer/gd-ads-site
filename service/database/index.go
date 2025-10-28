@@ -134,6 +134,36 @@ func NewStat(event AdEvent, adId int64, user int64) error {
 	return err
 }
 
+func NewStatWithUserID(event AdEvent, adId int64, userID string) error {
+	log.Debug("Registering new %s for user %s", event, userID)
+	sql := fmt.Sprintf("INSERT INTO %s (ad_id, user_id, timestamp) VALUES (?, ?, ?)", event)
+
+	stmt, err := prepareStmt(data, sql)
+	if err != nil {
+		return err
+	}
+
+	var viewsDelta, clicksDelta int = 0, 0
+	switch event {
+	case AdEventView:
+		viewsDelta = 1
+	case AdEventClick:
+		clicksDelta = 1
+
+	default:
+		return fmt.Errorf("invalid ad event")
+	}
+
+	if ownerID, ownerErr := GetAdvertisementOwnerId(adId); ownerErr == nil && ownerID != "" {
+		if incErr := IncrementUserStats(ownerID, viewsDelta, clicksDelta); incErr != nil {
+			log.Error("Failed to increment total stats: %s", incErr.Error())
+		}
+	}
+
+	_, err = stmt.Exec(adId, userID, time.Now())
+	return err
+}
+
 func GetUser(id string) (User, error) {
 	if id == "" {
 		return User{}, fmt.Errorf("empty user id")

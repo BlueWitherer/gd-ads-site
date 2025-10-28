@@ -3,7 +3,6 @@ package api
 import (
 	"encoding/json"
 	"net/http"
-	"strconv"
 
 	"service/database"
 	"service/log"
@@ -30,14 +29,15 @@ func init() {
 				return
 			}
 
-			user, err := strconv.ParseInt(body.UserID, 10, 64)
-			if err != nil {
-				log.Error("Failed to parse user ID: %s", err.Error())
+			// Validate user_id is not empty
+			if body.UserID == "" {
+				log.Error("User ID is empty")
 				http.Error(w, "Invalid user ID", http.StatusBadRequest)
 				return
 			}
 
-			err = database.NewStat(database.AdEventView, body.AdID, user)
+			// Convert user_id string directly (it stays as a string for the database)
+			err := database.NewStatWithUserID(database.AdEventView, body.AdID, body.UserID)
 			if err != nil {
 				log.Error("Failed to create database view statistic: %s", err.Error())
 				http.Error(w, err.Error(), http.StatusInternalServerError)

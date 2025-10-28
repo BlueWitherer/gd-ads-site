@@ -3,7 +3,6 @@ package api
 import (
 	"encoding/json"
 	"net/http"
-	"strconv"
 
 	"service/database"
 	"service/log"
@@ -19,6 +18,14 @@ func init() {
 		header.Set("Access-Control-Allow-Headers", "Content-Type")
 
 		if r.Method == http.MethodPost {
+			// Validate user agent is from the game client
+			userAgent := r.Header.Get("User-Agent")
+			if userAgent != "PlayerAdvertisements/1.0" {
+				log.Warn("Click rejected: invalid user agent '%s'", userAgent)
+				http.Error(w, "Unauthorized user agent", http.StatusForbidden)
+				return
+			}
+
 			var body struct {
 				AdID   int64  `json:"ad_id"`
 				UserID string `json:"user_id"`
@@ -30,15 +37,15 @@ func init() {
 				return
 			}
 
-			// Convert user_id string to int64 cuz cheeseworks says the id is a string and must be string
-			user, err := strconv.ParseInt(body.UserID, 10, 64)
-			if err != nil {
-				log.Error("Failed to parse user ID: %s", err.Error())
+			// Validate user_id is not empty
+			if body.UserID == "" {
+				log.Error("User ID is empty")
 				http.Error(w, "Invalid user ID", http.StatusBadRequest)
 				return
 			}
 
-			err = database.NewStat(database.AdEventClick, body.AdID, user)
+			// Use user_id string directly (it stays as a string for the database)
+			err := database.NewStatWithUserID(database.AdEventClick, body.AdID, body.UserID)
 			if err != nil {
 				log.Error("Failed to create database click statistic: %s", err.Error())
 				http.Error(w, err.Error(), http.StatusInternalServerError)
