@@ -187,7 +187,9 @@ export default function Admin() {
   };
 
   const handleDeleteAd = async (adId: number) => {
-    if (!confirm("Are you sure you want to delete this advertisement?")) return;
+    if (!confirm("Are you sure you want to delete this advertisement?")) {
+      return;
+    }
 
     try {
       const res = await fetch(`/ads/delete?id=${adId}`, {
@@ -197,9 +199,11 @@ export default function Admin() {
 
       if (res.ok) {
         alert("Advertisement deleted successfully");
-        // Refresh the search to update the ad list
-        if (searchInput) {
-          handleSearch();
+        if (searchResult) {
+          setSearchResult({
+            ...searchResult,
+            ads: searchResult.ads.filter((ad) => ad.ad_id !== adId),
+          });
         }
       } else {
         alert("Failed to delete advertisement");
