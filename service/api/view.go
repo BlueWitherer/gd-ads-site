@@ -22,7 +22,7 @@ func init() {
 			var body struct {
 				AdID    int64  `json:"ad_id"`
 				UserID  string `json:"user_id"`
-				Account string `json:"account_id"`
+				Account int    `json:"account_id"`
 				Token   string `json:"authtoken"`
 			}
 

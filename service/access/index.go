@@ -18,7 +18,7 @@ type ArgonValidation struct {
 }
 
 type ArgonUser struct {
-	Account string `json:"account_id"` // Player account ID
+	Account int    `json:"account_id"` // Player account ID
 	Token   string `json:"authtoken"`  // Authorization token
 }
 
@@ -38,20 +38,20 @@ func UpsertArgonUser(user ArgonUser) {
 func ValidateArgonUser(user ArgonUser) (bool, error) {
 	for _, u := range ArgonCache {
 		if u.Token == user.Token {
-			log.Info("Argon cache hit for account of ID %s", user.Account)
+			log.Info("Argon cache hit for account of ID %v", user.Account)
 			return true, nil
 		}
 	}
 
-	u, err := url.Parse("https://argon.globed.dev/")
+	u, err := url.Parse("https://argon.globed.dev/v1/validation/check")
 	if err != nil {
 		return false, err
 	} else {
-		log.Debug("Argon URL parsed for account of ID %s", user.Account)
+		log.Debug("Argon URL parsed for account of ID %v", user.Account)
 	}
 
 	q := u.Query()
-	q.Set("account_id", user.Account)
+	q.Set("account_id", fmt.Sprintf("%v", user.Account))
 	q.Set("authtoken", user.Token)
 	u.RawQuery = q.Encode()
 
@@ -59,17 +59,18 @@ func ValidateArgonUser(user ArgonUser) (bool, error) {
 	if err != nil {
 		return false, err
 	} else {
-		log.Debug("Argon request object constructed for account of ID %s", user.Account)
+		log.Debug("Argon request object constructed for account of ID %v", user.Account)
 	}
 
 	req.Header.Set("User-Agent", "PlayerAdvertisements/1.0")
 
+	log.Info("Sending request to Argon server: %s", u.String())
 	client := &http.Client{Timeout: 15 * time.Second}
 	resp, err := client.Do(req)
 	if err != nil {
 		return false, err
 	} else {
-		log.Debug("Argon status received for account of ID %s", user.Account)
+		log.Debug("Argon status received for account of ID %v", user.Account)
 	}
 	defer resp.Body.Close()
 
@@ -77,20 +78,20 @@ func ValidateArgonUser(user ArgonUser) (bool, error) {
 	if err := json.NewDecoder(resp.Body).Decode(&valid); err != nil {
 		return false, err
 	} else {
-		log.Debug("Argon status of account of ID %s retrieved", user.Account)
+		log.Debug("Argon status of account of ID %v retrieved", user.Account)
 	}
 
 	if valid.Valid {
-		log.Info("Argon status of account of ID %s is valid", user.Account)
+		log.Info("Argon status of account of ID %v is valid", user.Account)
 		UpsertArgonUser(user)
 		return true, nil
 	}
 
-	log.Error("Argon status of account of ID %s is invalid for %s", user.Account, valid.Cause)
+	log.Error("Argon status of account of ID %v is invalid for %s", user.Account, valid.Cause)
 	return false, fmt.Errorf("cause: %s", valid.Cause)
 }
 
-func DeleteArgonUser(accountID string) {
+func DeleteArgonUser(accountID int) {
 	for i, u := range ArgonCache {
 		if u.Account == accountID {
 			ArgonCache = append(ArgonCache[:i], ArgonCache[i+1:]...)
