@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"service/access"
 	"service/database"
 	"service/log"
 )
@@ -19,8 +20,10 @@ func init() {
 
 		if r.Method == http.MethodPost {
 			var body struct {
-				AdID   int64  `json:"ad_id"`
-				UserID string `json:"user_id"`
+				AdID    int64  `json:"ad_id"`
+				UserID  string `json:"user_id"`
+				Account string `json:"account_id"`
+				Token   string `json:"authtoken"`
 			}
 
 			if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
@@ -29,21 +32,33 @@ func init() {
 				return
 			}
 
-			// Validate user_id is not empty
-			if body.UserID == "" {
-				log.Error("User ID is empty")
-				http.Error(w, "Invalid user ID", http.StatusBadRequest)
+			user := access.ArgonUser{Account: body.Account, Token: body.Token}
+			valid, err := access.ValidateArgonUser(user)
+			if err != nil {
+				log.Error("Failed to validate Argon user: %s", err.Error())
+				http.Error(w, "Failed to validate Argon user", http.StatusUnauthorized)
 				return
 			}
 
-			// Convert user_id string directly (it stays as a string for the database)
-			err := database.NewStatWithUserID(database.AdEventView, body.AdID, body.UserID)
-			if err != nil {
-				log.Error("Failed to create database view statistic: %s", err.Error())
-				http.Error(w, err.Error(), http.StatusInternalServerError)
+			if valid {
+				// Validate user_id is not empty
+				if body.UserID == "" {
+					log.Error("User ID is empty")
+					http.Error(w, "Invalid user ID", http.StatusBadRequest)
+					return
+				}
+
+				// Convert user_id string directly (it stays as a string for the database)
+				err := database.NewStatWithUserID(database.AdEventView, body.AdID, body.UserID)
+				if err != nil {
+					log.Error("Failed to create database view statistic: %s", err.Error())
+					http.Error(w, err.Error(), http.StatusInternalServerError)
+				} else {
+					w.WriteHeader(http.StatusOK)
+					w.Write([]byte("View registered!"))
+				}
 			} else {
-				w.WriteHeader(http.StatusOK)
-				w.Write([]byte("View registered!"))
+				http.Error(w, "Argon user invalid", http.StatusUnauthorized)
 			}
 		} else {
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
