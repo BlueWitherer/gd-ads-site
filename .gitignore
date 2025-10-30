@@ -35,3 +35,6 @@ build
 
 # Ignore build
 build/*
+
+# ignore ad_storage
+ad_storage/*

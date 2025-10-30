@@ -1,6 +1,6 @@
 import "./App.css";
 import CreditsButton from "./popup/Credits";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaDiscord } from "react-icons/fa";
 import "./Log.mjs";
@@ -24,6 +24,7 @@ export async function copyText(
 
 export default function App() {
   const navigate = useNavigate();
+  const [randomAds, setRandomAds] = useState<Array<{ url: string; id: number; top: number; scale: number; delay: number }>>([]);
 
   useEffect(() => {
     fetch("/session", { credentials: "include" })
@@ -36,6 +37,51 @@ export default function App() {
       });
   }, [navigate]);
 
+  useEffect(() => {
+    async function fetchRandomAds() {
+      try {
+        const adTypes = ["banner", "square", "skyscraper"];
+        const allImages: string[] = [];
+        for (const adType of adTypes) {
+          try {
+            const res = await fetch(`/cdn/${adType}/`);
+            if (res.ok) {
+              const html = await res.text();
+              const imageRegex = /href="([^"]+\.webp)"/g;
+              const matches = html.matchAll(imageRegex);
+              const images = Array.from(matches)
+                .map((m) => m[1])
+                .filter((img) => img !== "../");
+
+              images.forEach((img) => {
+                allImages.push(`/cdn/${adType}/${img}`);
+              });
+            }
+          } catch (err) {
+            console.error(`Failed to fetch ${adType} ads:`, err);
+          }
+        }
+        if (allImages.length > 0) {
+          const ads = Array.from({ length: 15 }, (_, i) => {
+            const randomImage = allImages[Math.floor(Math.random() * allImages.length)];
+            return {
+              url: randomImage,
+              id: i,
+              top: Math.random() * 80,
+              scale: 1,
+              delay: -(15 - i * 1),
+            };
+          });
+          setRandomAds(ads);
+        }
+      } catch (err) {
+        console.error("Failed to fetch random ads:", err);
+      }
+    }
+
+    fetchRandomAds();
+  }, []);
+
   const handleLogin = () => {
     window.location.href = "/login";
   };
@@ -44,7 +90,44 @@ export default function App() {
     <>
       <div id="background-scroll"></div>
       <div id="centered-container">
-        <div id="login-section">
+        {/* Random Ads Background */}
+        <div
+          className="ads-container"
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            overflow: "hidden",
+            pointerEvents: "none",
+            zIndex: 1,
+          }}
+        >
+          {randomAds.map((ad) => (
+            <img
+              key={ad.id}
+              src={ad.url}
+              alt={`Advertisement ${ad.id}`}
+              className="ad-slide"
+              style={{
+                position: "absolute",
+                top: `${ad.top}%`,
+                transform: `scale(${ad.scale})`,
+                opacity: 1,
+                pointerEvents: "none",
+                height: "auto",
+                width: "auto",
+                maxHeight: "30%",
+                maxWidth: "30%",
+                animationDelay: `${ad.delay}s`,
+              }}
+            />
+          ))}
+        </div>
+
+        {/* Login Section */}
+        <div id="login-section" style={{ position: "relative", zIndex: 2 }}>
           <h1 style={{ marginBottom: "2rem", color: "white" }}>GD Advertisement Manager</h1>
           <h2>
             Welcome to the GD Advertisement Manager! Manage all your Geometry
