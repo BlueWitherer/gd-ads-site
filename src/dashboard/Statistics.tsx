@@ -60,7 +60,9 @@ export default function Statistics() {
   return (
     <>
       <h1 className="text-2xl font-bold mb-6">Statistics</h1>
-
+        <div className="text-sm mb-6 p-3 rounded bg-yellow-900/30 border border-yellow-500">
+          <p>Clicks/Views will not be tracked if the Geode Mod "Player Advertisements" version is not on <b>v1.0.6</b> or later! <b>Please update your mod.</b></p>
+        </div>
       <div style={{ 
         display: "flex", 
         gap: "24px", 
