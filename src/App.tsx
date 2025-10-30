@@ -24,7 +24,7 @@ export async function copyText(
 
 export default function App() {
   const navigate = useNavigate();
-  const [randomAds, setRandomAds] = useState<Array<{ url: string; id: number; top: number; scale: number; delay: number; speed: number }>>([]);
+  const [randomAds, setRandomAds] = useState<Array<{ url: string; id: number; top: number; scale: number; delay: number; speed: number; fadeIn: boolean }>>([]);
   const [allImagesRef, setAllImagesRef] = useState<string[]>([]);
   const [nextIdRef, setNextIdRef] = useState(0);
 
@@ -65,7 +65,6 @@ export default function App() {
         }
         if (allImages.length > 0) {
           setAllImagesRef(allImages);
-          // Initialize with 15 ads
           const initialAds = Array.from({ length: 15 }, (_, i) => {
             const randomImage = allImages[Math.floor(Math.random() * allImages.length)];
             return {
@@ -74,7 +73,8 @@ export default function App() {
               top: Math.random() * 80,
               scale: 1,
               delay: -(15 - i * 1),
-              speed: 10 + Math.random() * 15, // Random speed between 10-25 seconds
+              speed: 10 + Math.random() * 15,
+              fadeIn: false,
             };
           });
           setRandomAds(initialAds);
@@ -91,15 +91,21 @@ export default function App() {
   useEffect(() => {
     if (allImagesRef.length === 0) return;
 
+    const MAX_ADS = 15;
     const interval = setInterval(() => {
       setRandomAds((prevAds) => {
+        if (prevAds.length >= MAX_ADS) {
+          return prevAds;
+        }
+
         const newAd = {
           url: allImagesRef[Math.floor(Math.random() * allImagesRef.length)],
           id: nextIdRef,
           top: Math.random() * 80,
           scale: 1,
-          delay: -(15 - (nextIdRef % 15) * 1),
-          speed: 10 + Math.random() * 15, // Random speed between 10-25 seconds
+          delay: 0,
+          speed: 10 + Math.random() * 15,
+          fadeIn: true,
         };
         setNextIdRef((prev) => prev + 1);
         return [...prevAds, newAd];
@@ -109,6 +115,33 @@ export default function App() {
     return () => clearInterval(interval);
   }, [allImagesRef]);
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setRandomAds((prevAds) =>
+        prevAds.map((ad) => ({ ...ad, fadeIn: false }))
+      );
+    }, 800);
+
+    return () => clearTimeout(timer);
+  }, [randomAds.length]);
+
+  useEffect(() => {
+    const timers: ReturnType<typeof setTimeout>[] = [];
+    
+    randomAds.forEach((ad) => {
+      const totalTime = ad.speed + 0.8 + (ad.speed * 0.05);
+      const removeTimer = setTimeout(() => {
+        setRandomAds((prevAds) => prevAds.filter((a) => a.id !== ad.id));
+      }, totalTime * 1000);
+      
+      timers.push(removeTimer);
+    });
+
+    return () => {
+      timers.forEach((timer) => clearTimeout(timer));
+    };
+  }, [randomAds]);
+
   const handleLogin = () => {
     window.location.href = "/login";
   };
@@ -117,13 +150,12 @@ export default function App() {
     <>
       <div id="background-scroll"></div>
       <div id="centered-container">
-        {/* Random Ads Background */}
         <div
           className="ads-container"
           style={{
             position: "absolute",
             width: "102%",
-            height: "103%",
+            height: "100%",
             overflow: "hidden",
             pointerEvents: "none",
             zIndex: 1,
@@ -134,12 +166,11 @@ export default function App() {
               key={ad.id}
               src={ad.url}
               alt={`Advertisement ${ad.id}`}
-              className="ad-slide"
+              className={`ad-slide ${ad.fadeIn ? 'fade-in' : ''}`}
               style={{
                 position: "absolute",
                 top: `${ad.top}%`,
                 transform: `scale(${ad.scale})`,
-                opacity: 1,
                 pointerEvents: "none",
                 height: "auto",
                 width: "auto",

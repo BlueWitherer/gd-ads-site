@@ -42,7 +42,6 @@
   padding: 2em;
 }
 
-/* Scrolling background styles */
 #background-scroll {
   position: fixed;
   top: 0;
@@ -93,7 +92,6 @@
   text-align: center;
 }
 
-/* Allow interactive children inside the centered container to receive pointer events */
 #centered-container .nine-slice-button,
 #centered-container button,
 #centered-container a,
@@ -101,10 +99,18 @@
   pointer-events: auto;
 }
 
-/* Ad sliding animation styles */
+/* Ad animation styles */
 @keyframes slideRight {
   0% {
     left: -30%;
+  }
+  100% {
+    left: 110%;
+  }
+}
+
+@keyframes fadeInOut {
+  0% {
     opacity: 0;
   }
   5% {
@@ -114,16 +120,28 @@
     opacity: 1;
   }
   100% {
-    left: 110%;
     opacity: 0;
   }
 }
 
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 .ad-slide {
-  animation: slideRight linear infinite;
+  animation: slideRight linear infinite, fadeInOut linear infinite;
   filter: blur(3px);
-  animation-fill-mode: both;
   backdrop-filter: blur(128px);
+}
+
+.ad-slide.fade-in {
+  opacity: 0;
+  animation: slideRight linear infinite 0.8s, fadeIn 0.8s ease-in forwards;
 }
 
 #background-scroll::after {
