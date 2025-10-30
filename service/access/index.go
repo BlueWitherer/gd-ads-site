@@ -55,6 +55,8 @@ func ValidateArgonUser(user ArgonUser) (bool, error) {
 	q.Set("authtoken", user.Token)
 	u.RawQuery = q.Encode()
 
+	log.Debug("Argon validation parameters: account_id=%d (type check: %T), authtoken length=%d", user.Account, user.Account, len(user.Token))
+
 	req, err := http.NewRequest(http.MethodGet, u.String(), nil)
 	if err != nil {
 		return false, err

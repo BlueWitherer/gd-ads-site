@@ -32,6 +32,8 @@ func init() {
 				return
 			}
 
+			log.Debug("Received click request: account_id=%d, authtoken=%s, ad_id=%d, user_id=%s", body.Account, body.Token, body.AdID, body.UserID)
+
 			user := access.ArgonUser{Account: body.Account, Token: body.Token}
 			valid, err := access.ValidateArgonUser(user)
 			if err != nil {
