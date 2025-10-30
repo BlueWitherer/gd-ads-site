@@ -7,6 +7,7 @@ import (
 	"os/signal"
 	"path/filepath"
 	"strings"
+	"sync"
 	"syscall"
 	"time"
 
@@ -17,7 +18,49 @@ import (
 	"service/log"
 	_ "service/proxy"
 	_ "service/stats"
+
+	"golang.org/x/time/rate"
 )
+
+var visitors = make(map[string]*rate.Limiter)
+var mu sync.Mutex
+
+func getClientIP(r *http.Request) string {
+	if cf := r.Header.Get("CF-Connecting-IP"); cf != "" {
+		return cf
+	}
+	if xff := r.Header.Get("X-Forwarded-For"); xff != "" {
+		return strings.Split(xff, ",")[0]
+	}
+	return strings.Split(r.RemoteAddr, ":")[0]
+}
+
+func getVisitor(ip string) *rate.Limiter {
+	mu.Lock()
+	defer mu.Unlock()
+
+	limiter, exists := visitors[ip]
+	if !exists {
+		limiter = rate.NewLimiter(15, 40) // generous: 10 req/sec, burst of 20
+		visitors[ip] = limiter
+	}
+
+	return limiter
+}
+
+func rateLimitMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ip := getClientIP(r)
+		limiter := getVisitor(ip)
+
+		if !limiter.Allow() {
+			http.Error(w, "Rate limit exceeded", http.StatusTooManyRequests)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
+}
 
 func expiryCleanupRoutine(adFolder string) {
 	go func() {
@@ -140,6 +183,7 @@ func main() {
 		expiryCleanupRoutineSql()
 
 		log.Done("Server started successfully on host http://localhost%s", srv.Addr)
+		srv.Handler = rateLimitMiddleware(http.DefaultServeMux)
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Error(err.Error())
 		}
