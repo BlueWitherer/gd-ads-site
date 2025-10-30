@@ -120,7 +120,7 @@
 }
 
 .ad-slide {
-  animation: slideRight 15s linear infinite;
+  animation: slideRight linear infinite;
   filter: blur(3px);
   animation-fill-mode: both;
   backdrop-filter: blur(128px);

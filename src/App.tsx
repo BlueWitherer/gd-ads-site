@@ -24,7 +24,9 @@ export async function copyText(
 
 export default function App() {
   const navigate = useNavigate();
-  const [randomAds, setRandomAds] = useState<Array<{ url: string; id: number; top: number; scale: number; delay: number }>>([]);
+  const [randomAds, setRandomAds] = useState<Array<{ url: string; id: number; top: number; scale: number; delay: number; speed: number }>>([]);
+  const [allImagesRef, setAllImagesRef] = useState<string[]>([]);
+  const [nextIdRef, setNextIdRef] = useState(0);
 
   useEffect(() => {
     fetch("/session", { credentials: "include" })
@@ -38,7 +40,7 @@ export default function App() {
   }, [navigate]);
 
   useEffect(() => {
-    async function fetchRandomAds() {
+    async function fetchAndInitializeAds() {
       try {
         const adTypes = ["banner", "square", "skyscraper"];
         const allImages: string[] = [];
@@ -62,7 +64,9 @@ export default function App() {
           }
         }
         if (allImages.length > 0) {
-          const ads = Array.from({ length: 15 }, (_, i) => {
+          setAllImagesRef(allImages);
+          // Initialize with 15 ads
+          const initialAds = Array.from({ length: 15 }, (_, i) => {
             const randomImage = allImages[Math.floor(Math.random() * allImages.length)];
             return {
               url: randomImage,
@@ -70,17 +74,40 @@ export default function App() {
               top: Math.random() * 80,
               scale: 1,
               delay: -(15 - i * 1),
+              speed: 10 + Math.random() * 15, // Random speed between 10-25 seconds
             };
           });
-          setRandomAds(ads);
+          setRandomAds(initialAds);
+          setNextIdRef(15);
         }
       } catch (err) {
         console.error("Failed to fetch random ads:", err);
       }
     }
 
-    fetchRandomAds();
+    fetchAndInitializeAds();
   }, []);
+
+  useEffect(() => {
+    if (allImagesRef.length === 0) return;
+
+    const interval = setInterval(() => {
+      setRandomAds((prevAds) => {
+        const newAd = {
+          url: allImagesRef[Math.floor(Math.random() * allImagesRef.length)],
+          id: nextIdRef,
+          top: Math.random() * 80,
+          scale: 1,
+          delay: -(15 - (nextIdRef % 15) * 1),
+          speed: 10 + Math.random() * 15, // Random speed between 10-25 seconds
+        };
+        setNextIdRef((prev) => prev + 1);
+        return [...prevAds, newAd];
+      });
+    }, 2000);
+
+    return () => clearInterval(interval);
+  }, [allImagesRef]);
 
   const handleLogin = () => {
     window.location.href = "/login";
@@ -95,10 +122,8 @@ export default function App() {
           className="ads-container"
           style={{
             position: "absolute",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
+            width: "102%",
+            height: "103%",
             overflow: "hidden",
             pointerEvents: "none",
             zIndex: 1,
@@ -121,6 +146,7 @@ export default function App() {
                 maxHeight: "30%",
                 maxWidth: "30%",
                 animationDelay: `${ad.delay}s`,
+                animationDuration: `${ad.speed}s`,
               }}
             />
           ))}
@@ -155,6 +181,7 @@ export default function App() {
           >
             <span>Install Geode Mod</span>
           </button>
+          <div style={{ marginTop: "2rem", color: "white" }}>Made with 💝 by ArcticWoof & Cheeseworks</div>
         </div>
       </div>
       <CreditsButton />
