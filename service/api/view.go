@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"service/access"
@@ -19,11 +20,15 @@ func init() {
 		header.Set("Access-Control-Allow-Headers", "Content-Type")
 
 		if r.Method == http.MethodPost {
+			query := r.URL.Query()
+			accountIDStr := query.Get("account_id")
+			authToken := query.Get("authtoken")
+
+			log.Info("Received view request - account_id=%s, authtoken length=%d", accountIDStr, len(authToken))
+
 			var body struct {
-				AdID    int64  `json:"ad_id"`
-				UserID  string `json:"user_id"`
-				Account int    `json:"account_id"`
-				Token   string `json:"authtoken"`
+				AdID   int64  `json:"ad_id"`
+				UserID string `json:"user_id"`
 			}
 
 			if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
@@ -32,13 +37,25 @@ func init() {
 				return
 			}
 
-			log.Info("Raw request body decoded - Account: %v (type: %T), Token: %s, AdID: %v, UserID: %s", body.Account, body.Account, body.Token, body.AdID, body.UserID)
+			log.Debug("Body decoded - AdID: %v, UserID: %s", body.AdID, body.UserID)
 
-			if body.Account == 0 {
-				log.Error("CRITICAL: Account ID is 0! This means JSON decoding failed for 'account_id' field")
+			// Validate required parameters
+			if accountIDStr == "" || authToken == "" {
+				log.Error("Missing query parameters - account_id: %s, authtoken: %s", accountIDStr, authToken)
+				http.Error(w, "Missing account_id or authtoken", http.StatusBadRequest)
+				return
 			}
 
-			user := access.ArgonUser{Account: body.Account, Token: body.Token}
+			// Convert account_id to int
+			var accountID int
+			_, err := fmt.Sscanf(accountIDStr, "%d", &accountID)
+			if err != nil {
+				log.Error("Failed to parse account_id: %s, error: %s", accountIDStr, err.Error())
+				http.Error(w, "Invalid account_id format", http.StatusBadRequest)
+				return
+			}
+
+			user := access.ArgonUser{Account: accountID, Token: authToken}
 			valid, err := access.ValidateArgonUser(user)
 			if err != nil {
 				log.Error("Failed to validate Argon user: %s", err.Error())
