@@ -3,6 +3,7 @@ package access
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"strings"
@@ -56,6 +57,7 @@ func ValidateArgonUser(user ArgonUser) (bool, error) {
 	u.RawQuery = q.Encode()
 
 	log.Debug("Argon validation parameters: account_id=%d (type check: %T), authtoken length=%d", user.Account, user.Account, len(user.Token))
+	log.Debug("Full Argon URL being requested: %s", u.String())
 
 	req, err := http.NewRequest(http.MethodGet, u.String(), nil)
 	if err != nil {
@@ -72,12 +74,18 @@ func ValidateArgonUser(user ArgonUser) (bool, error) {
 	if err != nil {
 		return false, err
 	} else {
-		log.Debug("Argon status received for account of ID %v", user.Account)
+		log.Debug("Argon status code received: %d, for account of ID %v", resp.StatusCode, user.Account)
 	}
 	defer resp.Body.Close()
 
+	bodyBytes, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return false, err
+	}
+	log.Debug("Argon response body: %s", string(bodyBytes))
+
 	var valid ArgonValidation
-	if err := json.NewDecoder(resp.Body).Decode(&valid); err != nil {
+	if err := json.Unmarshal(bodyBytes, &valid); err != nil {
 		return false, err
 	} else {
 		log.Debug("Argon status of account of ID %v retrieved", user.Account)

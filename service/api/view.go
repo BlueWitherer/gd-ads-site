@@ -32,7 +32,11 @@ func init() {
 				return
 			}
 
-			log.Debug("Received view request: account_id=%d, authtoken=%s, ad_id=%d, user_id=%s", body.Account, body.Token, body.AdID, body.UserID)
+			log.Info("Raw request body decoded - Account: %v (type: %T), Token: %s, AdID: %v, UserID: %s", body.Account, body.Account, body.Token, body.AdID, body.UserID)
+
+			if body.Account == 0 {
+				log.Error("CRITICAL: Account ID is 0! This means JSON decoding failed for 'account_id' field")
+			}
 
 			user := access.ArgonUser{Account: body.Account, Token: body.Token}
 			valid, err := access.ValidateArgonUser(user)
