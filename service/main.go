@@ -107,7 +107,7 @@ func expiryCleanupRoutineSql() {
 func main() {
 	log.Print("Starting server...")
 
-	srv := &http.Server{Addr: ":8081"}
+	srv := &http.Server{Addr: ":3000"}
 
 	// SPA fallback
 	log.Debug("Setting up SPA fallback for client-side routing")
