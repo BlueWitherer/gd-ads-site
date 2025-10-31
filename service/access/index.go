@@ -19,21 +19,32 @@ type ArgonValidation struct {
 }
 
 type ArgonUser struct {
-	Account int    `json:"account_id"` // Player account ID
-	Token   string `json:"authtoken"`  // Authorization token
+	Account int       `json:"account_id"` // Player account ID
+	Token   string    `json:"authtoken"`  // Authorization token
+	ValidAt time.Time // When this validation occurred
 }
 
 var ArgonCache []ArgonUser
 
+const MAX_ARGON_CACHE = 5000
+
 func UpsertArgonUser(user ArgonUser) {
+	user.ValidAt = time.Now()
+
 	for i, u := range ArgonCache {
 		if u.Account == user.Account {
-			ArgonCache[i].Token = user.Token
+			ArgonCache[i] = user
+			log.Debug("Argon cache updated for account %d", user.Account)
 			return
 		}
 	}
+	if len(ArgonCache) >= MAX_ARGON_CACHE {
+		log.Info("Argon cache at capacity (%d), removing oldest entry", MAX_ARGON_CACHE)
+		ArgonCache = ArgonCache[1:] // Remove first (oldest) entry
+	}
 
 	ArgonCache = append(ArgonCache, user)
+	log.Debug("Argon cache entry added for account %d, total entries: %d", user.Account, len(ArgonCache))
 }
 
 func ValidateArgonUser(user ArgonUser) (bool, error) {
@@ -68,7 +79,7 @@ func ValidateArgonUser(user ArgonUser) (bool, error) {
 
 	req.Header.Set("User-Agent", "PlayerAdvertisements/1.0")
 
-	log.Info("Sending request to Argon server: %s", u.String())
+	log.Debug("Sending request to Argon server: %s", u.String())
 	client := &http.Client{Timeout: 15 * time.Second}
 	resp, err := client.Do(req)
 	if err != nil {

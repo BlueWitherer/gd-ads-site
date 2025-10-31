@@ -24,6 +24,9 @@ import (
 
 var visitors = make(map[string]*rate.Limiter)
 var mu sync.Mutex
+var visitorCleanupTicker *time.Ticker
+
+const VISITOR_EXPIRY = 24 * time.Hour
 
 func getClientIP(r *http.Request) string {
 	if cf := r.Header.Get("CF-Connecting-IP"); cf != "" {
@@ -46,6 +49,41 @@ func getVisitor(ip string) *rate.Limiter {
 	}
 
 	return limiter
+}
+
+// Starts a background goroutine to clean up rate limiters periodically
+func startVisitorCleanup() {
+	visitorCleanupTicker = time.NewTicker(6 * time.Hour)
+	go func() {
+		for range visitorCleanupTicker.C {
+			cleanOldVisitors()
+		}
+	}()
+	log.Info("Visitor rate limiter cleanup goroutine started - will clean every 6 hours")
+}
+
+// Stops the visitor cleanup goroutine
+func stopVisitorCleanup() {
+	if visitorCleanupTicker != nil {
+		visitorCleanupTicker.Stop()
+		log.Info("Visitor rate limiter cleanup goroutine stopped")
+	}
+}
+
+// Cleans up the visitors map to prevent unbounded growth
+func cleanOldVisitors() {
+	mu.Lock()
+	defer mu.Unlock()
+
+	// Limiting visitors map to reasonable size - keep it under 10k IPs
+	// This prevents DDoS-like memory exhaustion from many unique IPs
+	if len(visitors) > 10000 {
+		// Clear all visitors and start fresh
+		visitors = make(map[string]*rate.Limiter)
+		log.Warn("Visitor rate limiter map cleared - exceeded 10k unique IPs")
+	} else {
+		log.Debug("Visitor rate limiter map size: %d entries", len(visitors))
+	}
 }
 
 func rateLimitMiddleware(next http.Handler) http.Handler {
@@ -106,6 +144,8 @@ func expiryCleanupRoutineSql() {
 
 func main() {
 	log.Print("Starting server...")
+	access.StartSessionCleanup()
+	startVisitorCleanup()
 
 	srv := &http.Server{Addr: ":3000"}
 
@@ -195,6 +235,10 @@ func main() {
 	<-quit
 
 	log.Warn("Shutting down server...")
+
+	// Stop all cleanup goroutines
+	access.StopSessionCleanup()
+	stopVisitorCleanup()
 
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
