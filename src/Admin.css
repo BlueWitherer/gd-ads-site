@@ -111,7 +111,7 @@
     pointer-events: auto !important;
   }
 
-  #centered-container > h1 {
+  #centered-container>h1 {
     margin-top: 1rem !important;
     margin-bottom: 1rem !important;
     width: 100% !important;
@@ -204,29 +204,29 @@
   }
 
   /* Show only the selected tab's content */
-  .results-container[data-active-tab="info"] > .user-info-section {
+  .results-container[data-active-tab="info"]>.user-info-section {
     display: flex !important;
     flex-direction: column !important;
     width: 100% !important;
     flex: 1 !important;
   }
 
-  .results-container[data-active-tab="info"] > .advertisements-section {
+  .results-container[data-active-tab="info"]>.advertisements-section {
     display: none !important;
   }
 
-  .results-container[data-active-tab="ads"] > .user-info-section {
+  .results-container[data-active-tab="ads"]>.user-info-section {
     display: none !important;
   }
 
-  .results-container[data-active-tab="ads"] > .advertisements-section {
+  .results-container[data-active-tab="ads"]>.advertisements-section {
     display: flex !important;
     flex-direction: column !important;
     width: 100% !important;
     flex: 1 !important;
   }
 
-  #centered-container > button:first-of-type {
+  #centered-container>button:first-of-type {
     transform: none !important;
     padding: 0 8px !important;
     margin: 0 !important;

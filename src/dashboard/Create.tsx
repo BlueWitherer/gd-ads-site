@@ -297,7 +297,7 @@ export default function Create() {
           advertisement!
         </p>
         <p>
-          <WarningIcon /> AI Generated Advertisements are hard rejection. 
+          <WarningIcon /> AI Generated Advertisements are hard rejection.
         </p>
         <p>
           <WarningIcon /> Violating this may result in a ban. <b>No appeals!</b>

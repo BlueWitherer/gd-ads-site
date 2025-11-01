@@ -125,7 +125,7 @@
     box-sizing: border-box;
   }
 
-  .user-container > div:first-child {
+  .user-container>div:first-child {
     width: auto;
     display: flex !important;
     justify-content: flex-start !important;
@@ -137,14 +137,14 @@
     min-width: 0;
   }
 
-  .user-container > div:first-child svg,
-  .user-container > div:first-child img {
+  .user-container>div:first-child svg,
+  .user-container>div:first-child img {
     width: 40px !important;
     height: 40px !important;
     flex-shrink: 0;
   }
 
-  .user-container > div:first-child span {
+  .user-container>div:first-child span {
     white-space: nowrap;
     overflow: visible !important;
     text-overflow: clip !important;
@@ -152,7 +152,7 @@
     display: block !important;
   }
 
-  .user-container > div:first-child > div {
+  .user-container>div:first-child>div {
     display: flex !important;
     align-items: center !important;
     gap: 4px !important;
@@ -201,7 +201,7 @@
     overflow: hidden !important;
   }
 
-  .ad-card > div:first-child {
+  .ad-card>div:first-child {
     display: flex !important;
     flex-direction: column !important;
     align-items: center !important;

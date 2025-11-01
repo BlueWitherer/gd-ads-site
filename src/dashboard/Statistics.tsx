@@ -60,12 +60,12 @@ export default function Statistics() {
   return (
     <>
       <h1 className="text-2xl font-bold mb-6">Statistics</h1>
-        <div className="text-sm mb-6 p-3 rounded bg-yellow-900/30 border border-yellow-500">
-          <p>Please update the Geode Mod to v1.0.6 or higher for clicks and views to be tracked properly.</p>
-        </div>
-      <div style={{ 
-        display: "flex", 
-        gap: "24px", 
+      <div className="text-sm mb-6 p-3 rounded bg-yellow-900/30 border border-yellow-500">
+        <p>Please update the Geode Mod to v1.0.6 or higher for clicks and views to be tracked properly.</p>
+      </div>
+      <div style={{
+        display: "flex",
+        gap: "24px",
         alignItems: "flex-start",
         flexWrap: "wrap",
         justifyContent: "center",
@@ -136,9 +136,9 @@ export default function Statistics() {
       </div>
 
       <h1 className="text-2xl font-bold mb-6">Global Statistics</h1>
-      <div style={{ 
-        display: "flex", 
-        gap: "24px", 
+      <div style={{
+        display: "flex",
+        gap: "24px",
         flexWrap: "wrap",
         justifyContent: "center"
       }}>

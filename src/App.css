@@ -104,6 +104,7 @@
   0% {
     left: -30%;
   }
+
   100% {
     left: 110%;
   }
@@ -113,12 +114,15 @@
   0% {
     opacity: 0;
   }
+
   5% {
     opacity: 1;
   }
+
   95% {
     opacity: 1;
   }
+
   100% {
     opacity: 0;
   }
@@ -128,6 +132,7 @@
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -437,7 +442,7 @@
     min-width: 0;
   }
 
-  #centered-container > h1 {
+  #centered-container>h1 {
     text-align: center !important;
     width: 100% !important;
     margin-top: 0 !important;
@@ -460,7 +465,7 @@
     text-align: center !important;
   }
 
-  #centered-container > .login-button {
+  #centered-container>.login-button {
     align-self: center !important;
     font-size: 24px !important;
     padding: 8px 24px !important;

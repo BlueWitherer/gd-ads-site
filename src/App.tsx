@@ -127,13 +127,13 @@ export default function App() {
 
   useEffect(() => {
     const timers: ReturnType<typeof setTimeout>[] = [];
-    
+
     randomAds.forEach((ad) => {
       const totalTime = ad.speed + 0.8 + (ad.speed * 0.05);
       const removeTimer = setTimeout(() => {
         setRandomAds((prevAds) => prevAds.filter((a) => a.id !== ad.id));
       }, totalTime * 1000);
-      
+
       timers.push(removeTimer);
     });
 
