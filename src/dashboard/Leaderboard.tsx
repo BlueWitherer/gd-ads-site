@@ -63,7 +63,7 @@ export default function Leaderboard() {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1rem", overflow: "auto", maxHeight: "100%" }}>
-      <h1 className="text-2xl font-bold mb-8">Leaderboard</h1>
+      <h1 className="text-2xl font-bold mb-6">Leaderboard</h1>
 
       {/* Tabs */}
       <div className="flex gap-4 mb-6 justify-center">

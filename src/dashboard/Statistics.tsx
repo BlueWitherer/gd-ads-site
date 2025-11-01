@@ -61,7 +61,7 @@ export default function Statistics() {
     <>
       <h1 className="text-2xl font-bold mb-6">Statistics</h1>
         <div className="text-sm mb-6 p-3 rounded bg-yellow-900/30 border border-yellow-500">
-          <p>Clicks/Views will not be tracked if the Geode Mod "Player Advertisements" version is not on <b>v1.0.6</b> or later! <b>Please update your mod.</b></p>
+          <p>Please update the Geode Mod to v1.0.6 or higher for clicks and views to be tracked properly.</p>
         </div>
       <div style={{ 
         display: "flex", 
@@ -79,8 +79,6 @@ export default function Statistics() {
                   data: [
                     { id: 0, value: views, label: "My Views", color: "#2196f3" },
                     { id: 1, value: clicks, label: "My Clicks", color: "#4caf50" },
-                    { id: 2, value: Math.max(0, globalViews - views), label: "Other Views", color: "#ff9800" },
-                    { id: 3, value: Math.max(0, globalClicks - clicks), label: "Other Clicks", color: "#e91e63" },
                   ],
                   highlightScope: { fade: "global", highlight: "item" },
                   faded: {
