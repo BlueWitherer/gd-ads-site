@@ -39,7 +39,7 @@ func UpsertArgonUser(user ArgonUser) {
 		}
 	}
 	if len(ArgonCache) >= MAX_ARGON_CACHE {
-		log.Info("Argon cache at capacity (%d), removing oldest entry", MAX_ARGON_CACHE)
+		log.Debug("Argon cache at capacity (%d), removing oldest entry", MAX_ARGON_CACHE)
 		ArgonCache = ArgonCache[1:] // Remove first (oldest) entry
 	}
 
@@ -50,7 +50,7 @@ func UpsertArgonUser(user ArgonUser) {
 func ValidateArgonUser(user ArgonUser) (bool, error) {
 	for _, u := range ArgonCache {
 		if u.Token == user.Token {
-			log.Info("Argon cache hit for account of ID %v", user.Account)
+			log.Debug("Argon cache hit for account of ID %v", user.Account)
 			return true, nil
 		}
 	}

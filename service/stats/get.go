@@ -93,7 +93,7 @@ func init() {
 			AdCount:     adCount,
 		}
 
-		log.Info("Retrieved global stats - Views: %d, Clicks: %d, Ads: %d", totalViews, totalClicks, adCount)
+		log.Debug("Retrieved global stats - Views: %d, Clicks: %d, Ads: %d", totalViews, totalClicks, adCount)
 		w.WriteHeader(http.StatusOK)
 		if err := json.NewEncoder(w).Encode(globalStats); err != nil {
 			log.Error("Failed to encode global stats response: %s", err.Error())

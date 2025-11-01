@@ -62,7 +62,7 @@ func init() {
 				}
 			}
 
-			log.Info("Returning %d pending advertisements", len(adList))
+			log.Debug("Returning %d pending advertisements", len(adList))
 
 			w.WriteHeader(http.StatusOK)
 			if err := json.NewEncoder(w).Encode(adList); err != nil {

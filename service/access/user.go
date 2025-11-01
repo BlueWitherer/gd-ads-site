@@ -41,7 +41,7 @@ const SESSION_EXPIRY = 24 * time.Hour
 func GetSessionFromId(id string) (*DiscordUser, error) {
 	sessionData, ok := sessions[id]
 	if !ok {
-		return nil, fmt.Errorf("user not found")
+		return nil, fmt.Errorf("session not found")
 	}
 
 	if time.Since(sessionData.CreatedAt) > SESSION_EXPIRY {

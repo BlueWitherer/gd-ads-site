@@ -24,8 +24,6 @@ func init() {
 			accountIDStr := query.Get("account_id")
 			authToken := query.Get("authtoken")
 
-			log.Info("Received view request - account_id=%s, authtoken length=%d", accountIDStr, len(authToken))
-
 			var body struct {
 				AdID   int64  `json:"ad_id"`
 				UserID string `json:"user_id"`
@@ -78,6 +76,7 @@ func init() {
 					http.Error(w, err.Error(), http.StatusInternalServerError)
 				} else {
 					w.WriteHeader(http.StatusOK)
+					log.Info("view passed: %s", accountIDStr)
 					w.Write([]byte("View registered!"))
 				}
 			} else {
