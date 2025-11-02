@@ -78,7 +78,7 @@ func cleanOldVisitors() {
 
 	// Limiting visitors map to reasonable size - keep it under 10k IPs
 	// This prevents DDoS-like memory exhaustion from many unique IPs
-	if len(visitors) > 10000 {
+	if len(visitors) > 5000 {
 		// Clear all visitors and start fresh
 		visitors = make(map[string]*rate.Limiter)
 		log.Warn("Visitor rate limiter map cleared - exceeded 10k unique IPs")
