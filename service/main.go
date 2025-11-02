@@ -78,7 +78,12 @@ func expiryCleanupRoutine() {
 func main() {
 	log.Print("Starting server...")
 
-	srv := &http.Server{Addr: fmt.Sprintf(":%s", os.Getenv("WEB_PORT"))}
+	port := os.Getenv("WEB_PORT")
+	if port == "" {
+		log.Error("WEB_PORT is not set")
+	}
+
+	srv := &http.Server{Addr: fmt.Sprintf(":%s", port)}
 
 	// SPA fallback
 	log.Debug("Setting up SPA fallback for client-side routing")
@@ -145,6 +150,12 @@ func main() {
 	})
 
 	go func() {
+		defer func() {
+			if r := recover(); r != nil {
+				log.Error("Recovered from panic: %v", r)
+			}
+		}()
+
 		log.Debug("Starting expiry routines...")
 		expiryCleanupRoutine()
 
