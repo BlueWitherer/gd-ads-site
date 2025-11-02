@@ -8,6 +8,7 @@ import (
 
 	"service/database"
 	"service/log"
+	"service/utils"
 )
 
 func init() {
@@ -22,7 +23,7 @@ func init() {
 			header.Set("Content-Type", "application/json")
 			header.Set("Cache-Control", "no-store")
 
-			var adFolder database.AdType
+			var adFolder utils.AdType
 
 			query := r.URL.Query()
 			adTypeStr := query.Get("type")
@@ -34,7 +35,7 @@ func init() {
 				return
 			}
 
-			adFolder, err = database.AdTypeFromInt(typeNum)
+			adFolder, err = utils.AdTypeFromInt(typeNum)
 			if err != nil {
 				log.Error("Failed to get ad folder: %s", err.Error())
 				http.Error(w, err.Error(), http.StatusBadRequest)

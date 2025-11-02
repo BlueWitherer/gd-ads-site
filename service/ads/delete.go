@@ -1,10 +1,7 @@
 package ads
 
 import (
-	"fmt"
 	"net/http"
-	"os"
-	"path/filepath"
 	"strconv"
 
 	"service/access"
@@ -59,7 +56,7 @@ func init() {
 				return
 			}
 
-			if user.IsAdmin || ownerid == user.ID {
+			if user.IsAdmin || user.IsStaff || ownerid == user.ID {
 				permission = true
 			}
 
@@ -71,23 +68,7 @@ func init() {
 					return
 				}
 
-				adFolder, err := database.AdTypeFromInt(ad.Type)
-				if err != nil {
-					log.Error("Failed to get advertisement folder: %s", err.Error())
-					http.Error(w, "Failed to get advertisement folder", http.StatusInternalServerError)
-					return
-				}
-
-				target := filepath.Join("..", "ad_storage", string(adFolder), fmt.Sprintf("%s-%d.webp", ad.UserID, ad.AdID))
-
-				err = os.Remove(target)
-				if err != nil {
-					log.Error("Failed to delete advertisement image: %s", err.Error())
-					http.Error(w, "Failed to delete advertisement image", http.StatusInternalServerError)
-					return
-				}
-
-				log.Info("Deleted advertisement of ID %s", idStr)
+				log.Info("Deleted advertisement of ID %d", ad.AdID)
 
 				w.WriteHeader(http.StatusOK)
 				w.Write([]byte(`{"status":"success","message":"Advertisement deleted successfully"}`))

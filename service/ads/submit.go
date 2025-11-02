@@ -11,6 +11,7 @@ import (
 	"service/access"
 	"service/database"
 	"service/log"
+	"service/utils"
 )
 
 func init() {
@@ -79,7 +80,7 @@ func init() {
 			}
 
 			// Map type to number
-			typeNum, err := database.IntFromAdType(database.AdType(adFolder))
+			typeNum, err := utils.IntFromAdType(utils.AdType(adFolder))
 			if err != nil {
 				log.Error("Invalid ad type: %s", err.Error())
 				http.Error(w, "Invalid ad type", http.StatusBadRequest)
@@ -115,10 +116,7 @@ func init() {
 			// Close the file before renaming
 			dst.Close()
 
-			// Create DB row for the advertisement first (to get the ad ID)
-			// Use a placeholder URL initially
-			placeholderURL := fmt.Sprintf("%s/cdn/%s/placeholder?v=%d", access.GetDomain(r), adFolder, time.Now().Unix())
-			adID, err := database.CreateAdvertisement(uid, levelID, typeNum, placeholderURL)
+			adID, err := database.CreateAdvertisement(uid, levelID, typeNum)
 			if err != nil {
 				e := os.Remove(dstPath)
 				if e != nil {
@@ -135,11 +133,12 @@ func init() {
 			newDstPath := filepath.Join(targetDir, newFileName)
 			err = os.Rename(dstPath, newDstPath)
 			if err != nil {
-				_, delErr := database.DeleteAdvertisement(adID)
-				if delErr != nil {
-					log.Error("Failed to delete advertisement row: %s", delErr.Error())
+				_, e := database.DeleteAdvertisement(adID)
+				if e != nil {
+					log.Error("Failed to delete advertisement row: %s", e.Error())
 				}
-				e := os.Remove(dstPath)
+
+				e = os.Remove(dstPath)
 				if e != nil {
 					log.Error("Failed to delete advertisement image: %s", e.Error())
 				}
@@ -153,11 +152,12 @@ func init() {
 			imageURL := fmt.Sprintf("%s/cdn/%s/%s?v=%d", access.GetDomain(r), adFolder, newFileName, time.Now().Unix())
 			err = database.UpdateAdvertisementImageURL(adID, imageURL)
 			if err != nil {
-				_, delErr := database.DeleteAdvertisement(adID)
-				if delErr != nil {
-					log.Error("Failed to delete advertisement row: %s", delErr.Error())
+				_, e := database.DeleteAdvertisement(adID)
+				if e != nil {
+					log.Error("Failed to delete advertisement row: %s", e.Error())
 				}
-				e := os.Remove(newDstPath)
+
+				e = os.Remove(newDstPath)
 				if e != nil {
 					log.Error("Failed to delete advertisement image: %s", e.Error())
 				}
@@ -167,7 +167,7 @@ func init() {
 				return
 			}
 
-			if user.IsAdmin {
+			if user.IsAdmin || user.IsStaff || user.Verified {
 				newAd, err := database.ApproveAd(adID)
 				if err != nil {
 					log.Error("Failed to auto-approve new ad by admin: %s", err.Error())

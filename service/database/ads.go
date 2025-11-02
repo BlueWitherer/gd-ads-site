@@ -1,0 +1,353 @@
+package database
+
+import (
+	"database/sql"
+	"fmt"
+	"io/fs"
+	"os"
+	"path/filepath"
+	"time"
+
+	"service/log"
+	"service/utils"
+)
+
+func ApproveAd(id int64) (utils.Ad, error) {
+	stmt, err := utils.PrepareStmt(dat, "UPDATE advertisements SET pending = FALSE WHERE ad_id = ?")
+	if err != nil {
+		return utils.Ad{}, err
+	}
+
+	_, err = stmt.Exec(id)
+	if err != nil {
+		return utils.Ad{}, err
+	}
+
+	return GetAdvertisement(id)
+}
+
+// inserts or updates an ad row
+func CreateAdvertisement(userId string, levelID string, adType int) (int64, error) {
+	if userId == "" || levelID == "" {
+		return 0, fmt.Errorf("missing ad fields")
+	}
+
+	// Create new ad - allow multiple ads per user per type
+	stmt, err := utils.PrepareStmt(dat, "INSERT INTO advertisements (user_id, level_id, type, pending) VALUES (?, ?, ?, ?)")
+	if err != nil {
+		return 0, err
+	}
+
+	res, err := stmt.Exec(userId, levelID, adType, true)
+	if err != nil {
+		return 0, err
+	}
+
+	return res.LastInsertId()
+}
+
+func GetAdUnixExpiry(ad utils.Ad) int64 {
+	expiry := ad.Created.Unix() + int64((7 * 24 * time.Hour).Seconds())
+
+	return expiry
+}
+
+// fetches all ads for a given user
+func ListAllAdvertisements() ([]utils.Ad, error) {
+	stmt, err := utils.PrepareStmt(dat, "SELECT ad_id, user_id, level_id, type, image_url, created_at, pending FROM advertisements ORDER BY ad_id DESC")
+	if err != nil {
+		return nil, err
+	}
+
+	rows, err := stmt.Query()
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	var out []utils.Ad
+	for rows.Next() {
+		var r utils.Ad
+		if err := rows.Scan(&r.AdID, &r.UserID, &r.LevelID, &r.Type, &r.ImageURL, &r.Created, &r.Pending); err != nil {
+			return nil, err
+		}
+
+		r.Expiry = GetAdUnixExpiry(r)
+
+		out = append(out, r)
+	}
+
+	return out, rows.Err()
+}
+
+func ListPendingAdvertisements() ([]utils.Ad, error) {
+	// Use != 0 to match tinyint(1) values in MySQL/MariaDB
+	stmt, err := utils.PrepareStmt(dat, "SELECT ad_id, user_id, level_id, type, image_url, created_at, pending FROM advertisements WHERE pending = TRUE ORDER BY ad_id DESC")
+	if err != nil {
+		return nil, err
+	}
+
+	rows, err := stmt.Query()
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	out := make([]utils.Ad, 0)
+	for rows.Next() {
+		var r utils.Ad
+		if err := rows.Scan(&r.AdID, &r.UserID, &r.LevelID, &r.Type, &r.ImageURL, &r.Created, &r.Pending); err != nil {
+			return nil, err
+		}
+
+		r.Expiry = GetAdUnixExpiry(r)
+
+		out = append(out, r)
+	}
+
+	return out, rows.Err()
+}
+
+func FilterAdsByPending(rows []utils.Ad, showPending bool) ([]utils.Ad, error) {
+	out := make([]utils.Ad, 0)
+	for _, r := range rows {
+		if r.Pending == showPending {
+			out = append(out, r)
+		}
+	}
+
+	return out, nil
+}
+
+func FilterAdsFromBannedUsers(rows []utils.Ad) ([]utils.Ad, error) {
+	var out []utils.Ad
+	for _, r := range rows {
+		user, err := GetUser(r.UserID)
+		if err != nil {
+			return nil, err
+		}
+
+		if !user.Banned {
+			out = append(out, r)
+		}
+	}
+
+	return out, nil
+}
+
+func FilterAdsByUser(rows []utils.Ad, userId string) ([]utils.Ad, error) {
+	var out []utils.Ad
+	for _, r := range rows {
+		if r.UserID == userId {
+			out = append(out, r)
+		}
+	}
+
+	return out, nil
+}
+
+func FilterAdsByType(rows []utils.Ad, adType utils.AdType) ([]utils.Ad, error) {
+	typeNum, err := utils.IntFromAdType(adType)
+	if err != nil {
+		return nil, err
+	}
+
+	var out []utils.Ad
+	for _, r := range rows {
+		if r.Type == typeNum {
+			out = append(out, r)
+		}
+	}
+
+	return out, nil
+}
+
+func GetAdvertisement(adId int64) (utils.Ad, error) {
+	stmt, err := utils.PrepareStmt(dat, "SELECT ad_id, user_id, level_id, type, image_url, created_at, pending FROM advertisements WHERE ad_id = ?")
+	if err != nil {
+		return utils.Ad{}, err
+	}
+
+	// QueryRow is more convenient when expecting a single row
+	row := stmt.QueryRow(adId)
+	if row != nil {
+		var r utils.Ad
+		if err := row.Scan(&r.AdID, &r.UserID, &r.LevelID, &r.Type, &r.ImageURL, &r.Created, &r.Pending); err != nil {
+			if err == sql.ErrNoRows {
+				return utils.Ad{}, nil
+			}
+
+			return utils.Ad{}, err
+		}
+
+		r.Expiry = GetAdUnixExpiry(r)
+
+		return r, nil
+	} else {
+		return utils.Ad{}, fmt.Errorf("ad not found")
+	}
+}
+
+// returns the owning user_id for an ad
+func GetAdvertisementOwnerId(adId int64) (string, error) {
+	var uid string
+
+	stmt, err := utils.PrepareStmt(dat, "SELECT user_id FROM advertisements WHERE ad_id = ?")
+	if err != nil {
+		return "", err
+	}
+
+	err = stmt.QueryRow(adId).Scan(&uid)
+	if err != nil {
+		return "", err
+	}
+
+	return uid, nil
+}
+
+func UpdateAdvertisementImageURL(adId int64, imageURL string) error {
+	if imageURL == "" {
+		return fmt.Errorf("empty image url")
+	}
+
+	stmt, err := utils.PrepareStmt(dat, "UPDATE advertisements SET image_url = ? WHERE ad_id = ?")
+	if err != nil {
+		return err
+	}
+
+	_, err = stmt.Exec(imageURL, adId)
+	return err
+}
+
+func DeleteAdvertisement(adId int64) (utils.Ad, error) {
+	ad, err := GetAdvertisement(adId)
+	if err != nil {
+		return ad, err
+	}
+
+	stmt, err := utils.PrepareStmt(dat, "DELETE FROM advertisements WHERE ad_id = ?")
+	if err != nil {
+		return ad, err
+	}
+
+	_, err = stmt.Exec(adId)
+	if err != nil {
+		return ad, err
+	}
+
+	adType, err := utils.AdTypeFromInt(ad.Type)
+	if err != nil {
+		return ad, err
+	}
+
+	adDir := filepath.Join("..", "ad_storage", string(adType), fmt.Sprintf("%s-%d.webp", ad.UserID, ad.AdID))
+	err = os.Remove(adDir)
+	if err != nil {
+		return ad, err
+	}
+
+	return ad, nil
+}
+
+func DeleteAllExpiredAds() error {
+	stmt, err := utils.PrepareStmt(dat, "DELETE FROM advertisements WHERE created_at < NOW() - INTERVAL 7 DAY")
+	if err != nil {
+		return err
+	}
+
+	_, err = stmt.Exec()
+	if err != nil {
+		return err
+	}
+
+	adsDir := filepath.Join("..", "ad_storage")
+	err = filepath.WalkDir(adsDir, func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			log.Error("Error accessing path %s: %s", path, err.Error())
+			return nil // continue walking
+		}
+
+		if d.IsDir() {
+			return nil // skip directories
+		}
+
+		info, err := d.Info()
+		if err != nil {
+			log.Error("Failed to get file info for %s: %s", path, err.Error())
+			return nil
+		}
+
+		if time.Since(info.ModTime()) > 7*24*time.Hour {
+			log.Info("Removing expired ad %s (%v B)", path, info.Size())
+			if err := os.Remove(path); err != nil {
+				log.Error("Failed to remove file %s: %s", path, err.Error())
+			}
+		} else {
+			log.Debug("utils.Ad %s is still valid", path)
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		log.Error("Failed to walk ad directory: %s", err.Error())
+		return err
+	}
+
+	return nil
+}
+
+// CountActiveAdvertisementsByUser returns the count of active (non-expired) advertisements for a user
+func CountActiveAdvertisementsByUser(userId string) (int, error) {
+	if userId == "" {
+		return 0, fmt.Errorf("empty user id")
+	}
+
+	stmt, err := utils.PrepareStmt(dat, "SELECT COUNT(*) FROM advertisements WHERE user_id = ? AND created_at > NOW() - INTERVAL 7 DAY")
+	if err != nil {
+		return 0, err
+	}
+
+	var count int
+	err = stmt.QueryRow(userId).Scan(&count)
+	if err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}
+
+// returns total_views and total_clicks for a given ad id
+func GetAdStats(adId int64) (int, int, error) {
+	if adId == 0 {
+		return 0, 0, fmt.Errorf("invalid ad id")
+	}
+
+	// Count views for this ad
+	viewStmt, err := utils.PrepareStmt(dat, "SELECT COUNT(*) FROM views WHERE ad_id = ?")
+	if err != nil {
+		return 0, 0, err
+	}
+
+	var views int
+	err = viewStmt.QueryRow(adId).Scan(&views)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	// Count clicks for this ad
+	clickStmt, err := utils.PrepareStmt(dat, "SELECT COUNT(*) FROM clicks WHERE ad_id = ?")
+	if err != nil {
+		return 0, 0, err
+	}
+
+	var clicks int
+	err = clickStmt.QueryRow(adId).Scan(&clicks)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	return views, clicks, nil
+}

@@ -7,6 +7,7 @@ import (
 
 	"service/database"
 	"service/log"
+	"service/utils"
 )
 
 func init() {
@@ -51,7 +52,7 @@ func init() {
 				return
 			}
 
-			users, err := database.UserLeaderboard(database.StatByViews, page, max)
+			users, err := database.UserLeaderboard(utils.StatByViews, page, max)
 			if err != nil {
 				log.Error("Failed to get views leaderboard: %s", err.Error())
 				http.Error(w, "Failed to get views leaderboard", http.StatusInternalServerError)
@@ -97,7 +98,7 @@ func init() {
 				return
 			}
 
-			users, err := database.UserLeaderboard(database.StatByClicks, page, max)
+			users, err := database.UserLeaderboard(utils.StatByClicks, page, max)
 			if err != nil {
 				log.Error("Failed to get clicks leaderboard: %s", err.Error())
 				http.Error(w, "Failed to get clicks leaderboard", http.StatusInternalServerError)

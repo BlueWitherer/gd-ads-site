@@ -67,7 +67,7 @@ func init() {
 					return
 				}
 
-				err := database.NewStatWithUserID(database.AdEventClick, body.AdID, body.UserID)
+				err := database.NewStatWithUserID(utils.AdEventClick, body.AdID, body.UserID)
 				if err != nil {
 					log.Error("Failed to create database click statistic: %s", err.Error())
 					http.Error(w, err.Error(), http.StatusInternalServerError)

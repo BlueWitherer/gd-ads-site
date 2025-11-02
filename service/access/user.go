@@ -14,6 +14,7 @@ import (
 	"service/log"
 
 	"github.com/google/uuid"
+	"github.com/patrickmn/go-cache"
 )
 
 type DiscordUser struct {
@@ -28,28 +29,15 @@ type Token struct {
 	TokenType   string `json:"token_type"`
 }
 
-type SessionData struct {
-	User      DiscordUser
-	CreatedAt time.Time
-}
-
-var sessions = map[string]SessionData{} // session ID -> SessionData{}
-var sessionCleanupTicker *time.Ticker
-
-const SESSION_EXPIRY = 24 * time.Hour
+var sessionCache = cache.New(2*time.Hour, 10*time.Minute)
 
 func GetSessionFromId(id string) (*DiscordUser, error) {
-	sessionData, ok := sessions[id]
-	if !ok {
-		return nil, fmt.Errorf("session not found")
+	var user DiscordUser
+	if val, found := sessionCache.Get(id); found {
+		user = val.(DiscordUser)
 	}
 
-	if time.Since(sessionData.CreatedAt) > SESSION_EXPIRY {
-		delete(sessions, id)
-		return nil, fmt.Errorf("session expired")
-	}
-
-	return &sessionData.User, nil
+	return &user, nil
 }
 
 func GetSessionUserID(r *http.Request) (string, error) {
@@ -86,39 +74,6 @@ func GetSession(r *http.Request) (*DiscordUser, error) {
 
 func generateSessionID() string {
 	return uuid.New().String() // uuid v4
-}
-
-func StartSessionCleanup() {
-	sessionCleanupTicker = time.NewTicker(1 * time.Hour)
-	go func() {
-		for range sessionCleanupTicker.C {
-			cleanExpiredSessions()
-		}
-	}()
-	log.Info("Session cleanup goroutine started - will clean expired sessions every 1 hour")
-}
-
-func StopSessionCleanup() {
-	if sessionCleanupTicker != nil {
-		sessionCleanupTicker.Stop()
-		log.Info("Session cleanup goroutine stopped")
-	}
-}
-
-func cleanExpiredSessions() {
-	now := time.Now()
-	removedCount := 0
-
-	for sessionID, sessionData := range sessions {
-		if now.Sub(sessionData.CreatedAt) > SESSION_EXPIRY {
-			delete(sessions, sessionID)
-			removedCount++
-		}
-	}
-
-	if removedCount > 0 {
-		log.Info("Session cleanup: removed %d expired sessions", removedCount)
-	}
 }
 
 func init() {
@@ -268,10 +223,7 @@ func init() {
 			}
 
 			sessionID := generateSessionID()
-			sessions[sessionID] = SessionData{
-				User:      user,
-				CreatedAt: time.Now(),
-			}
+			sessionCache.Set(sessionID, user, cache.DefaultExpiration)
 
 			secure := false
 			if r.TLS != nil || os.Getenv("ENV") == "production" {
@@ -347,7 +299,7 @@ func init() {
 	http.HandleFunc("/logout", func(w http.ResponseWriter, r *http.Request) {
 		cookie, err := r.Cookie("session_id")
 		if err == nil {
-			delete(sessions, cookie.Value)
+			sessionCache.Delete(cookie.Value)
 			log.Info("User %s logged out", cookie.Value)
 		}
 

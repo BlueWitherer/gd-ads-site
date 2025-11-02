@@ -4,7 +4,8 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
-	"time"
+	"path/filepath"
+	"strings"
 
 	"service/log"
 
@@ -13,19 +14,6 @@ import (
 
 // Concurrent database connection
 var data *sql.DB
-
-const ARGON_EXPIRY = 6 * time.Hour
-
-type ArgonUser struct {
-	Account int       `json:"account_id"` // Player account ID
-	Token   string    `json:"authtoken"`  // Authorization token
-	ValidAt time.Time // When this validation occurred
-}
-
-type ArgonValidation struct {
-	Valid bool   `json:"valid"` // If user is valid
-	Cause string `json:"cause"` // Cause for invalidation if any
-}
 
 // safely prepare the sql statement
 func PrepareStmt(db *sql.DB, sql string) (*sql.Stmt, error) {
@@ -41,10 +29,40 @@ func Db() *sql.DB {
 	return data
 }
 
+// initializeSchema reads and executes the schema.sql file to create tables if they don't exist
+func initializeSchema() error {
+	schemaPath := filepath.Join("..", "database", "schema.sql")
+	log.Debug("Reading database schema from %s", schemaPath)
+
+	schemaSQL, err := os.ReadFile(schemaPath)
+	if err != nil {
+		return fmt.Errorf("failed to read schema file: %w", err)
+	}
+
+	// Split the SQL file into individual statements
+	statements := strings.Split(string(schemaSQL), ";")
+
+	for _, stmt := range statements {
+		stmt = strings.TrimSpace(stmt)
+		if stmt == "" || strings.HasPrefix(stmt, "--") {
+			continue
+		}
+
+		log.Debug("Executing schema statement: %.50s...", stmt)
+		_, err := data.Exec(stmt)
+		if err != nil {
+			return fmt.Errorf("failed to execute schema statement: %w", err)
+		}
+	}
+
+	log.Done("Database schema initialized successfully")
+	return nil
+}
+
 func init() {
 	var err error
 
-	uri := fmt.Sprintf("%s:%s@tcp(%s)/%s",
+	uri := fmt.Sprintf("%s:%s@tcp(%s)/%s?parseTime=true",
 		os.Getenv("DB_USER"),
 		os.Getenv("DB_PASS"),
 		os.Getenv("DB_HOST"),
@@ -69,9 +87,9 @@ func init() {
 
 	log.Print("MariaDB connection established.")
 
-	// // Initialize database schema (create tables if they don't exist)
-	// if err := initializeSchema(); err != nil {
-	// 	log.Error("Failed to initialize database schema: %s", err.Error())
-	// 	return
-	// }
+	// Initialize database schema (create tables if they don't exist)
+	if err := initializeSchema(); err != nil {
+		log.Error("Failed to initialize database schema: %s", err.Error())
+		return
+	}
 }

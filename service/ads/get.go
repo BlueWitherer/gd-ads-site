@@ -28,8 +28,8 @@ func init() {
 			}
 
 			// Check if status=pending query parameter is present
-			status := r.URL.Query().Get("status")
-			if status == "pending" {
+			pending := r.URL.Query().Get("pending")
+			if pending == "1" {
 				// Get user to check if admin
 				user, err := database.GetUser(uid)
 				if err != nil {
@@ -63,6 +63,7 @@ func init() {
 					http.Error(w, "Failed to encode response", http.StatusInternalServerError)
 					return
 				}
+
 				return
 			}
 

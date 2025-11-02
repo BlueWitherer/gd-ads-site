@@ -71,7 +71,7 @@ func init() {
 				}
 
 				// Convert user_id string directly (it stays as a string for the database)
-				err := database.NewStatWithUserID(database.AdEventView, body.AdID, body.UserID)
+				err := database.NewStatWithUserID(utils.AdEventView, body.AdID, body.UserID)
 				if err != nil {
 					log.Error("Failed to create database view statistic: %s", err.Error())
 					http.Error(w, err.Error(), http.StatusInternalServerError)
