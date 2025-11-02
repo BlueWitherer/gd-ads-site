@@ -3,18 +3,13 @@ package database
 import (
 	"database/sql"
 	"fmt"
-	"os"
-	"path/filepath"
-	"strings"
 	"time"
 
 	"service/log"
-
-	_ "github.com/go-sql-driver/mysql"
+	"service/utils"
 )
 
-// Concurrent database connection
-var data *sql.DB
+var dat *sql.DB
 
 type AdType string // Dimensions of the ad image
 
@@ -65,16 +60,6 @@ type Ad struct {
 	Pending    bool   `json:"pending"`               // Under review
 }
 
-// private method to safely prepare the sql statement
-func prepareStmt(db *sql.DB, sql string) (*sql.Stmt, error) {
-	if db != nil {
-		log.Debug("Preparing connection for statement %s", sql)
-		return db.Prepare(sql)
-	} else {
-		return nil, fmt.Errorf("database connection non-existent")
-	}
-}
-
 func AdTypeFromInt(t int) (AdType, error) {
 	switch t {
 	case 1:
@@ -108,7 +93,7 @@ func NewStat(event AdEvent, adId int64, user int64) error {
 	log.Debug("Registering new %s on ad %d for user %d", event, adId, user)
 	sql := fmt.Sprintf("INSERT INTO %s (ad_id, user_id, timestamp) VALUES (?, ?, ?)", event)
 
-	stmt, err := prepareStmt(data, sql)
+	stmt, err := utils.PrepareStmt(dat, sql)
 	if err != nil {
 		return err
 	}
@@ -154,7 +139,7 @@ func NewStatWithUserID(event AdEvent, adId int64, userID string) error {
 
 	sql := fmt.Sprintf("INSERT INTO %s (ad_id, user_id, timestamp) VALUES (?, ?, ?)", event)
 
-	stmt, err := prepareStmt(data, sql)
+	stmt, err := utils.PrepareStmt(dat, sql)
 	if err != nil {
 		return err
 	}
@@ -195,7 +180,7 @@ func GetUser(id string) (User, error) {
 		return User{}, fmt.Errorf("empty user id")
 	}
 
-	stmt, err := prepareStmt(data, "SELECT username, id, total_views, total_clicks, is_admin, banned, created_at, updated_at FROM users WHERE id = ?")
+	stmt, err := utils.PrepareStmt(dat, "SELECT username, id, total_views, total_clicks, is_admin, banned, created_at, updated_at FROM users WHERE id = ?")
 	if err != nil {
 		return User{}, err
 	}
@@ -210,7 +195,7 @@ func GetUser(id string) (User, error) {
 }
 
 func GetAllUsers() ([]User, error) {
-	stmt, err := prepareStmt(data, "SELECT id, username, total_clicks, total_views, is_admin, banned, created_at, updated_at FROM users ORDER BY id DESC")
+	stmt, err := utils.PrepareStmt(dat, "SELECT id, username, total_clicks, total_views, is_admin, banned, created_at, updated_at FROM users ORDER BY id DESC")
 	if err != nil {
 		return nil, err
 	}
@@ -241,7 +226,7 @@ func UpsertUser(id string, username string) error {
 		return fmt.Errorf("empty user id")
 	}
 
-	stmt, err := prepareStmt(data, "INSERT INTO users (username, id) VALUES (?, ?) ON DUPLICATE KEY UPDATE username = VALUES (username), updated_at = CURRENT_TIMESTAMP")
+	stmt, err := utils.PrepareStmt(dat, "INSERT INTO users (username, id) VALUES (?, ?) ON DUPLICATE KEY UPDATE username = VALUES (username), updated_at = CURRENT_TIMESTAMP")
 	if err != nil {
 		return err
 	}
@@ -256,7 +241,7 @@ func IncrementUserStats(userId string, viewsDelta int, clicksDelta int) error {
 		return fmt.Errorf("empty user id")
 	}
 
-	stmt, err := prepareStmt(data, "UPDATE users SET total_views = total_views + ?, total_clicks = total_clicks + ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?")
+	stmt, err := utils.PrepareStmt(dat, "UPDATE users SET total_views = total_views + ?, total_clicks = total_clicks + ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?")
 	if err != nil {
 		return err
 	}
@@ -272,7 +257,7 @@ func CreateAdvertisement(userId string, levelID string, adType int, imageURL str
 	}
 
 	// Create new ad - allow multiple ads per user per type
-	stmt, err := prepareStmt(data, "INSERT INTO advertisements (user_id, level_id, type, image_url, pending) VALUES (?, ?, ?, ?, ?)")
+	stmt, err := utils.PrepareStmt(dat, "INSERT INTO advertisements (user_id, level_id, type, image_url, pending) VALUES (?, ?, ?, ?, ?)")
 	if err != nil {
 		return 0, err
 	}
@@ -286,7 +271,7 @@ func CreateAdvertisement(userId string, levelID string, adType int, imageURL str
 }
 
 func ApproveAd(id int64) (Ad, error) {
-	stmt, err := prepareStmt(data, "UPDATE advertisements SET pending = FALSE WHERE ad_id = ?")
+	stmt, err := utils.PrepareStmt(dat, "UPDATE advertisements SET pending = FALSE WHERE ad_id = ?")
 	if err != nil {
 		return Ad{}, err
 	}
@@ -301,7 +286,7 @@ func ApproveAd(id int64) (Ad, error) {
 
 func BanUser(id string) (User, error) {
 	// delete all advertisements associated with the user
-	deleteAdsStmt, err := prepareStmt(data, "DELETE FROM advertisements WHERE user_id = ?")
+	deleteAdsStmt, err := utils.PrepareStmt(dat, "DELETE FROM advertisements WHERE user_id = ?")
 	if err != nil {
 		return User{}, err
 	}
@@ -312,7 +297,7 @@ func BanUser(id string) (User, error) {
 	}
 
 	// ban the user
-	stmt, err := prepareStmt(data, "UPDATE users SET banned = TRUE WHERE id = ?")
+	stmt, err := utils.PrepareStmt(dat, "UPDATE users SET banned = TRUE WHERE id = ?")
 	if err != nil {
 		return User{}, err
 	}
@@ -327,7 +312,7 @@ func BanUser(id string) (User, error) {
 
 func UnbanUser(id string) (User, error) {
 	// unban the user
-	stmt, err := prepareStmt(data, "UPDATE users SET banned = FALSE WHERE id = ?")
+	stmt, err := utils.PrepareStmt(dat, "UPDATE users SET banned = FALSE WHERE id = ?")
 	if err != nil {
 		return User{}, err
 	}
@@ -353,7 +338,7 @@ func GetAdUnixExpiry(ad Ad) (int64, error) {
 
 // fetches all ads for a given user
 func ListAllAdvertisements() ([]Ad, error) {
-	stmt, err := prepareStmt(data, "SELECT ad_id, user_id, level_id, type, image_url, created_at, pending FROM advertisements ORDER BY ad_id DESC")
+	stmt, err := utils.PrepareStmt(dat, "SELECT ad_id, user_id, level_id, type, image_url, created_at, pending FROM advertisements ORDER BY ad_id DESC")
 	if err != nil {
 		return nil, err
 	}
@@ -385,7 +370,7 @@ func ListAllAdvertisements() ([]Ad, error) {
 
 func ListPendingAdvertisements() ([]Ad, error) {
 	// Use != 0 to match tinyint(1) values in MySQL/MariaDB
-	stmt, err := prepareStmt(data, "SELECT ad_id, user_id, level_id, type, image_url, created_at, pending FROM advertisements WHERE pending = TRUE ORDER BY ad_id DESC")
+	stmt, err := utils.PrepareStmt(dat, "SELECT ad_id, user_id, level_id, type, image_url, created_at, pending FROM advertisements WHERE pending = TRUE ORDER BY ad_id DESC")
 	if err != nil {
 		return nil, err
 	}
@@ -470,7 +455,7 @@ func FilterAdsByType(rows []Ad, adType AdType) ([]Ad, error) {
 }
 
 func UserLeaderboard(stat StatBy, page uint64, maxPerPage uint64) ([]User, error) {
-	stmt, err := prepareStmt(data, fmt.Sprintf("SELECT * FROM users WHERE banned = FALSE ORDER BY %s DESC", stat))
+	stmt, err := utils.PrepareStmt(dat, fmt.Sprintf("SELECT * FROM users WHERE banned = FALSE ORDER BY %s DESC", stat))
 	if err != nil {
 		return nil, err
 	}
@@ -507,7 +492,7 @@ func UserLeaderboard(stat StatBy, page uint64, maxPerPage uint64) ([]User, error
 
 // get an advertisement by id
 func GetAdvertisement(adId int64) (Ad, error) {
-	stmt, err := prepareStmt(data, "SELECT ad_id, user_id, level_id, type, image_url, created_at, pending FROM advertisements WHERE ad_id = ?")
+	stmt, err := utils.PrepareStmt(dat, "SELECT ad_id, user_id, level_id, type, image_url, created_at, pending FROM advertisements WHERE ad_id = ?")
 	if err != nil {
 		return Ad{}, err
 	}
@@ -539,7 +524,7 @@ func GetAdvertisement(adId int64) (Ad, error) {
 func GetAdvertisementOwnerId(adId int64) (string, error) {
 	var uid string
 
-	stmt, err := prepareStmt(data, "SELECT user_id FROM advertisements WHERE ad_id = ?")
+	stmt, err := utils.PrepareStmt(dat, "SELECT user_id FROM advertisements WHERE ad_id = ?")
 	if err != nil {
 		return "", err
 	}
@@ -557,7 +542,7 @@ func UpdateAdvertisementImageURL(adId int64, imageURL string) error {
 		return fmt.Errorf("empty image url")
 	}
 
-	stmt, err := prepareStmt(data, "UPDATE advertisements SET image_url = ? WHERE ad_id = ?")
+	stmt, err := utils.PrepareStmt(dat, "UPDATE advertisements SET image_url = ? WHERE ad_id = ?")
 	if err != nil {
 		return err
 	}
@@ -572,7 +557,7 @@ func DeleteAdvertisement(adId int64) (Ad, error) {
 		return ad, err
 	}
 
-	stmt, err := prepareStmt(data, "DELETE FROM advertisements WHERE ad_id = ?")
+	stmt, err := utils.PrepareStmt(dat, "DELETE FROM advertisements WHERE ad_id = ?")
 	if err != nil {
 		return ad, err
 	}
@@ -586,7 +571,7 @@ func DeleteAdvertisement(adId int64) (Ad, error) {
 }
 
 func DeleteAllExpiredAds() error {
-	stmt, err := prepareStmt(data, "DELETE FROM advertisements WHERE created_at < NOW() - INTERVAL 7 DAY")
+	stmt, err := utils.PrepareStmt(dat, "DELETE FROM advertisements WHERE created_at < NOW() - INTERVAL 7 DAY")
 	if err != nil {
 		return err
 	}
@@ -605,7 +590,7 @@ func CountActiveAdvertisementsByUser(userId string) (int, error) {
 		return 0, fmt.Errorf("empty user id")
 	}
 
-	stmt, err := prepareStmt(data, "SELECT COUNT(*) FROM advertisements WHERE user_id = ? AND created_at > NOW() - INTERVAL 7 DAY")
+	stmt, err := utils.PrepareStmt(dat, "SELECT COUNT(*) FROM advertisements WHERE user_id = ? AND created_at > NOW() - INTERVAL 7 DAY")
 	if err != nil {
 		return 0, err
 	}
@@ -625,7 +610,7 @@ func GetUserTotals(userId string) (int, int, error) {
 		return 0, 0, fmt.Errorf("empty user id")
 	}
 
-	stmt, err := prepareStmt(data, "SELECT total_views, total_clicks FROM users WHERE id = ?")
+	stmt, err := utils.PrepareStmt(dat, "SELECT total_views, total_clicks FROM users WHERE id = ?")
 	if err != nil {
 		return 0, 0, err
 	}
@@ -647,7 +632,7 @@ func GetAdStats(adId int64) (int, int, error) {
 	}
 
 	// Count views for this ad
-	viewStmt, err := prepareStmt(data, "SELECT COUNT(*) FROM views WHERE ad_id = ?")
+	viewStmt, err := utils.PrepareStmt(dat, "SELECT COUNT(*) FROM views WHERE ad_id = ?")
 	if err != nil {
 		return 0, 0, err
 	}
@@ -659,7 +644,7 @@ func GetAdStats(adId int64) (int, int, error) {
 	}
 
 	// Count clicks for this ad
-	clickStmt, err := prepareStmt(data, "SELECT COUNT(*) FROM clicks WHERE ad_id = ?")
+	clickStmt, err := utils.PrepareStmt(dat, "SELECT COUNT(*) FROM clicks WHERE ad_id = ?")
 	if err != nil {
 		return 0, 0, err
 	}
@@ -674,57 +659,57 @@ func GetAdStats(adId int64) (int, int, error) {
 }
 
 // initializeSchema reads and executes the schema.sql file to create tables if they don't exist
-func initializeSchema() error {
-	schemaPath := filepath.Join("service", "database", "schema.sql")
-	log.Debug("Reading database schema from %s", schemaPath)
+// func initializeSchema() error {
+// 	schemaPath := filepath.Join("service", "database", "schema.sql")
+// 	log.Debug("Reading database schema from %s", schemaPath)
 
-	schemaSQL, err := os.ReadFile(schemaPath)
-	if err != nil {
-		return fmt.Errorf("failed to read schema file: %w", err)
-	}
+// 	schemaSQL, err := os.ReadFile(schemaPath)
+// 	if err != nil {
+// 		return fmt.Errorf("failed to read schema file: %w", err)
+// 	}
 
-	// Split the SQL file into individual statements
-	statements := strings.Split(string(schemaSQL), ";")
+// 	// Split the SQL file into individual statements
+// 	statements := strings.Split(string(schemaSQL), ";")
 
-	for _, stmt := range statements {
-		stmt = strings.TrimSpace(stmt)
-		if stmt == "" || strings.HasPrefix(stmt, "--") {
-			continue
-		}
+// 	for _, stmt := range statements {
+// 		stmt = strings.TrimSpace(stmt)
+// 		if stmt == "" || strings.HasPrefix(stmt, "--") {
+// 			continue
+// 		}
 
-		log.Debug("Executing schema statement: %.50s...", stmt)
-		_, err := data.Exec(stmt)
-		if err != nil {
-			return fmt.Errorf("failed to execute schema statement: %w", err)
-		}
-	}
+// 		log.Debug("Executing schema statement: %.50s...", stmt)
+// 		_, err := dat.Exec(stmt)
+// 		if err != nil {
+// 			return fmt.Errorf("failed to execute schema statement: %w", err)
+// 		}
+// 	}
 
-	log.Done("Database schema initialized successfully")
-	return nil
-}
+// 	log.Done("Database schema initialized successfully")
+// 	return nil
+// }
 
 // GetGlobalStats returns the total views, total clicks, and count of active advertisements
 func GetGlobalStats() (int, int, int, error) {
-	if data == nil {
+	if dat == nil {
 		return 0, 0, 0, fmt.Errorf("database connection non-existent")
 	}
 
 	var totalViews, totalClicks, adCount int
 
-	err := data.QueryRow("SELECT COUNT(*) FROM views").Scan(&totalViews)
+	err := dat.QueryRow("SELECT COUNT(*) FROM views").Scan(&totalViews)
 	if err != nil {
 		log.Error("Failed to fetch view stats: %s", err.Error())
 		return 0, 0, 0, err
 	}
 
-	err = data.QueryRow("SELECT COUNT(*) FROM clicks").Scan(&totalClicks)
+	err = dat.QueryRow("SELECT COUNT(*) FROM clicks").Scan(&totalClicks)
 	if err != nil {
 		log.Error("Failed to fetch click stats: %s", err.Error())
 		return 0, 0, 0, err
 	}
 
 	// Get count of active (non-pending) advertisements
-	err = data.QueryRow("SELECT COUNT(*) FROM advertisements WHERE pending = FALSE").Scan(&adCount)
+	err = dat.QueryRow("SELECT COUNT(*) FROM advertisements WHERE pending = FALSE").Scan(&adCount)
 	if err != nil {
 		log.Error("Failed to fetch ad count: %s", err.Error())
 		return 0, 0, 0, err
@@ -734,36 +719,5 @@ func GetGlobalStats() (int, int, int, error) {
 }
 
 func init() {
-	var err error
-
-	uri := fmt.Sprintf("%s:%s@tcp(%s)/%s",
-		os.Getenv("DB_USER"),
-		os.Getenv("DB_PASS"),
-		os.Getenv("DB_HOST"),
-		os.Getenv("DB_NAME"),
-	)
-
-	log.Info("Connecting to database with URI: %s", uri)
-	data, err = sql.Open("mysql", uri)
-	if err != nil {
-		log.Error("Failed to establish MariaDB connection: %s", err.Error())
-		return
-	}
-
-	err = data.Ping()
-	if err != nil {
-		log.Error("Failed to ping database: %s", err.Error())
-		return
-	} else if data == nil {
-		log.Error("Database connection is nil")
-		return
-	}
-
-	log.Print("MariaDB connection established.")
-
-	// Initialize database schema (create tables if they don't exist)
-	if err := initializeSchema(); err != nil {
-		log.Error("Failed to initialize database schema: %s", err.Error())
-		return
-	}
+	dat = utils.Db()
 }

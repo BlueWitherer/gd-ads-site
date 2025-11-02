@@ -8,6 +8,7 @@ import (
 	"service/access"
 	"service/database"
 	"service/log"
+	"service/utils"
 )
 
 func init() {
@@ -51,7 +52,7 @@ func init() {
 				return
 			}
 
-			user := access.ArgonUser{Account: accountID, Token: authToken}
+			user := utils.ArgonUser{Account: accountID, Token: authToken}
 			valid, err := access.ValidateArgonUser(user)
 			if err != nil {
 				log.Error("Failed to validate Argon user: %s", err.Error())

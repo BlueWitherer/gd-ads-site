@@ -11,33 +11,24 @@ import (
 
 	"service/database"
 	"service/log"
+	"service/utils"
 )
 
-type ArgonValidation struct {
-	Valid bool   `json:"valid"` // If user is valid
-	Cause string `json:"cause"` // Cause for invalidation if any
-}
+var ArgonCache []utils.ArgonUser
 
-type ArgonUser struct {
-	Account int       `json:"account_id"` // Player account ID
-	Token   string    `json:"authtoken"`  // Authorization token
-	ValidAt time.Time // When this validation occurred
-}
+const MAX_ARGON_CACHE int = 2500
 
-var ArgonCache []ArgonUser
-
-const MAX_ARGON_CACHE = 5000
-
-func UpsertArgonUser(user ArgonUser) {
+func UpsertArgonUser(user utils.ArgonUser) error {
 	user.ValidAt = time.Now()
 
 	for i, u := range ArgonCache {
-		if u.Account == user.Account {
+		if u.Account == user.Account && u.Token == user.Token {
 			ArgonCache[i] = user
 			log.Debug("Argon cache updated for account %d", user.Account)
-			return
+			return nil
 		}
 	}
+
 	if len(ArgonCache) >= MAX_ARGON_CACHE {
 		log.Debug("Argon cache at capacity (%d), removing oldest entry", MAX_ARGON_CACHE)
 		ArgonCache = ArgonCache[1:] // Remove first (oldest) entry
@@ -45,12 +36,36 @@ func UpsertArgonUser(user ArgonUser) {
 
 	ArgonCache = append(ArgonCache, user)
 	log.Debug("Argon cache entry added for account %d, total entries: %d", user.Account, len(ArgonCache))
+
+	stmt, err := utils.PrepareStmt(utils.Db(), "INSERT INTO argon (account_id, authtoken) VALUES (?, ?) ON DUPLICATE KEY UPDATE authtoken = VALUES (authtoken), valid_at = CURRENT_TIMESTAMP")
+	if err != nil {
+		return err
+	}
+
+	_, err = stmt.Exec(user.Account, user.Token)
+	return err
 }
 
-func ValidateArgonUser(user ArgonUser) (bool, error) {
+func ValidateArgonUser(user utils.ArgonUser) (bool, error) {
 	for _, u := range ArgonCache {
 		if u.Token == user.Token {
 			log.Debug("Argon cache hit for account of ID %v", user.Account)
+			return true, nil
+		}
+	}
+
+	stmt, err := utils.PrepareStmt(utils.Db(), "SELECT account_id, authtoken, valid_at FROM argon WHERE account_id = ?")
+	if err != nil {
+		return false, err
+	} else {
+		log.Debug("Prepared argon database statement for account of ID %v", user.Account)
+	}
+
+	var dbUser utils.ArgonUser
+	if row := stmt.QueryRow(user.Account); row != nil {
+		if err := row.Scan(&dbUser.Account, &dbUser.Token, &dbUser.ValidAt); err != nil {
+			log.Error(err.Error())
+		} else if dbUser.Account == user.Account && dbUser.Token == user.Token && time.Since(dbUser.ValidAt) < utils.ARGON_EXPIRY {
 			return true, nil
 		}
 	}
@@ -95,7 +110,7 @@ func ValidateArgonUser(user ArgonUser) (bool, error) {
 	}
 	log.Debug("Argon response body: %s", string(bodyBytes))
 
-	var valid ArgonValidation
+	var valid utils.ArgonValidation
 	if err := json.Unmarshal(bodyBytes, &valid); err != nil {
 		return false, err
 	} else {

@@ -45,3 +45,18 @@ CREATE TABLE IF NOT EXISTS clicks (
     KEY idx_ad_id (ad_id),
     KEY idx_user_id (user_id)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;
+
+CREATE TABLE IF NOT EXISTS sessions (
+    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    user_id VARCHAR(32) NOT NULL,
+    session_id varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+    PRIMARY KEY (id),
+    KEY idx_user_id (user_id)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;
+
+CREATE TABLE IF NOT EXISTS argon (
+    account_id int(11) NOT NULL,
+    authtoken varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+    valid_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (account_id)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;

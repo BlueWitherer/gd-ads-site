@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
@@ -26,7 +27,7 @@ var visitors = make(map[string]*rate.Limiter)
 var mu sync.Mutex
 var visitorCleanupTicker *time.Ticker
 
-const VISITOR_EXPIRY = 24 * time.Hour
+const VISITOR_EXPIRY = 6 * time.Hour
 
 func getClientIP(r *http.Request) string {
 	if cf := r.Header.Get("CF-Connecting-IP"); cf != "" {
@@ -147,7 +148,7 @@ func main() {
 	access.StartSessionCleanup()
 	startVisitorCleanup()
 
-	srv := &http.Server{Addr: ":3000"}
+	srv := &http.Server{Addr: fmt.Sprintf(":%s", os.Getenv("WEB_PORT"))}
 
 	// SPA fallback
 	log.Debug("Setting up SPA fallback for client-side routing")
