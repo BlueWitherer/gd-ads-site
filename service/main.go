@@ -173,6 +173,8 @@ func main() {
 
 	log.Warn("Shutting down server...")
 
+	access.StopSessionCleanup()
+
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
 	if err := srv.Shutdown(ctx); err != nil {

@@ -12,16 +12,16 @@ import (
 	"service/utils"
 )
 
-func ApproveAd(id int64) (utils.Ad, error) {
+func ApproveAd(id int64) (*utils.Ad, error) {
 	stmt, err := utils.PrepareStmt(dat, "UPDATE advertisements SET pending = FALSE WHERE ad_id = ?")
 	if err != nil {
-		return utils.Ad{}, err
+		return nil, err
 	}
 	defer stmt.Close()
 
 	_, err = stmt.Exec(id)
 	if err != nil {
-		return utils.Ad{}, err
+		return nil, err
 	}
 
 	return GetAdvertisement(id)
@@ -48,14 +48,14 @@ func CreateAdvertisement(userId string, levelID string, adType int) (int64, erro
 	return res.LastInsertId()
 }
 
-func GetAdUnixExpiry(ad utils.Ad) int64 {
+func GetAdUnixExpiry(ad *utils.Ad) int64 {
 	expiry := ad.Created.Unix() + int64((7 * 24 * time.Hour).Seconds())
 
 	return expiry
 }
 
 // fetches all ads for a given user
-func ListAllAdvertisements() ([]utils.Ad, error) {
+func ListAllAdvertisements() ([]*utils.Ad, error) {
 	stmt, err := utils.PrepareStmt(dat, "SELECT * FROM advertisements ORDER BY ad_id DESC")
 	if err != nil {
 		return nil, err
@@ -68,9 +68,9 @@ func ListAllAdvertisements() ([]utils.Ad, error) {
 	}
 	defer rows.Close()
 
-	var out []utils.Ad
+	var out []*utils.Ad
 	for rows.Next() {
-		var r utils.Ad
+		r := new(utils.Ad)
 		if err := rows.Scan(
 			&r.AdID,
 			&r.UserID,
@@ -87,15 +87,13 @@ func ListAllAdvertisements() ([]utils.Ad, error) {
 		}
 
 		r.Expiry = GetAdUnixExpiry(r)
-
 		out = append(out, r)
 	}
 
 	return out, rows.Err()
 }
 
-func ListPendingAdvertisements() ([]utils.Ad, error) {
-	// Use != 0 to match tinyint(1) values in MySQL/MariaDB
+func ListPendingAdvertisements() ([]*utils.Ad, error) {
 	stmt, err := utils.PrepareStmt(dat, "SELECT * FROM advertisements WHERE pending = TRUE ORDER BY ad_id DESC")
 	if err != nil {
 		return nil, err
@@ -108,9 +106,9 @@ func ListPendingAdvertisements() ([]utils.Ad, error) {
 	}
 	defer rows.Close()
 
-	out := make([]utils.Ad, 0)
+	out := make([]*utils.Ad, 0)
 	for rows.Next() {
-		var r utils.Ad
+		r := new(utils.Ad)
 		if err := rows.Scan(
 			&r.AdID,
 			&r.UserID,
@@ -134,8 +132,8 @@ func ListPendingAdvertisements() ([]utils.Ad, error) {
 	return out, rows.Err()
 }
 
-func FilterAdsByPending(rows []utils.Ad, showPending bool) ([]utils.Ad, error) {
-	out := make([]utils.Ad, 0)
+func FilterAdsByPending(rows []*utils.Ad, showPending bool) ([]*utils.Ad, error) {
+	out := make([]*utils.Ad, 0)
 	for _, r := range rows {
 		if r.Pending == showPending {
 			out = append(out, r)
@@ -145,8 +143,8 @@ func FilterAdsByPending(rows []utils.Ad, showPending bool) ([]utils.Ad, error) {
 	return out, nil
 }
 
-func FilterAdsFromBannedUsers(rows []utils.Ad) ([]utils.Ad, error) {
-	var out []utils.Ad
+func FilterAdsFromBannedUsers(rows []*utils.Ad) ([]*utils.Ad, error) {
+	var out []*utils.Ad
 	for _, r := range rows {
 		user, err := GetUser(r.UserID)
 		if err != nil {
@@ -161,8 +159,8 @@ func FilterAdsFromBannedUsers(rows []utils.Ad) ([]utils.Ad, error) {
 	return out, nil
 }
 
-func FilterAdsByUser(rows []utils.Ad, userId string) ([]utils.Ad, error) {
-	var out []utils.Ad
+func FilterAdsByUser(rows []*utils.Ad, userId string) ([]*utils.Ad, error) {
+	var out []*utils.Ad
 	for _, r := range rows {
 		if r.UserID == userId {
 			out = append(out, r)
@@ -172,13 +170,13 @@ func FilterAdsByUser(rows []utils.Ad, userId string) ([]utils.Ad, error) {
 	return out, nil
 }
 
-func FilterAdsByType(rows []utils.Ad, adType utils.AdType) ([]utils.Ad, error) {
+func FilterAdsByType(rows []*utils.Ad, adType utils.AdType) ([]*utils.Ad, error) {
 	typeNum, err := utils.IntFromAdType(adType)
 	if err != nil {
 		return nil, err
 	}
 
-	var out []utils.Ad
+	var out []*utils.Ad
 	for _, r := range rows {
 		if r.Type == typeNum {
 			out = append(out, r)
@@ -188,17 +186,17 @@ func FilterAdsByType(rows []utils.Ad, adType utils.AdType) ([]utils.Ad, error) {
 	return out, nil
 }
 
-func GetAdvertisement(adId int64) (utils.Ad, error) {
+func GetAdvertisement(adId int64) (*utils.Ad, error) {
 	stmt, err := utils.PrepareStmt(dat, "SELECT * FROM advertisements WHERE ad_id = ?")
 	if err != nil {
-		return utils.Ad{}, err
+		return nil, err
 	}
 	defer stmt.Close()
 
 	// QueryRow is more convenient when expecting a single row
 	row := stmt.QueryRow(adId)
 	if row != nil {
-		var r utils.Ad
+		r := new(utils.Ad)
 		if err := row.Scan(
 			&r.AdID,
 			&r.UserID,
@@ -212,17 +210,17 @@ func GetAdvertisement(adId int64) (utils.Ad, error) {
 			&r.BoostCount,
 		); err != nil {
 			if err == sql.ErrNoRows {
-				return utils.Ad{}, nil
+				return nil, err
 			}
 
-			return utils.Ad{}, err
+			return nil, err
 		}
 
 		r.Expiry = GetAdUnixExpiry(r)
 
 		return r, nil
 	} else {
-		return utils.Ad{}, fmt.Errorf("ad not found")
+		return nil, fmt.Errorf("ad not found")
 	}
 }
 
@@ -259,7 +257,7 @@ func UpdateAdvertisementImageURL(adId int64, imageURL string) error {
 	return err
 }
 
-func DeleteAdvertisement(adId int64) (utils.Ad, error) {
+func DeleteAdvertisement(adId int64) (*utils.Ad, error) {
 	ad, err := GetAdvertisement(adId)
 	if err != nil {
 		return ad, err
