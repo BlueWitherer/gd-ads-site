@@ -3,8 +3,9 @@ import "./Dashboard.css";
 import { useState, useEffect } from "react";
 
 import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
-import BuildIcon from '@mui/icons-material/Build';
-import VerifiedIcon from '@mui/icons-material/Verified';
+import BuildIcon from "@mui/icons-material/Build";
+import VerifiedIcon from "@mui/icons-material/Verified";
+import Avatar from "@mui/material/Avatar";
 
 interface User {
   id: string;
@@ -18,7 +19,7 @@ interface User {
   banned: boolean;
   created_at: string;
   updated_at: string;
-};
+}
 
 export default function Leaderboard() {
   const [leaderboardData, setLeaderboardData] = useState<User[]>([]);
@@ -71,13 +72,17 @@ export default function Leaderboard() {
       <div className="leaderboard-tabs">
         <button
           onClick={() => handleSort("views")}
-          className={`nine-slice-button small leaderboard-tab-button ${sortBy === "views" ? "active" : ""}`}
+          className={`nine-slice-button small leaderboard-tab-button ${
+            sortBy === "views" ? "active" : ""
+          }`}
         >
           Total Views
         </button>
         <button
           onClick={() => handleSort("clicks")}
-          className={`nine-slice-button small leaderboard-tab-button ${sortBy === "clicks" ? "active" : ""}`}
+          className={`nine-slice-button small leaderboard-tab-button ${
+            sortBy === "clicks" ? "active" : ""
+          }`}
         >
           Total Clicks
         </button>
@@ -94,7 +99,9 @@ export default function Leaderboard() {
               <thead className="bg-gray-800 text-white">
                 <tr>
                   <th className="px-4 py-3 text-left font-semibold">Rank</th>
-                  <th className="px-4 py-3 text-left font-semibold">Username</th>
+                  <th className="px-4 py-3 text-left font-semibold">
+                    Username
+                  </th>
                   <th className="px-4 py-3 text-right font-semibold">
                     {sortBy === "views" ? "Total Views" : "Total Clicks"}
                   </th>
@@ -102,32 +109,39 @@ export default function Leaderboard() {
               </thead>
               <tbody>
                 {leaderboardData.map((user, index) => (
-                  <tr key={user.id} className="border-b border-gray-200 transition-colors">
+                  <tr
+                    key={user.id}
+                    className="border-b border-gray-200 transition-colors"
+                  >
                     <td className="px-4 py-3">
                       {page * MAX_USERS + index + 1}
                     </td>
                     <td className="px-4 py-3 flex items-center gap-2">
-                      {user.avatar_url && (
-                        <img
+                      {user.avatar_url ? (
+                        <Avatar
+                          alt={user.username}
                           src={user.avatar_url}
-                          alt={`${user.username}'s avatar`}
-                          style={{
-                            width: '32px',
-                            height: '32px',
-                            borderRadius: '50%',
-                            objectFit: 'cover'
-                          }}
                         />
+                      ) : (
+                        <Avatar
+                          alt={user.username}
+                        >
+                          {user.username.charAt(0).toUpperCase()}
+                        </Avatar>
                       )}
                       {user.username}
-                      {
-                        user.is_admin && <AdminPanelSettingsIcon titleAccess="Administrator" />
-                        || user.is_staff && <BuildIcon titleAccess="Staff" />
-                        || user.verified && <VerifiedIcon titleAccess="Verified" />
-                      }
+                      {(user.is_admin && (
+                        <AdminPanelSettingsIcon titleAccess="Administrator" />
+                      )) ||
+                        (user.is_staff && <BuildIcon titleAccess="Staff" />) ||
+                        (user.verified && (
+                          <VerifiedIcon titleAccess="Verified" />
+                        ))}
                     </td>
                     <td className="px-4 py-3 text-right">
-                      {sortBy === "views" ? user.total_views : user.total_clicks}
+                      {sortBy === "views"
+                        ? user.total_views
+                        : user.total_clicks}
                     </td>
                   </tr>
                 ))}

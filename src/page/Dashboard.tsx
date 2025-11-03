@@ -204,7 +204,6 @@ export default function Dashboard() {
                 <Avatar
                   alt={user.username}
                   src={avatarUrl}
-                  sx={{ width: 42, height: 42 }}
                 />
               ) : null;
             })()}
