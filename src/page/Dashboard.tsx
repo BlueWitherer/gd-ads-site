@@ -34,6 +34,7 @@ export default function Dashboard() {
   const [isStaff, setIsStaff] = useState<boolean>(false);
   const [verified, setVerified] = useState<boolean>(false);
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
+  const [sidebarClosing, setSidebarClosing] = useState<boolean>(false);
 
   const [user, setUser] = useState<{
     id: string;
@@ -91,6 +92,15 @@ export default function Dashboard() {
       });
   };
 
+  const closeSidebarWithAnimation = (callback?: () => void) => {
+    setSidebarClosing(true);
+    setTimeout(() => {
+      setSidebarOpen(false);
+      setSidebarClosing(false);
+      callback?.();
+    }, 300);
+  };
+
   const renderContent = () => {
     if (isBanned) {
       return (
@@ -128,7 +138,17 @@ export default function Dashboard() {
         {/* Mobile Menu Toggle Button */}
         <button
           className="nine-slice-button mobile-menu-btn"
-          onClick={() => setSidebarOpen(!sidebarOpen)}
+          onClick={() => {
+            if (sidebarOpen) {
+              setSidebarClosing(true);
+              setTimeout(() => {
+                setSidebarOpen(false);
+                setSidebarClosing(false);
+              }, 300);
+            } else {
+              setSidebarOpen(true);
+            }
+          }}
           id="mobile-menu-btn"
         >
           {sidebarOpen ? <CloseIcon /> : <MenuIcon />}
@@ -136,7 +156,7 @@ export default function Dashboard() {
 
         <div
           className={`sidebar-container sidebar-wrapper ${
-            sidebarOpen ? "open" : ""
+            sidebarClosing ? "closing" : sidebarOpen ? "open" : ""
           }`}
           id="sidebar"
         >
@@ -144,7 +164,7 @@ export default function Dashboard() {
             className="nine-slice-button padding-4 mt-4 mb-4"
             onClick={() => {
               setSelectedView("create");
-              setSidebarOpen(false);
+              closeSidebarWithAnimation();
             }}
           >
             <NoteAddIcon /> Create
@@ -153,7 +173,7 @@ export default function Dashboard() {
             className="nine-slice-button padding-4 mt-4 mb-4"
             onClick={() => {
               setSelectedView("statistics");
-              setSidebarOpen(false);
+              closeSidebarWithAnimation();
             }}
           >
             <QueryStatsIcon /> Statistics
@@ -162,7 +182,7 @@ export default function Dashboard() {
             className="nine-slice-button padding-4 mt-4 mb-4"
             onClick={() => {
               setSelectedView("leaderboard");
-              setSidebarOpen(false);
+              closeSidebarWithAnimation();
             }}
           >
             <EmojiEventsIcon /> Leaderboard
@@ -171,7 +191,7 @@ export default function Dashboard() {
             className="nine-slice-button padding-4 mt-4 mb-4"
             onClick={() => {
               setSelectedView("manage");
-              setSidebarOpen(false);
+              closeSidebarWithAnimation();
             }}
           >
             <AppSettingsAltIcon /> Manage
@@ -180,7 +200,7 @@ export default function Dashboard() {
             className="nine-slice-button padding-4 mt-4 mb-4"
             onClick={() => {
               setSelectedView("account");
-              setSidebarOpen(false);
+              closeSidebarWithAnimation();
             }}
           >
             <AccountCircleIcon /> Account

@@ -10,6 +10,8 @@ type Ad = {
   image: string;
   expiration: number;
   pending?: boolean;
+  views?: number;
+  clicks?: number;
 };
 
 function getDaysRemaining(expirationTimestamp: number): {
@@ -54,6 +56,8 @@ function Manage() {
             image: a.image_url,
             expiration: a.expiry,
             pending: a.pending,
+            views: a.views || 0,
+            clicks: a.clicks || 0,
           }))
         );
       } catch (err: any) {
@@ -104,28 +108,50 @@ function Manage() {
                     className="ad-card-image manage-ad-image"
                   />
                 </a>
-                <div className="ad-card-info manage-ad-info">
-                  <div>
-                    <strong>Ad ID:</strong> {advert.id}
+                <div className="ad-content-wrapper">
+                  <div className="ad-card-info manage-ad-info">
+                    <div>
+                      <strong>Ad ID:</strong> {advert.id}
+                    </div>
+                    <div>
+                      <strong>Type:</strong> {advert.type}
+                    </div>
+                    <div>
+                      <strong>Level ID:</strong> {advert.level_id}
+                    </div>
+                    <div>
+                      <strong>Expiration:</strong>{" "}
+                      {(() => {
+                        const { days, color } = getDaysRemaining(
+                          advert.expiration
+                        );
+                        return (
+                          <span style={{ color, fontWeight: "bold" }}>
+                            {days} day{days !== 1 ? "s" : ""}
+                          </span>
+                        );
+                      })()}
+                    </div>
                   </div>
-                  <div>
-                    <strong>Type:</strong> {advert.type}
-                  </div>
-                  <div>
-                    <strong>Level ID:</strong> {advert.level_id}
-                  </div>
-                  <div>
-                    <strong>Expiration:</strong>{" "}
-                    {(() => {
-                      const { days, color } = getDaysRemaining(
-                        advert.expiration
-                      );
-                      return (
-                        <span style={{ color, fontWeight: "bold" }}>
-                          {days} day{days !== 1 ? "s" : ""}
-                        </span>
-                      );
-                    })()}
+                  <div className="ad-card-stats manage-ad-stats">
+                    <div className="stat-item">
+                      <strong>Views: {advert.views || 0}</strong>
+                    </div>
+                    <div className="stat-item">
+                      <strong>Clicks: {advert.clicks || 0}</strong>
+                    </div>
+                    <div className="stat-item">
+                      <strong>
+                        Click/View Ratio:
+                        {advert.views && advert.views > 0
+                          ? (
+                              ((advert.clicks || 0) / advert.views) *
+                              100
+                            ).toFixed(2)
+                          : "0.00"}
+                        %
+                      </strong>
+                    </div>
                   </div>
                 </div>
               </div>

@@ -22,7 +22,7 @@ export default function RulesButton() {
               onClick={() => setOpen(false)}
             />
             <div className="rules-popup-bg rules-popup-elastic">
-              <h2 className="rules-title">Advertisement Rules</h2>
+              <h2 className="rules-title">Advertisement Submission Rules</h2>
               <div className="rules-content">
                 <div className="rules-list">
                   <div className="rule-item">
@@ -53,7 +53,18 @@ export default function RulesButton() {
                   </div>
                   <div className="rule-item">
                     <WarningIcon className="rule-icon" />
-                    <p>AI Generated advertisements are hard rejection.</p>
+                    <p>
+                      AI Generated advertisements are not allowed. Expect if is
+                      a well-known generated image like brainrot.
+                    </p>
+                  </div>
+                  <div className="rule-item">
+                    <WarningIcon className="rule-icon" />
+                    <p>
+                      Do not post the same advertisement multiple times. Most
+                      likely your duplicated advertisements will be rejected or
+                      deleted.
+                    </p>
                   </div>
                   <div className="rule-item warning">
                     <WarningIcon className="rule-icon" />
