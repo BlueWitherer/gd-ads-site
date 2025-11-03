@@ -35,9 +35,9 @@ func init() {
 				return
 			}
 
-			if !u.IsAdmin {
-				log.Error("User of ID %s is not admin", u.ID)
-				http.Error(w, "User is not admin", http.StatusUnauthorized)
+			if !u.IsAdmin && !u.IsStaff {
+				log.Error("User of ID %s is not admin or staff", u.ID)
+				http.Error(w, "User is not admin or staff", http.StatusUnauthorized)
 				return
 			}
 
