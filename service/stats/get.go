@@ -7,18 +7,8 @@ import (
 	"service/access"
 	"service/database"
 	"service/log"
+	"service/utils"
 )
-
-type Stats struct {
-	Views  int `json:"views"`
-	Clicks int `json:"clicks"`
-}
-
-type GlobalStats struct {
-	TotalViews  int `json:"total_views"`
-	TotalClicks int `json:"total_clicks"`
-	AdCount     int `json:"ad_count"`
-}
 
 func init() {
 	http.HandleFunc("/stats/get", func(w http.ResponseWriter, r *http.Request) {
@@ -51,7 +41,7 @@ func init() {
 			return
 		}
 
-		stats := Stats{
+		stats := utils.Stats{
 			Views:  views,
 			Clicks: clicks,
 		}
@@ -87,7 +77,7 @@ func init() {
 			return
 		}
 
-		globalStats := GlobalStats{
+		globalStats := utils.GlobalStats{
 			TotalViews:  totalViews,
 			TotalClicks: totalClicks,
 			AdCount:     adCount,

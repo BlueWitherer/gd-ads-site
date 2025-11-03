@@ -86,8 +86,8 @@ func init() {
 			if err != nil {
 				log.Error("Failed to get ad stats: %s", err.Error())
 			} else {
-				ad.ViewCount = views
-				ad.ClickCount = clicks
+				ad.Views = uint64(views)
+				ad.Clicks = uint64(clicks)
 			}
 
 			log.Debug("Returning ad as JSON: %s", ad.ImageURL)
@@ -148,8 +148,8 @@ func init() {
 			if err != nil {
 				log.Error("Failed to get ad stats: %s", err.Error())
 			} else {
-				ad.ViewCount = views
-				ad.ClickCount = clicks
+				ad.Views = uint64(views)
+				ad.Clicks = uint64(clicks)
 			}
 
 			log.Info("Returning ad as JSON: %s", ad.ImageURL)

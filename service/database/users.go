@@ -19,7 +19,20 @@ func GetUser(id string) (utils.User, error) {
 	}
 
 	var user utils.User
-	err = stmt.QueryRow(id).Scan(&user.ID, &user.Username, &user.TotalViews, &user.TotalClicks, &user.IsAdmin, &user.IsStaff, &user.Verified, &user.Banned, &user.Created, &user.Updated)
+	err = stmt.QueryRow(id).Scan(
+		&user.ID,
+		&user.Username,
+		&user.AvatarURL,
+		&user.TotalViews,
+		&user.TotalClicks,
+		&user.IsAdmin,
+		&user.IsStaff,
+		&user.Verified,
+		&user.Banned,
+		&user.BoostCount,
+		&user.Created,
+		&user.Updated,
+	)
 	if err != nil {
 		return utils.User{}, err
 	}
@@ -43,7 +56,20 @@ func GetAllUsers() ([]utils.User, error) {
 	var out []utils.User
 	for users.Next() {
 		var u utils.User
-		if err := users.Scan(&u.ID, &u.Username, &u.TotalClicks, &u.TotalViews, &u.IsAdmin, &u.IsStaff, &u.Verified, &u.Banned, &u.Created, &u.Updated); err != nil {
+		if err := users.Scan(
+			&u.ID,
+			&u.Username,
+			&u.AvatarURL,
+			&u.TotalClicks,
+			&u.TotalViews,
+			&u.IsAdmin,
+			&u.IsStaff,
+			&u.Verified,
+			&u.Banned,
+			&u.BoostCount,
+			&u.Created,
+			&u.Updated,
+		); err != nil {
 			return nil, err
 		}
 
@@ -54,17 +80,17 @@ func GetAllUsers() ([]utils.User, error) {
 }
 
 // inserts a new user or updates username if it already exists.
-func UpsertUser(id string, username string) error {
+func UpsertUser(id string, username string, avatarUrl string) error {
 	if id == "" {
 		return fmt.Errorf("empty user id")
 	}
 
-	stmt, err := utils.PrepareStmt(dat, "INSERT INTO users (username, id) VALUES (?, ?) ON DUPLICATE KEY UPDATE username = VALUES (username), updated_at = CURRENT_TIMESTAMP")
+	stmt, err := utils.PrepareStmt(dat, "INSERT INTO users (id, username, avatar_url) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE username = VALUES (username), avatar_url = VALUES (avatar_url), updated_at = CURRENT_TIMESTAMP")
 	if err != nil {
 		return err
 	}
 
-	_, err = stmt.Exec(username, id)
+	_, err = stmt.Exec(id, username, avatarUrl)
 	return err
 }
 
@@ -98,7 +124,16 @@ func BanUser(id string) (utils.User, error) {
 	ads := make([]utils.Ad, 0)
 	for rows.Next() {
 		var r utils.Ad
-		if err := rows.Scan(&r.AdID, &r.UserID, &r.LevelID, &r.Type, &r.ImageURL, &r.Created, &r.Pending); err != nil {
+		if err := rows.Scan(
+			&r.AdID,
+			&r.UserID,
+			&r.LevelID,
+			&r.Type,
+			&r.ImageURL,
+			&r.Created,
+			&r.Pending,
+			&r.BoostCount,
+		); err != nil {
 			return utils.User{}, err
 		}
 
@@ -167,7 +202,20 @@ func UserLeaderboard(stat utils.StatBy, page uint64, maxPerPage uint64) ([]utils
 	for rows.Next() {
 		var r utils.User
 
-		if err := rows.Scan(&r.ID, &r.Username, &r.TotalViews, &r.TotalClicks, &r.IsAdmin, &r.Banned, &r.Created, &r.Updated); err != nil {
+		if err := rows.Scan(
+			&r.ID,
+			&r.Username,
+			&r.AvatarURL,
+			&r.TotalViews,
+			&r.TotalClicks,
+			&r.IsAdmin,
+			&r.IsStaff,
+			&r.Verified,
+			&r.Banned,
+			&r.BoostCount,
+			&r.Created,
+			&r.Updated,
+		); err != nil {
 			return nil, err
 		}
 

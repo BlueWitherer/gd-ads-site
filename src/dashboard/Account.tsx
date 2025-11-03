@@ -11,6 +11,7 @@ type User = {
   id: string;
   username: string;
   is_admin: boolean;
+  is_staff: boolean;
   created_at: string;
 };
 
@@ -36,7 +37,7 @@ export default function Account() {
   useEffect(() => {
     async function fetchUser() {
       try {
-        const res = await fetch("/account/user", { credentials: "include" });
+        const res = await fetch("/account/me", { credentials: "include" });
         if (res.ok) {
           const data = await res.json();
           setUser(data);
@@ -279,7 +280,7 @@ export default function Account() {
             Delete Account
           </button>
 
-          {user?.is_admin && (
+          {(user?.is_admin || user?.is_staff) && (
             <button
               className="nine-slice-button"
               onClick={handlePendingAds}

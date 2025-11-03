@@ -31,7 +31,7 @@ func Db() *sql.DB {
 
 // initializeSchema reads and executes the schema.sql file to create tables if they don't exist
 func initializeSchema() error {
-	schemaPath := filepath.Join("..", "database", "schema.sql")
+	schemaPath := filepath.Join("database", "schema.sql")
 	log.Debug("Reading database schema from %s", schemaPath)
 
 	schemaSQL, err := os.ReadFile(schemaPath)

@@ -120,12 +120,13 @@ func GetUserTotals(userId string) (int, int, error) {
 }
 
 // GetGlobalStats returns the total views, total clicks, and count of active advertisements
-func GetGlobalStats() (int, int, int, error) {
+func GetGlobalStats() (uint64, uint64, uint, error) {
 	if dat == nil {
 		return 0, 0, 0, fmt.Errorf("database connection non-existent")
 	}
 
-	var totalViews, totalClicks, adCount int
+	var totalViews, totalClicks uint64
+	var adCount uint
 
 	err := dat.QueryRow("SELECT COUNT(*) FROM views").Scan(&totalViews)
 	if err != nil {

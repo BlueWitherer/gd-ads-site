@@ -7,7 +7,7 @@ import (
 
 type AdType string // Dimensions of the ad image
 
-const ( // Table to save stats
+const (
 	AdTypeBanner     AdType = "banner"     // Horizontal ads
 	AdTypeSquare     AdType = "square"     // Square ads
 	AdTypeSkyscraper AdType = "skyscraper" // Vertical ads
@@ -27,18 +27,30 @@ const (
 	StatByClicks StatBy = "total_clicks" // Filter stats by user
 )
 
+type Stats struct {
+	Views  int `json:"views"`
+	Clicks int `json:"clicks"`
+}
+
+type GlobalStats struct {
+	TotalViews  uint64 `json:"total_views"`
+	TotalClicks uint64 `json:"total_clicks"`
+	AdCount     uint   `json:"ad_count"`
+}
+
 // Database row for advertisements listing
 type Ad struct {
-	AdID       int64     `json:"ad_id"`                 // Advertisement ID
-	UserID     string    `json:"user_id"`               // Owner Discord user ID
-	LevelID    int64     `json:"level_id"`              // Geometry Dash level ID
-	Type       int       `json:"type"`                  // Type of advertisement
-	ViewCount  int       `json:"view_count,omitempty"`  // Total registered views
-	ClickCount int       `json:"click_count,omitempty"` // Total registered clicks
-	ImageURL   string    `json:"image_url"`             // URL to the advertisement image
-	Created    time.Time `json:"created_at"`            // First created
-	Expiry     int64     `json:"expiry"`                // Unix time of expiration
-	Pending    bool      `json:"pending"`               // Under review
+	AdID       int64     `json:"ad_id"`       // Advertisement ID
+	UserID     string    `json:"user_id"`     // Owner Discord user ID
+	LevelID    int64     `json:"level_id"`    // Geometry Dash level ID
+	Type       int       `json:"type"`        // Type of advertisement
+	Views      uint64    `json:"views"`       // Times the ad was viewed
+	Clicks     uint64    `json:"clicks"`      // Times the ad was clicked on
+	ImageURL   string    `json:"image_url"`   // URL to the advertisement image
+	Created    time.Time `json:"created_at"`  // First created
+	Expiry     int64     `json:"expiry"`      // Unix time of expiration
+	Pending    bool      `json:"pending"`     // Under review
+	BoostCount uint      `json:"boost_count"` // Available boosts
 }
 
 func AdTypeFromInt(t int) (AdType, error) {

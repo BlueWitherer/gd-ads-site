@@ -282,8 +282,8 @@ func init() {
 				if err != nil {
 					log.Debug("Failed to get ad stats: %s", err.Error())
 				} else {
-					userAds[i].ViewCount = views
-					userAds[i].ClickCount = clicks
+					userAds[i].Views = uint64(views)
+					userAds[i].Clicks = uint64(clicks)
 				}
 			}
 
@@ -380,8 +380,8 @@ func init() {
 				if err != nil {
 					log.Debug("Failed to get ad stats: %s", err.Error())
 				} else {
-					userAds[i].ViewCount = views
-					userAds[i].ClickCount = clicks
+					userAds[i].Views = uint64(views)
+					userAds[i].Clicks = uint64(clicks)
 				}
 			}
 
