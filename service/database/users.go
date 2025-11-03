@@ -129,6 +129,8 @@ func BanUser(id string) (utils.User, error) {
 			&r.UserID,
 			&r.LevelID,
 			&r.Type,
+			&r.Views,
+			&r.Clicks,
 			&r.ImageURL,
 			&r.Created,
 			&r.Pending,
