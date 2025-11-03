@@ -378,15 +378,16 @@
   border-radius: 0.25rem;
   background-color: rgba(120, 53, 15, 0.3);
   border: 1px solid rgb(234, 179, 8);
-  font-size: 1.125rem;
+  font-size: .875rem;
 }
 
 .login-title {
-  margin-bottom: 2rem;
+  margin-bottom: 6rem;
   color: white;
 }
 
 .login-subtitle {
+  margin-top: 1rem;
   margin-bottom: 2rem;
   color: white;
 }
