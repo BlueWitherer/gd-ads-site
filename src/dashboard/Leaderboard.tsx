@@ -9,6 +9,7 @@ import VerifiedIcon from '@mui/icons-material/Verified';
 interface User {
   id: string;
   username: string;
+  avatar_url: string;
   total_views: number;
   total_clicks: number;
   is_admin: boolean;
@@ -106,6 +107,18 @@ export default function Leaderboard() {
                       {page * MAX_USERS + index + 1}
                     </td>
                     <td className="px-4 py-3 flex items-center gap-2">
+                      {user.avatar_url && (
+                        <img
+                          src={user.avatar_url}
+                          alt={`${user.username}'s avatar`}
+                          style={{
+                            width: '32px',
+                            height: '32px',
+                            borderRadius: '50%',
+                            objectFit: 'cover'
+                          }}
+                        />
+                      )}
                       {user.username}
                       {
                         user.is_admin && <AdminPanelSettingsIcon titleAccess="Administrator" />
