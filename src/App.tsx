@@ -24,7 +24,17 @@ export async function copyText(
 
 export default function App() {
   const navigate = useNavigate();
-  const [randomAds, setRandomAds] = useState<Array<{ url: string; id: number; top: number; scale: number; delay: number; speed: number; fadeIn: boolean }>>([]);
+  const [randomAds, setRandomAds] = useState<
+    Array<{
+      url: string;
+      id: number;
+      top: number;
+      scale: number;
+      delay: number;
+      speed: number;
+      fadeIn: boolean;
+    }>
+  >([]);
   const [allImagesRef, setAllImagesRef] = useState<string[]>([]);
   const [nextIdRef, setNextIdRef] = useState(0);
 
@@ -66,7 +76,8 @@ export default function App() {
         if (allImages.length > 0) {
           setAllImagesRef(allImages);
           const initialAds = Array.from({ length: 15 }, (_, i) => {
-            const randomImage = allImages[Math.floor(Math.random() * allImages.length)];
+            const randomImage =
+              allImages[Math.floor(Math.random() * allImages.length)];
             return {
               url: randomImage,
               id: i,
@@ -129,7 +140,7 @@ export default function App() {
     const timers: ReturnType<typeof setTimeout>[] = [];
 
     randomAds.forEach((ad) => {
-      const totalTime = ad.speed + 0.8 + (ad.speed * 0.05);
+      const totalTime = ad.speed + 0.8 + ad.speed * 0.05;
       const removeTimer = setTimeout(() => {
         setRandomAds((prevAds) => prevAds.filter((a) => a.id !== ad.id));
       }, totalTime * 1000);
@@ -166,7 +177,7 @@ export default function App() {
               key={ad.id}
               src={ad.url}
               alt={`Advertisement ${ad.id}`}
-              className={`ad-slide ${ad.fadeIn ? 'fade-in' : ''}`}
+              className={`ad-slide ${ad.fadeIn ? "fade-in" : ""}`}
               style={{
                 position: "absolute",
                 top: `${ad.top}%`,
@@ -185,12 +196,21 @@ export default function App() {
 
         {/* Login Section */}
         <div id="login-section" style={{ position: "relative", zIndex: 2 }}>
-          <h1 style={{ marginBottom: "2rem", color: "white" }}>GD Advertisement Manager</h1>
+          <div className="text-lg mb-6 p-3 rounded bg-yellow-900/30 border border-yellow-500">
+            <p>
+              The website may break due to overhaul changes in the backend. Expect downtime during peak time.
+            </p>
+          </div>
+          <h1 style={{ marginBottom: "2rem", color: "white" }}>
+            GD Advertisement Manager
+          </h1>
           <h2>
             Welcome to the GD Advertisement Manager! Manage all your Geometry
             Dash Advertisements here!
           </h2>
-          <h2 style={{ marginBottom: "2rem", color: "white" }}>Login using your Discord Account to get started!</h2>
+          <h2 style={{ marginBottom: "2rem", color: "white" }}>
+            Login using your Discord Account to get started!
+          </h2>
           <button
             className="nine-slice-button login-button"
             onClick={handleLogin}
@@ -212,7 +232,9 @@ export default function App() {
           >
             <span>Install Geode Mod</span>
           </button>
-          <div style={{ marginTop: "2rem", color: "white" }}>Made with 💝 by ArcticWoof & Cheeseworks</div>
+          <div style={{ marginTop: "2rem", color: "white" }}>
+            Made with 💝 by ArcticWoof & Cheeseworks
+          </div>
         </div>
       </div>
       <CreditsButton />
