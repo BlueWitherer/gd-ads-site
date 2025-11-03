@@ -45,12 +45,12 @@ func GetAllUsers() ([]utils.User, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer stmt.Close()
 
 	users, err := stmt.Query()
 	if err != nil {
 		return nil, err
 	}
-
 	defer users.Close()
 
 	var out []utils.User
@@ -89,12 +89,30 @@ func UpsertUser(id string, username string, avatarUrl string) error {
 	if err != nil {
 		return err
 	}
+	defer stmt.Close()
 
 	_, err = stmt.Exec(id, username, avatarUrl)
 	return err
 }
 
-// increments total_views or total_clicks for a user.
+// increments total_views or total_clicks for an ad
+func IncrementAdStat(adID int64, statType utils.AdEvent) error {
+	query := fmt.Sprintf("UPDATE advertisements SET %s = %s + 1 WHERE ad_id = ?", statType, statType)
+
+	stmt, err := utils.PrepareStmt(dat, query)
+	if err != nil {
+		return fmt.Errorf("failed to prepare increment query: %w", err)
+	}
+	defer stmt.Close()
+
+	if _, err := stmt.Exec(adID); err != nil {
+		return fmt.Errorf("failed to increment %s for ad %d: %w", statType, adID, err)
+	}
+
+	return nil
+}
+
+// increments total_views or total_clicks for a user
 func IncrementUserStats(userId string, viewsDelta int, clicksDelta int) error {
 	if userId == "" {
 		return fmt.Errorf("empty user id")
@@ -104,6 +122,7 @@ func IncrementUserStats(userId string, viewsDelta int, clicksDelta int) error {
 	if err != nil {
 		return err
 	}
+	defer stmt.Close()
 
 	_, err = stmt.Exec(viewsDelta, clicksDelta, userId)
 	return err
@@ -115,6 +134,7 @@ func BanUser(id string) (utils.User, error) {
 	if err != nil {
 		return utils.User{}, err
 	}
+	defer deleteAdsStmt.Close()
 
 	rows, err := deleteAdsStmt.Query(id)
 	if err != nil {
@@ -165,6 +185,7 @@ func BanUser(id string) (utils.User, error) {
 	if err != nil {
 		return utils.User{}, err
 	}
+	defer stmt.Close()
 
 	_, err = stmt.Exec(id)
 	if err != nil {
@@ -180,6 +201,7 @@ func UnbanUser(id string) (utils.User, error) {
 	if err != nil {
 		return utils.User{}, err
 	}
+	defer stmt.Close()
 
 	_, err = stmt.Exec(id)
 	if err != nil {
@@ -194,11 +216,13 @@ func UserLeaderboard(stat utils.StatBy, page uint64, maxPerPage uint64) ([]utils
 	if err != nil {
 		return nil, err
 	}
+	defer stmt.Close()
 
 	rows, err := stmt.Query()
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 
 	var out []utils.User
 	for rows.Next() {

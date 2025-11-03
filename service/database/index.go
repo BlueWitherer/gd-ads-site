@@ -3,7 +3,6 @@ package database
 import (
 	"database/sql"
 	"fmt"
-	"time"
 
 	"service/log"
 	"service/utils"
@@ -12,58 +11,24 @@ import (
 var dat *sql.DB
 
 // Register a new client event for an ad
-func NewStat(event utils.AdEvent, adId int64, user int64) error {
-	log.Debug("Registering new %s on ad %d for user %d", event, adId, user)
-	sql := fmt.Sprintf("INSERT INTO %s (ad_id, user_id, timestamp) VALUES (?, ?, ?)", event)
-
-	stmt, err := utils.PrepareStmt(dat, sql)
-	if err != nil {
-		return err
-	}
-
-	var viewsDelta, clicksDelta int = 0, 0
-	switch event {
-	case utils.AdEventView:
-		viewsDelta = 1
-	case utils.AdEventClick:
-		clicksDelta = 1
-
-	default:
-		return fmt.Errorf("invalid ad event")
-	}
-
-	if ownerID, ownerErr := GetAdvertisementOwnerId(adId); ownerErr == nil && ownerID != "" {
-		log.Info("Incrementing stats for owner %s: views +%d, clicks +%d", ownerID, viewsDelta, clicksDelta)
-		if incErr := IncrementUserStats(ownerID, viewsDelta, clicksDelta); incErr != nil {
-			log.Error("Failed to increment total clicks: %s", incErr.Error())
-		}
-	} else {
-		log.Warn("Could not find owner for ad %d: %v", adId, ownerErr)
-	}
-
-	_, err = stmt.Exec(adId, user, time.Now())
-	if err != nil {
-		log.Error("Failed to insert %s record: %s", event, err.Error())
-		return err
-	}
-
-	log.Debug("Successfully registered %s for ad %d", event, adId)
-	return err
-}
-
-func NewStatWithUserID(event utils.AdEvent, adId int64, userID string) error {
+func NewStat(event utils.AdEvent, adId int64, userID string) error {
 	log.Debug("Registering new %s for user %s on ad %d", event, userID, adId)
 
-	_, err := GetAdvertisement(adId)
+	query := fmt.Sprintf("UPDATE advertisements SET %s = %s + 1 WHERE ad_id = ?", event, event)
+
+	stmt, err := utils.PrepareStmt(dat, query)
 	if err != nil {
-		log.Error("Failed to get advertisement %d: %s", adId, err.Error())
+		return err
+	}
+	defer stmt.Close()
+
+	if _, err := stmt.Exec(adId); err != nil {
 		return err
 	}
 
-	sql := fmt.Sprintf("INSERT INTO %s (ad_id, user_id, timestamp) VALUES (?, ?, ?)", event)
-
-	stmt, err := utils.PrepareStmt(dat, sql)
+	_, err = GetAdvertisement(adId)
 	if err != nil {
+		log.Error("Failed to get advertisement %d: %s", adId, err.Error())
 		return err
 	}
 
@@ -86,12 +51,6 @@ func NewStatWithUserID(event utils.AdEvent, adId int64, userID string) error {
 		}
 	} else {
 		log.Warn("Could not find owner for ad %d: %v", adId, ownerErr)
-	}
-
-	_, err = stmt.Exec(adId, userID, time.Now())
-	if err != nil {
-		log.Error("Failed to insert %s record: %s", event, err.Error())
-		return err
 	}
 
 	log.Debug("Successfully registered %s for ad %d", event, adId)
@@ -128,20 +87,8 @@ func GetGlobalStats() (uint64, uint64, uint, error) {
 	var totalViews, totalClicks uint64
 	var adCount uint
 
-	err := dat.QueryRow("SELECT COUNT(*) FROM views").Scan(&totalViews)
-	if err != nil {
-		log.Error("Failed to fetch view stats: %s", err.Error())
-		return 0, 0, 0, err
-	}
-
-	err = dat.QueryRow("SELECT COUNT(*) FROM clicks").Scan(&totalClicks)
-	if err != nil {
-		log.Error("Failed to fetch click stats: %s", err.Error())
-		return 0, 0, 0, err
-	}
-
 	// Get count of active (non-pending) advertisements
-	err = dat.QueryRow("SELECT COUNT(*) FROM advertisements WHERE pending = FALSE").Scan(&adCount)
+	err := dat.QueryRow("SELECT COUNT(*) FROM advertisements WHERE pending = FALSE").Scan(&adCount)
 	if err != nil {
 		log.Error("Failed to fetch ad count: %s", err.Error())
 		return 0, 0, 0, err

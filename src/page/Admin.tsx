@@ -30,8 +30,8 @@ type Ad = {
   type: number;
   image_url: string;
   created_at: string;
-  view_count?: number;
-  click_count?: number;
+  views?: number;
+  clicks?: number;
   pending?: boolean;
 };
 
@@ -388,8 +388,8 @@ export default function Admin() {
                             <strong>Type:</strong> {ad.type}
                           </div>
                           <div>
-                            <strong>Views:</strong> {ad.view_count || 0} |{" "}
-                            <strong>Clicks:</strong> {ad.click_count || 0}
+                            <strong>Views:</strong> {ad.views || 0} |{" "}
+                            <strong>Clicks:</strong> {ad.clicks || 0}
                           </div>
                           <button
                             className="nine-slice-button delete-ad-button"

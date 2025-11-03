@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"net/url"
-	"strconv"
 
 	"service/access"
 	"service/database"
@@ -13,13 +11,12 @@ import (
 	"service/utils"
 )
 
-func newStat(r *http.Request, query url.Values, adEvent utils.AdEvent) (int, error) {
-	accountIDStr := query.Get("account_id")
-	authToken := query.Get("authtoken")
-
+func newStat(r *http.Request, adEvent utils.AdEvent) (int, error) {
 	var body struct {
-		AdID   int64  `json:"ad_id"`
-		UserID string `json:"user_id"`
+		AdID      int64  `json:"ad_id"`
+		UserID    string `json:"user_id"`
+		AccountID int    `json:"account_id"`
+		AuthToken string `json:"authtoken"`
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
@@ -29,18 +26,7 @@ func newStat(r *http.Request, query url.Values, adEvent utils.AdEvent) (int, err
 
 	log.Debug("Body decoded - AdID: %v, UserID: %s", body.AdID, body.UserID)
 
-	if accountIDStr == "" || authToken == "" {
-		log.Error("Missing query parameters - account_id: %s, authtoken: %s", accountIDStr, authToken)
-		return http.StatusBadRequest, fmt.Errorf("missing query parameters")
-	}
-
-	accountId, err := strconv.Atoi(accountIDStr)
-	if err != nil {
-		log.Error("Failed to parse account ID: %s", err.Error())
-		return http.StatusInternalServerError, err
-	}
-
-	user := utils.ArgonUser{Account: accountId, Token: authToken}
+	user := utils.ArgonUser{Account: body.AccountID, Token: body.AuthToken}
 	valid, err := access.ValidateArgonUser(user)
 	if err != nil {
 		log.Error("Failed to validate Argon user: %s", err.Error())
@@ -53,12 +39,12 @@ func newStat(r *http.Request, query url.Values, adEvent utils.AdEvent) (int, err
 			return http.StatusBadRequest, err
 		}
 
-		err := database.NewStatWithUserID(adEvent, body.AdID, body.UserID)
+		err := database.NewStat(adEvent, body.AdID, body.UserID)
 		if err != nil {
 			log.Error("Failed to create database click statistic: %s", err.Error())
 			return http.StatusInternalServerError, err
 		} else {
-			log.Info("click passed: %s", accountIDStr)
+			log.Info("click passed: %d", body.AccountID)
 		}
 	} else {
 		return http.StatusUnauthorized, fmt.Errorf("argon user invalid")
@@ -77,9 +63,7 @@ func init() {
 		header.Set("Access-Control-Allow-Headers", "Content-Type")
 
 		if r.Method == http.MethodPost {
-			query := r.URL.Query()
-
-			status, err := newStat(r, query, utils.AdEventClick)
+			status, err := newStat(r, utils.AdEventClick)
 			if err != nil {
 				http.Error(w, "Failed to register click statistic", status)
 				return
@@ -101,9 +85,7 @@ func init() {
 		header.Set("Access-Control-Allow-Headers", "Content-Type")
 
 		if r.Method == http.MethodPost {
-			query := r.URL.Query()
-
-			status, err := newStat(r, query, utils.AdEventView)
+			status, err := newStat(r, utils.AdEventView)
 			if err != nil {
 				http.Error(w, "Failed to register view statistic", status)
 				return
