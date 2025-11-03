@@ -11,37 +11,22 @@ import (
 var dat *sql.DB
 
 // Register a new client event for an ad
-func NewStat(event utils.AdEvent, adId int64, user int64) error {
-	log.Debug("Registering new %s on ad %d for user %d", event, adId, user)
-
-	var viewsDelta, clicksDelta int = 0, 0
-	switch event {
-	case utils.AdEventView:
-		viewsDelta = 1
-	case utils.AdEventClick:
-		clicksDelta = 1
-
-	default:
-		return fmt.Errorf("invalid ad event")
-	}
-
-	if ownerID, ownerErr := GetAdvertisementOwnerId(adId); ownerErr == nil && ownerID != "" {
-		log.Info("Incrementing stats for owner %s: views +%d, clicks +%d", ownerID, viewsDelta, clicksDelta)
-		if incErr := IncrementUserStats(ownerID, viewsDelta, clicksDelta); incErr != nil {
-			log.Error("Failed to increment total clicks: %s", incErr.Error())
-		}
-	} else {
-		log.Warn("Could not find owner for ad %d: %v", adId, ownerErr)
-	}
-
-	log.Debug("Successfully registered %s for ad %d", event, adId)
-	return nil
-}
-
-func NewStatWithUserID(event utils.AdEvent, adId int64, userID string) error {
+func NewStat(event utils.AdEvent, adId int64, userID string) error {
 	log.Debug("Registering new %s for user %s on ad %d", event, userID, adId)
 
-	_, err := GetAdvertisement(adId)
+	query := fmt.Sprintf("UPDATE advertisements SET %s = %s + 1 WHERE ad_id = ?", event, event)
+
+	stmt, err := utils.PrepareStmt(dat, query)
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	if _, err := stmt.Exec(adId); err != nil {
+		return err
+	}
+
+	_, err = GetAdvertisement(adId)
 	if err != nil {
 		log.Error("Failed to get advertisement %d: %s", adId, err.Error())
 		return err

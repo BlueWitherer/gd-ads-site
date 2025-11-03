@@ -17,6 +17,7 @@ func ApproveAd(id int64) (utils.Ad, error) {
 	if err != nil {
 		return utils.Ad{}, err
 	}
+	defer stmt.Close()
 
 	_, err = stmt.Exec(id)
 	if err != nil {
@@ -37,6 +38,7 @@ func CreateAdvertisement(userId string, levelID string, adType int) (int64, erro
 	if err != nil {
 		return 0, err
 	}
+	defer stmt.Close()
 
 	res, err := stmt.Exec(userId, levelID, adType, true)
 	if err != nil {
@@ -58,12 +60,12 @@ func ListAllAdvertisements() ([]utils.Ad, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer stmt.Close()
 
 	rows, err := stmt.Query()
 	if err != nil {
 		return nil, err
 	}
-
 	defer rows.Close()
 
 	var out []utils.Ad
@@ -98,12 +100,12 @@ func ListPendingAdvertisements() ([]utils.Ad, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer stmt.Close()
 
 	rows, err := stmt.Query()
 	if err != nil {
 		return nil, err
 	}
-
 	defer rows.Close()
 
 	out := make([]utils.Ad, 0)
@@ -191,6 +193,7 @@ func GetAdvertisement(adId int64) (utils.Ad, error) {
 	if err != nil {
 		return utils.Ad{}, err
 	}
+	defer stmt.Close()
 
 	// QueryRow is more convenient when expecting a single row
 	row := stmt.QueryRow(adId)
@@ -231,6 +234,7 @@ func GetAdvertisementOwnerId(adId int64) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	defer stmt.Close()
 
 	err = stmt.QueryRow(adId).Scan(&uid)
 	if err != nil {
@@ -249,6 +253,7 @@ func UpdateAdvertisementImageURL(adId int64, imageURL string) error {
 	if err != nil {
 		return err
 	}
+	defer stmt.Close()
 
 	_, err = stmt.Exec(imageURL, adId)
 	return err
@@ -264,6 +269,7 @@ func DeleteAdvertisement(adId int64) (utils.Ad, error) {
 	if err != nil {
 		return ad, err
 	}
+	defer stmt.Close()
 
 	_, err = stmt.Exec(adId)
 	if err != nil {
@@ -289,6 +295,7 @@ func DeleteAllExpiredAds() error {
 	if err != nil {
 		return err
 	}
+	defer stmt.Close()
 
 	_, err = stmt.Exec()
 	if err != nil {
@@ -342,6 +349,7 @@ func CountActiveAdvertisementsByUser(userId string) (int, error) {
 	if err != nil {
 		return 0, err
 	}
+	defer stmt.Close()
 
 	var count int
 	err = stmt.QueryRow(userId).Scan(&count)
