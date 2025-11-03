@@ -8,7 +8,6 @@ import (
 
 	"service/database"
 	"service/log"
-	"service/utils"
 )
 
 func GetDomain(r *http.Request) string {
@@ -401,52 +400,6 @@ func init() {
 			log.Info("Fetched user %s info via /users/fetch", targetUser.ID)
 		} else {
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		}
-	})
-
-	http.HandleFunc("/migratedb", func(w http.ResponseWriter, r *http.Request) {
-		header := w.Header()
-
-		header.Set("Access-Control-Allow-Origin", "*")
-		header.Set("Access-Control-Allow-Methods", "POST")
-		header.Set("Access-Control-Allow-Headers", "Content-Type")
-
-		if r.Method == http.MethodPost {
-			header.Set("Content-Type", "application/json")
-
-			// require login
-			uid, err := GetSessionUserID(r)
-			if err != nil || uid == "" {
-				http.Error(w, "Unauthorized", http.StatusUnauthorized)
-				return
-			}
-
-			u, err := database.GetUser(uid)
-			if err != nil {
-				log.Error("Failed to get user: %s", err.Error())
-				http.Error(w, "Failed to get user", http.StatusInternalServerError)
-				return
-			}
-
-			if !u.IsAdmin {
-				log.Error("User of ID %s is not admin or staff", u.ID)
-				http.Error(w, "User is not admin or staff", http.StatusUnauthorized)
-				return
-			}
-
-			err = database.MigrateAdStats(utils.AdEventClick)
-			if err != nil {
-				log.Error("Failed to migrate click statistics: %s", err.Error())
-				http.Error(w, "Failed to migrate click statistics", http.StatusInternalServerError)
-				return
-			}
-
-			err = database.MigrateAdStats(utils.AdEventView)
-			if err != nil {
-				log.Error("Failed to migrate view statistics: %s", err.Error())
-				http.Error(w, "Failed to migrate view statistics", http.StatusInternalServerError)
-				return
-			}
 		}
 	})
 }
