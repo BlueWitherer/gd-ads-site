@@ -94,7 +94,7 @@ func ListAllAdvertisements() ([]utils.Ad, error) {
 
 func ListPendingAdvertisements() ([]utils.Ad, error) {
 	// Use != 0 to match tinyint(1) values in MySQL/MariaDB
-	stmt, err := utils.PrepareStmt(dat, "SELECT ad_id, user_id, level_id, type, image_url, created_at, pending FROM advertisements WHERE pending = TRUE ORDER BY ad_id DESC")
+	stmt, err := utils.PrepareStmt(dat, "SELECT * FROM advertisements WHERE pending = TRUE ORDER BY ad_id DESC")
 	if err != nil {
 		return nil, err
 	}
@@ -187,7 +187,7 @@ func FilterAdsByType(rows []utils.Ad, adType utils.AdType) ([]utils.Ad, error) {
 }
 
 func GetAdvertisement(adId int64) (utils.Ad, error) {
-	stmt, err := utils.PrepareStmt(dat, "SELECT ad_id, user_id, level_id, type, image_url, created_at, pending FROM advertisements WHERE ad_id = ?")
+	stmt, err := utils.PrepareStmt(dat, "SELECT * FROM advertisements WHERE ad_id = ?")
 	if err != nil {
 		return utils.Ad{}, err
 	}
