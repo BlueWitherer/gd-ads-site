@@ -1,5 +1,5 @@
 import "./index.css";
-import App from "./App.tsx";
+import Login from "./Login.tsx";
 import Dashboard from "./Dashboard.tsx";
 import Admin from "./Admin.tsx";
 import NotFound from "./NotFound.tsx";
@@ -11,7 +11,7 @@ createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<App />} />
+        <Route path="/" element={<Login />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/admin" element={<Admin />} />
 

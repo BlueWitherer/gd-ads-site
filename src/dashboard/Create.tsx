@@ -1,4 +1,4 @@
-import "../App.css";
+import "../page/Login.css";
 import { useEffect, useState } from "react";
 
 import WarningIcon from "@mui/icons-material/WarningOutlined";
@@ -259,28 +259,28 @@ export default function Create() {
 
   return (
     <>
-      <h1 className="text-2xl font-bold mb-6">Create Advertisement</h1>
-      <p className="text-lg">
+      <h1 className="create-title">Create Advertisement</h1>
+      <p className="create-subtitle">
         Select the size and upload an image for your advertisement.
       </p>
-      <p className="text-sm mb-6 text-gray-500">
+      <p className="create-description">
         Each advertisement expires after 7 days.{" "}
         <b>You may have a maximum of 10 active advertisements at a time.</b>{" "}
         You can create multiple advertisements per type. Before it can be shown in game, your advertisement must first be
         approved by an admin.
       </p>
       {activeAdCount !== null && (
-        <div className="text-sm mb-6 p-3 rounded bg-blue-900/30 border border-blue-500">
+        <div className="create-ad-limit-info">
           <p>Active advertisements: <b>{activeAdCount}/10</b></p>
         </div>
       )}
       {activeAdCount === 10 && (
-        <div className="text-sm mb-6 p-3 rounded bg-red-900/30 border border-red-500 text-red-300">
+        <div className="create-ad-limit-warning">
           <p><WarningIcon /> You have reached the maximum number of active advertisements. Delete some to submit new ones.</p>
         </div>
       )}
       {/* Rules */}
-      <div className="text-sm text-orange-500 mb-6">
+      <div className="create-rules">
         <p>
           <WarningIcon /> Do not upload inappropriate or controversial
           advertisements.
@@ -324,14 +324,7 @@ export default function Create() {
       </div>
       <div className="form-group mb-6">
         <label className="text-lg font-bold mb-2 block">Upload Image</label>
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "flex-start",
-            gap: "16px",
-          }}
-        >
+        <div className="create-image-upload-wrapper">
           <input
             type="file"
             id="image-upload"
@@ -378,7 +371,7 @@ export default function Create() {
       </div>
       <div className="form-group mb-6">
         <label className="text-lg font-bold mb-2 block">Level ID</label>
-        <div style={{ display: "flex", alignItems: "center", gap: "1em" }}>
+        <div className="create-level-input-wrapper">
           <input
             className="custom-select"
             placeholder="Enter Level ID"
@@ -388,14 +381,13 @@ export default function Create() {
           <button
             className="nine-slice-button small"
             type="button"
-            style={{ padding: "0.5em 1em", fontSize: "1em" }}
             onClick={() => checkLevelValidity(levelId)}
             disabled={checkingLevel || !levelId.trim()}
           >
             <SearchIcon style={{ scale: 1.5 }} />
           </button>
         </div>
-        <div style={{ marginTop: "8px", fontSize: "0.9em" }}>
+        <div className="create-level-validation">
           {checkingLevel && (
             <span style={{ color: "#888" }}>Checking level...</span>
           )}
@@ -409,10 +401,7 @@ export default function Create() {
           )}
         </div>
       </div>
-      <div
-        className="form-group mb-6"
-        style={{ display: "flex", justifyContent: "center" }}
-      >
+      <div className="form-group mb-6 create-submit-wrapper">
         <button
           className="nine-slice-button small"
           onClick={handleSubmit}

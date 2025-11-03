@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import "../App.css";
-import "../Log.mjs";
+import "../page/Login.css";
+import "./Dashboard.css";
+import "../misc/Log.mjs";
 import { PieChart } from "@mui/x-charts/PieChart";
 
 export default function Statistics() {
@@ -59,19 +60,12 @@ export default function Statistics() {
 
   return (
     <>
-      <h1 className="text-2xl font-bold mb-6">Statistics</h1>
-      <div className="text-sm mb-6 p-3 rounded bg-yellow-900/30 border border-yellow-500">
+      <h1 className="stats-title">Statistics</h1>
+      <div className="stats-warning">
         <p>Please update the Geode Mod to v1.0.6 or higher for clicks and views to be tracked properly.</p>
       </div>
-      <div style={{
-        display: "flex",
-        gap: "24px",
-        alignItems: "flex-start",
-        flexWrap: "wrap",
-        justifyContent: "center",
-        marginBottom: "48px"
-      }}>
-        <div className="stat-box" style={{ flex: "0 0 auto", minWidth: 0 }}>
+      <div className="stats-personal-container">
+        <div className="stat-box stats-chart-box">
           {views !== null && clicks !== null && globalViews !== null && globalClicks !== null ? (
             <PieChart
               series={[
@@ -96,15 +90,7 @@ export default function Statistics() {
             <p>Loading chart...</p>
           )}
         </div>
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: "16px",
-            flex: "1 1 auto",
-            minWidth: "200px",
-          }}
-        >
+        <div className="stats-numbers-container">
           <div className="stat-box">
             <h2 className="text-xl font-bold mb-2">Your Total Views</h2>
             <p className="text-4xl font-bold">
@@ -116,13 +102,7 @@ export default function Statistics() {
             <p className="text-4xl font-bold">
               {clicks !== null ? clicks.toLocaleString() : "Loading..."}
             </p>
-            <div
-              style={{
-                fontSize: "1.2rem",
-                color: "#4caf50",
-                marginTop: "12px",
-              }}
-            >
+            <div className="stats-ratio">
               {views !== null && clicks !== null && views > 0 ? (
                 <span>
                   Click/View Ratio: {((clicks / views) * 100).toFixed(2)}%
@@ -135,13 +115,8 @@ export default function Statistics() {
         </div>
       </div>
 
-      <h1 className="text-2xl font-bold mb-6">Global Statistics</h1>
-      <div style={{
-        display: "flex",
-        gap: "24px",
-        flexWrap: "wrap",
-        justifyContent: "center"
-      }}>
+      <h1 className="stats-global-title">Global Statistics</h1>
+      <div className="stats-global-container">
         <div className="stat-box">
           <h3 className="text-xl font-bold mb-2">Total Views</h3>
           <p className="text-4xl font-bold">

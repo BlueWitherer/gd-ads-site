@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
-import CreditsButton from "./popup/Credits";
-import "./App.css";
-import "./Log.mjs";
+import CreditsButton from "../popup/Credits";
+import "../page/Login.css";
+import "../misc/Log.mjs";
 
 export default function NotFound() {
   console.error("404 - Page Not Found");

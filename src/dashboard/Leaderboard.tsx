@@ -1,4 +1,5 @@
-import "../App.css";
+import "../page/Login.css";
+import "./Dashboard.css";
 import { useState, useEffect } from "react";
 
 import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
@@ -62,31 +63,29 @@ export default function Leaderboard() {
   };
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "1rem", overflow: "auto", maxHeight: "100%" }}>
-      <h1 className="text-2xl font-bold">Leaderboard</h1>
+    <div className="leaderboard-container">
+      <h1 className="leaderboard-title">Leaderboard</h1>
 
       {/* Tabs */}
-      <div className="flex gap-4 mb-6 justify-center">
+      <div className="leaderboard-tabs">
         <button
           onClick={() => handleSort("views")}
-          className={`nine-slice-button small ${sortBy === "views" ? "active" : ""}`}
-          style={{ fontSize: "0.75rem", padding: "4px 12px" }}
+          className={`nine-slice-button small leaderboard-tab-button ${sortBy === "views" ? "active" : ""}`}
         >
           Total Views
         </button>
         <button
           onClick={() => handleSort("clicks")}
-          className={`nine-slice-button small ${sortBy === "clicks" ? "active" : ""}`}
-          style={{ fontSize: "0.75rem", padding: "4px 12px" }}
+          className={`nine-slice-button small leaderboard-tab-button ${sortBy === "clicks" ? "active" : ""}`}
         >
           Total Clicks
         </button>
       </div>
 
       {loading ? (
-        <p className="text-center">Loading...</p>
+        <p className="leaderboard-loading">Loading...</p>
       ) : leaderboardData.length === 0 ? (
-        <p className="text-center text-red-500">No users found</p>
+        <p className="leaderboard-empty">No users found</p>
       ) : (
         <>
           <div className="rounded-lg shadow-lg">
@@ -119,12 +118,11 @@ export default function Leaderboard() {
             </table>
           </div>
 
-          <div className="mt-4 flex justify-between items-center">
+          <div className="leaderboard-pagination">
             <button
               onClick={() => setPage(Math.max(0, page - 1))}
               disabled={page === 0}
-              className="nine-slice-button"
-              style={{ fontSize: "0.75rem", padding: "4px 12px" }}
+              className="nine-slice-button leaderboard-pagination-button"
             >
               Previous
             </button>
@@ -132,8 +130,7 @@ export default function Leaderboard() {
             <button
               onClick={() => setPage(page + 1)}
               disabled={!hasNext}
-              className="nine-slice-button"
-              style={{ fontSize: "0.75rem", padding: "4px 12px" }}
+              className="nine-slice-button leaderboard-pagination-button"
             >
               Next
             </button>

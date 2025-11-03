@@ -1,24 +1,24 @@
-import "./App.css";
+import "./Login.css";
 import "./Dashboard.css";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Statistics from "./dashboard/Statistics";
-import Create from "./dashboard/Create";
-import Leaderboard from "./dashboard/Leaderboard";
-import Manage from "./dashboard/Manage";
-import Account from "./dashboard/Account";
-import CreditsButton from "./popup/Credits";
-import "./Log.mjs";
+import Statistics from "../dashboard/Statistics";
+import Create from "../dashboard/Create";
+import Leaderboard from "../dashboard/Leaderboard";
+import Manage from "../dashboard/Manage";
+import Account from "../dashboard/Account";
+import CreditsButton from "../popup/Credits";
+import "../misc/Log.mjs";
 
 import LogoutIcon from "@mui/icons-material/LogoutOutlined";
 import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
-import NoteAddIcon from '@mui/icons-material/NoteAddOutlined';
-import QueryStatsIcon from '@mui/icons-material/QueryStatsOutlined';
-import EmojiEventsIcon from '@mui/icons-material/EmojiEventsOutlined';
-import AppSettingsAltIcon from '@mui/icons-material/AppSettingsAltOutlined';
-import AccountCircleIcon from '@mui/icons-material/AccountCircleOutlined';
-import MenuIcon from '@mui/icons-material/MenuOutlined';
-import CloseIcon from '@mui/icons-material/CloseOutlined';
+import NoteAddIcon from "@mui/icons-material/NoteAddOutlined";
+import QueryStatsIcon from "@mui/icons-material/QueryStatsOutlined";
+import EmojiEventsIcon from "@mui/icons-material/EmojiEventsOutlined";
+import AppSettingsAltIcon from "@mui/icons-material/AppSettingsAltOutlined";
+import AccountCircleIcon from "@mui/icons-material/AccountCircleOutlined";
+import MenuIcon from "@mui/icons-material/MenuOutlined";
+import CloseIcon from "@mui/icons-material/CloseOutlined";
 import Avatar from "@mui/material/Avatar";
 
 export default function Dashboard() {
@@ -90,15 +90,14 @@ export default function Dashboard() {
     if (isBanned) {
       return (
         <>
-          <h1 className="text-2xl font-bold mb-6" style={{ color: "#e74c3c" }}>
-            Account Banned
-          </h1>
-          <p className="text-lg" style={{ color: "#e74c3c" }}>
-            Your account has been banned. You no longer have access to this service.
+          <h1 className="banned-title">Account Banned</h1>
+          <p className="banned-text">
+            Your account has been banned. You no longer have access to this
+            service.
           </p>
         </>
       );
-    };
+    }
 
     switch (selectedView) {
       case "statistics":
@@ -123,26 +122,18 @@ export default function Dashboard() {
       <div id="centered-container">
         {/* Mobile Menu Toggle Button */}
         <button
-          className="nine-slice-button"
+          className="nine-slice-button mobile-menu-btn"
           onClick={() => setSidebarOpen(!sidebarOpen)}
-          style={{
-            position: "absolute",
-            top: "1rem",
-            left: "1rem",
-            zIndex: 100,
-            display: "none",
-          }}
           id="mobile-menu-btn"
         >
           {sidebarOpen ? <CloseIcon /> : <MenuIcon />}
         </button>
 
         <div
-          className={`sidebar-container ${sidebarOpen ? 'open' : ''}`}
+          className={`sidebar-container sidebar-wrapper ${
+            sidebarOpen ? "open" : ""
+          }`}
           id="sidebar"
-          style={{
-            position: "absolute",
-          }}
         >
           <button
             className="nine-slice-button padding-4 mt-4 mb-4"
@@ -190,43 +181,46 @@ export default function Dashboard() {
             <AccountCircleIcon /> Account
           </button>
         </div>
-        <div
-          className="user-container"
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: "1rem",
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-start", gap: 15, flexWrap: "nowrap", flex: 0 }}>
+        <div className="user-container user-container-wrapper">
+          <div className="user-info-container">
             {(() => {
-              if (!user) return <Avatar alt="Guest" sx={{ "width": 48, "height": 48 }}>G</Avatar>;
+              if (!user)
+                return (
+                  <Avatar alt="Guest" sx={{ width: 48, height: 48 }}>
+                    G
+                  </Avatar>
+                );
               const avatarUrl =
                 user.avatar && user.id
                   ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=64`
                   : user.discriminator
-                    ? `https://cdn.discordapp.com/embed/avatars/${parseInt(user.discriminator || "0", 10) % 5
+                  ? `https://cdn.discordapp.com/embed/avatars/${
+                      parseInt(user.discriminator || "0", 10) % 5
                     }.png`
-                    : null;
+                  : null;
               return avatarUrl ? (
-                <Avatar alt={user.username} src={avatarUrl} sx={{ "width": 48, "height": 48 }} />
+                <Avatar
+                  alt={user.username}
+                  src={avatarUrl}
+                  sx={{ width: 48, height: 48 }}
+                />
               ) : null;
             })()}
 
-            <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+            <div className="user-details">
               {isAdmin && <AdminPanelSettingsIcon />}
-              <span style={{ fontSize: "0.9rem" }}>{user !== null ? user.username : "Guest"}</span>
+              <span className="username-text">
+                {user !== null ? user.username : "Guest"}
+              </span>
             </div>
           </div>
 
           <button
             title="Log Out"
-            className="nine-slice-button"
+            className="nine-slice-button logout-button"
             onClick={logout}
-            style={{ padding: "2px 4px", fontSize: "10px", flexShrink: 0 }}
           >
-            <LogoutIcon style={{ "scale": 1 }} />
+            <LogoutIcon className="logout-icon" />
           </button>
         </div>
         <div className="dashboard-container">{renderContent()}</div>

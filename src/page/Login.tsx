@@ -1,9 +1,9 @@
-import "./App.css";
-import CreditsButton from "./popup/Credits";
+import "./Login.css";
+import CreditsButton from "../popup/Credits";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaDiscord } from "react-icons/fa";
-import "./Log.mjs";
+import "../misc/Log.mjs";
 
 export async function copyText(
   text: string | undefined,
@@ -161,17 +161,7 @@ export default function App() {
     <>
       <div id="background-scroll"></div>
       <div id="centered-container">
-        <div
-          className="ads-container"
-          style={{
-            position: "absolute",
-            width: "102%",
-            height: "100%",
-            overflow: "hidden",
-            pointerEvents: "none",
-            zIndex: 1,
-          }}
-        >
+        <div className="ads-container">
           {randomAds.map((ad) => (
             <img
               key={ad.id}
@@ -195,22 +185,21 @@ export default function App() {
         </div>
 
         {/* Login Section */}
-        <div id="login-section" style={{ position: "relative", zIndex: 2 }}>
-          <div className="text-lg mb-6 p-3 rounded bg-yellow-900/30 border border-yellow-500">
+        <div id="login-section" className="login-section-wrapper">
+          <div className="maintenance-banner">
             <p>
               GD Advertisement Manager is currently in a process of overhauling
-              the backend of the server. Expect some downtime and issues during
-              this period.
+              the backend of the server for <strong>better performance</strong>.
+              Expect some downtime and issues during this period. We will have
+              some exciting features coming soon! :D
             </p>
           </div>
-          <h1 style={{ marginBottom: "2rem", color: "white" }}>
-            GD Advertisement Manager
-          </h1>
+          <h1 className="login-title">GD Advertisement Manager</h1>
           <h2>
             Welcome to the GD Advertisement Manager! Manage all your Geometry
             Dash Advertisements here!
           </h2>
-          <h2 style={{ marginBottom: "2rem", color: "white" }}>
+          <h2 className="login-subtitle">
             Login using your Discord Account to get started!
           </h2>
           <button
@@ -222,7 +211,7 @@ export default function App() {
             <span>Login with Discord</span>
           </button>
           <button
-            className="nine-slice-button login-button"
+            className="nine-slice-button login-button install-mod-button"
             onClick={() =>
               window.open(
                 "https://geode-sdk.org/mods/arcticwoof.player_advertisements",
@@ -230,11 +219,10 @@ export default function App() {
               )
             }
             aria-label="Install Geode Mod"
-            style={{ marginTop: "1rem" }}
           >
             <span>Install Geode Mod</span>
           </button>
-          <div style={{ marginTop: "2rem", color: "white" }}>
+          <div className="footer-text">
             Made with 💝 by ArcticWoof & Cheeseworks
           </div>
         </div>

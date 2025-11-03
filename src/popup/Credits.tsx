@@ -1,5 +1,6 @@
 import { useState } from "react";
-import "../App.css";
+import "../page/Login.css";
+import "./Credits.css";
 import newsIcon from "../assets/newsIcon.png";
 
 export default function CreditsButton() {
@@ -7,98 +8,22 @@ export default function CreditsButton() {
   return (
     <>
       <button
-        className="sprite-button"
-        style={{
-          position: "fixed",
-          right: "32px",
-          bottom: "32px",
-          zIndex: 1000,
-          width: "64px",
-          height: "64px",
-          background: "transparent",
-          border: "none",
-          padding: 0,
-          cursor: "pointer",
-          transition: "transform 0.1s ease",
-        }}
+        className="sprite-button credits-button"
         onClick={() => setOpen(true)}
-        onMouseDown={(e) => (e.currentTarget.style.transform = "scale(0.95)")}
-        onMouseUp={(e) => (e.currentTarget.style.transform = "scale(1)")}
-        onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
       >
-        <img
-          src={newsIcon}
-          alt="Credits"
-          style={{ width: "100%", height: "100%", objectFit: "contain" }}
-        />
+        <img src={newsIcon} alt="Credits" />
       </button>
       {open && (
         <>
           <div
             className="credit-popup-overlay"
-            style={{
-              position: "fixed",
-              top: 0,
-              left: 0,
-              width: "100vw",
-              height: "100vh",
-              background: "rgba(0,0,0,0.7)",
-              zIndex: 1999,
-              animation: "fadeIn 0.3s",
-            }}
             onClick={() => setOpen(false)}
           />
-          <div
-            className="credit-popup-bg credit-popup-elastic"
-            style={{
-              position: "fixed",
-              left: "50%",
-              top: "50%",
-              transform: "translate(-50%, -50%)",
-              zIndex: 2000,
-              width: "400px",
-              minHeight: "220px",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-              pointerEvents: "auto",
-              background: "transparent",
-              animation: "popupElastic 0.7s cubic-bezier(.5,-0.5,.5,1.5)",
-            }}
-          >
-            <h2
-              style={{
-                fontSize: "2rem",
-                fontWeight: "bold",
-                marginBottom: "16px",
-                color: "#fff",
-              }}
-            >
-              Credits
-            </h2>
-            <div
-              style={{
-                color: "#fff",
-                fontSize: "1.2rem",
-                textAlign: "center",
-                marginBottom: "24px",
-              }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "center",
-                  gap: "2em",
-                }}
-              >
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                  }}
-                >
+          <div className="credit-popup-bg credit-popup-elastic">
+            <h2 className="credits-title">Credits</h2>
+            <div className="credits-content">
+              <div className="credits-grid">
+                <div className="credits-person">
                   <a
                     href="https://github.com/DumbCaveSpider"
                     target="_blank"
@@ -107,26 +32,14 @@ export default function CreditsButton() {
                     <img
                       src="https://avatars.githubusercontent.com/u/56347227"
                       alt="ArcticWoof avatar"
-                      style={{
-                        width: "128px",
-                        height: "128px",
-                        borderRadius: "50%",
-                        marginBottom: "0.5em",
-                        transition: "box-shadow 0.2s",
-                      }}
+                      className="credits-avatar"
                     />
                   </a>
-                  <span style={{ fontWeight: "bold" }}>ArcticWoof</span>
-                  <span style={{ fontSize: "0.8em" }}>Frontend/UI/UX</span>
-                  <span style={{ fontSize: "0.8em" }}>Geode Mod</span>
+                  <span className="credits-name">ArcticWoof</span>
+                  <span className="credits-role">Frontend/UI/UX</span>
+                  <span className="credits-role">Geode Mod</span>
                 </div>
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                  }}
-                >
+                <div className="credits-person">
                   <a
                     href="https://github.com/BlueWitherer"
                     target="_blank"
@@ -135,20 +48,14 @@ export default function CreditsButton() {
                     <img
                       src="https://avatars.githubusercontent.com/u/47698640?v=4"
                       alt="Cheeseworks avatar"
-                      style={{
-                        width: "128px",
-                        height: "128px",
-                        borderRadius: "50%",
-                        marginBottom: "0.5em",
-                        transition: "box-shadow 0.2s",
-                      }}
+                      className="credits-avatar"
                     />
                   </a>
-                  <span style={{ fontWeight: "bold" }}>Cheeseworks</span>
-                  <span style={{ fontSize: "0.8em" }}>Backend/API</span>
+                  <span className="credits-name">Cheeseworks</span>
+                  <span className="credits-role">Backend/API</span>
                 </div>
               </div>
-              <p style={{ marginTop: "1em" }}>
+              <p className="credits-footer-text">
                 Assets by Geode Team and RobTop Games.
               </p>
             </div>
@@ -156,13 +63,12 @@ export default function CreditsButton() {
               href="https://arcticwoof.com.au/privacy/"
               target="_blank"
               rel="noopener noreferrer"
-              style={{ color: "#fff", textDecoration: "underline", marginBottom: "8px" }}
+              className="credits-privacy-link"
             >
               Privacy Policy
             </a>
             <button
-              className="nine-slice-button large"
-              style={{ marginTop: "8px" }}
+              className="nine-slice-button large credits-close-button"
               onClick={() => setOpen(false)}
             >
               Close

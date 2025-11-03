@@ -1,8 +1,8 @@
-import "./App.css";
+import "../page/Login.css";
 import "./Admin.css";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { copyText } from "./App";
+import { copyText } from "./Login";
 
 import ReplyIcon from '@mui/icons-material/ReplyOutlined';
 import SearchIcon from '@mui/icons-material/SearchOutlined';
@@ -226,14 +226,8 @@ export default function Admin() {
           <button
             className="nine-slice-button back-button"
             onClick={() => navigate("/dashboard")}
-            style={{
-              position: "absolute",
-              top: "1rem",
-              left: "1rem",
-              zIndex: 100,
-            }}
           >
-            <ReplyIcon style={{ scale: 2.5 }} />
+            <ReplyIcon className="back-icon" />
           </button>
 
           <div className="search-container">
@@ -273,13 +267,13 @@ export default function Admin() {
 
           <div className="results-container" data-active-tab={activeTab}>
             {error && (
-              <div style={{ color: "#e74c3c", width: "100%", textAlign: "center", padding: "2rem" }}>
+              <div className="error-message">
                 {error}
               </div>
             )}
 
             {!error && !searchResult && (
-              <div style={{ color: "rgba(255, 255, 255, 0.7)", width: "100%", textAlign: "center", padding: "2rem" }}>
+              <div className="empty-state">
                 Search for a user to get started
               </div>
             )}
@@ -287,22 +281,14 @@ export default function Admin() {
             {searchResult && (
               <>
                 <div style={{ flex: "0 0 350px", width: "100%" }} className="user-info-section">
-                  <div
-                    style={{
-                      marginBottom: "1.5rem",
-                      textAlign: "left",
-                      padding: "1rem",
-                      backgroundColor: "rgba(0, 0, 0, 0.3)",
-                      borderRadius: "8px",
-                    }}
-                  >
-                    <div style={{ marginBottom: "0.5rem" }}>
+                  <div className="user-info-box">
+                    <div className="user-info-item">
                       <PersonPinIcon /><strong>Username:</strong> {searchResult.user.username}
                     </div>
-                    <div style={{ marginBottom: "0.5rem" }}>
+                    <div className="user-info-item">
                       <BadgeIcon /><strong>User ID:</strong> {searchResult.user.id} <button
                         onClick={handleCopyUserId}
-                        style={{ background: "none", border: "none", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "0.25rem" }}
+                        className="copy-button"
                         aria-label="Copy user id"
                       >
                         {copied ? (
@@ -314,44 +300,34 @@ export default function Admin() {
                         )}
                       </button>
                     </div>
-                    <div style={{ marginBottom: "0.5rem" }}>
+                    <div className="user-info-item">
                       <VisibilityIcon /><strong>Total Views:</strong> {searchResult.user.total_views}
                     </div>
-                    <div style={{ marginBottom: "0.5rem" }}>
+                    <div className="user-info-item">
                       <MouseIcon /><strong>Total Clicks:</strong> {searchResult.user.total_clicks}
                     </div>
-                    <div style={{ marginBottom: "0.5rem" }}>
+                    <div className="user-info-item">
                       <AdminPanelSettingsIcon /><strong>Admin:</strong> {searchResult.user.is_admin ? "Yes" : "No"}
                     </div>
-                    <div style={{ marginBottom: "0.5rem" }}>
+                    <div className="user-info-item">
                       <GavelIcon /><strong>Banned:</strong> {searchResult.user.banned ? "Yes" : "No"}
                     </div>
                   </div>
 
-                  <div
-                    style={{
-                      display: "flex",
-                      gap: "1rem",
-                      justifyContent: "center",
-                      marginTop: "1.5rem",
-                      flexWrap: "wrap",
-                    }}
-                  >
+                  <div className="user-actions">
                     <button
-                      className="nine-slice-button"
+                      className="nine-slice-button action-button"
                       onClick={() =>
                         searchResult.user.banned
                           ? handleUnbanUser(searchResult.user.id)
                           : handleBanUser(searchResult.user.id)
                       }
-                      style={{ fontSize: "0.9rem", padding: "4px 12px" }}
                     >
                       <GavelIcon /> {searchResult.user.banned ? "Unban" : "Ban"}
                     </button>
                     <button
-                      className="nine-slice-button"
+                      className="nine-slice-button action-button"
                       onClick={() => handleDeleteUser(searchResult.user.id)}
-                      style={{ fontSize: "0.9rem", padding: "4px 12px" }}
                     >
                       Delete User
                     </button>
@@ -359,47 +335,15 @@ export default function Admin() {
                 </div>
 
                 <div style={{ flex: "1", width: "100%" }} className="advertisements-section">
-                  <h3 style={{ marginBottom: "1rem", marginTop: "0" }}>Advertisements ({searchResult.ads?.length || 0})</h3>
+                  <h3 className="ads-section-title">Advertisements ({searchResult.ads?.length || 0})</h3>
                   {!searchResult.ads || searchResult.ads.length === 0 ? (
-                    <div style={{ color: "rgba(255, 255, 255, 0.7)" }}>No advertisements</div>
+                    <div className="no-ads-message">No advertisements</div>
                   ) : (
-                    <div
-                      style={{
-                        display: "grid",
-                        gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
-                        gap: "1rem",
-                      }}
-                    >
+                    <div className="ads-grid">
                       {searchResult.ads.map((ad) => (
-                        <div
-                          key={ad.ad_id}
-                          style={{
-                            padding: "0.75rem",
-                            backgroundColor: "rgba(0, 0, 0, 0.3)",
-                            borderRadius: "8px",
-                            fontSize: "0.85rem",
-                            display: "flex",
-                            flexDirection: "column",
-                            gap: "0.5rem",
-                            position: "relative",
-                            pointerEvents: "auto",
-                          }}
-                        >
+                        <div key={ad.ad_id} className="ad-card">
                           {ad.pending && (
-                            <div
-                              style={{
-                                position: "absolute",
-                                top: "0.5rem",
-                                right: "0.5rem",
-                                backgroundColor: "#f39c12",
-                                color: "black",
-                                padding: "0.25rem 0.5rem",
-                                borderRadius: "3px",
-                                fontSize: "0.75rem",
-                                fontWeight: "bold",
-                                zIndex: 10,
-                              }}
-                            >
+                            <div className="pending-badge">
                               <AccessTimeIcon /> PENDING
                             </div>
                           )}
@@ -407,28 +351,12 @@ export default function Admin() {
                             href={ad.image_url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            style={{
-                              display: "block",
-                              width: "100%",
-                              textDecoration: "none",
-                              pointerEvents: "auto",
-                            }}
+                            className="ad-image-link"
                           >
                             <img
                               src={ad.image_url}
                               alt={`Ad ${ad.ad_id}`}
-                              style={{
-                                width: "100%",
-                                height: "auto",
-                                aspectRatio: "16 / 9",
-                                objectFit: "contain",
-                                backgroundColor: "rgba(0, 0, 0, 0.5)",
-                                cursor: "pointer",
-                                transition: "opacity 0.2s ease",
-                                display: "block",
-                              }}
-                              onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.8")}
-                              onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
+                              className="ad-image"
                             />
                           </a>
                           <div>
@@ -444,16 +372,10 @@ export default function Admin() {
                             <strong>Views:</strong> {ad.view_count || 0} | <strong>Clicks:</strong> {ad.click_count || 0}
                           </div>
                           <button
-                            className="nine-slice-button"
+                            className="nine-slice-button delete-ad-button"
                             onClick={(e) => {
                               e.preventDefault();
                               handleDeleteAd(ad.ad_id);
-                            }}
-                            style={{
-                              fontSize: "0.75rem",
-                              padding: "2px 8px",
-                              marginTop: "0.25rem",
-                              width: "100%",
                             }}
                           >
                             <DeleteForeverIcon /> Delete

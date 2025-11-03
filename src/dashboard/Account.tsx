@@ -1,7 +1,8 @@
-import "../App.css";
+import "../page/Login.css";
+import "./Dashboard.css";
 import { useEffect, useState } from "react";
 import square02 from "../assets/square02.png";
-import { copyText } from "../App";
+import { copyText } from "../page/Login";
 
 import ContentCopyIcon from "@mui/icons-material/ContentCopyOutlined";
 import DoneIcon from "@mui/icons-material/DoneOutlined";
@@ -116,85 +117,52 @@ export default function Account() {
   if (showingPending) {
     return (
       <>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "1rem" }}>
-          <h1 className="text-2xl font-bold">Pending Advertisements</h1>
+        <div className="pending-ads-header">
+          <h2>Pending Advertisements</h2>
         </div>
-        <div style={{ display: "flex", gap: "0.5rem", justifyContent: "center", marginBottom: "1.5rem" }}>
+        <div className="pending-ads-actions">
           <button
-            className="nine-slice-button small"
+            className="nine-slice-button small pending-ads-action-button"
             onClick={handlePendingAds}
-            style={{ fontSize: "0.75rem", padding: "4px 12px" }}
           >
             Refresh
           </button>
           <button
-            className="nine-slice-button small"
+            className="nine-slice-button small pending-ads-action-button"
             onClick={() => setShowingPending(false)}
-            style={{ fontSize: "0.75rem", padding: "4px 12px" }}
           >
             Back
           </button>
         </div>
         {!pendingAds || pendingAds.length === 0 ? (
-          <div style={{ color: "rgba(255, 255, 255, 0.7)", fontSize: "1.1rem", textAlign: "center" }}>
+          <div className="pending-ads-empty">
             No pending advertisements
           </div>
         ) : (
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: "1rem",
-              maxHeight: "600px",
-              overflowY: "auto",
-            }}
-          >
+          <div className="pending-ads-list">
             {pendingAds.map((ad) => (
               <div
                 key={ad.ad_id}
+                className="pending-ad-card"
                 style={{
-                  padding: "1rem",
-                  borderStyle: "solid",
-                  borderWidth: "12px",
                   borderImage: `url(${square02}) 24 fill stretch`,
-                  background: "transparent",
-                  borderRadius: "0px",
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "1rem",
-                  alignItems: "center",
                 }}
               >
-                <div style={{ display: "flex", justifyContent: "center", alignItems: "center", flexShrink: 0 }}>
+                <div className="pending-ad-image-wrapper">
                   <a
                     href={ad.image_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    style={{
-                      display: "block",
-                      flexShrink: 0,
-                      textDecoration: "none",
-                    }}
+                    className="pending-ad-image-link"
                   >
                     <img
                       src={ad.image_url}
                       alt={`Ad ${ad.ad_id}`}
-                      style={{
-                        width: "200px",
-                        height: "auto",
-                        aspectRatio: "16 / 9",
-                        objectFit: "contain",
-                        backgroundColor: "rgba(0, 0, 0, 0.5)",
-                        cursor: "pointer",
-                        transition: "opacity 0.2s ease",
-                        borderRadius: "4px",
-                      }}
-                      onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.8")}
-                      onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
+                      className="pending-ad-image"
                     />
                   </a>
                 </div>
-                <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", textAlign: "center", width: "100%" }}>
+                <div className="pending-ad-info">
                   <div>
                     <strong>Ad ID:</strong> {ad.ad_id}
                   </div>
@@ -226,42 +194,16 @@ export default function Account() {
                     <strong>Created:</strong> {new Date(ad.created_at).toLocaleString()}
                   </div>
                 </div>
-                <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", width: "100%" }}>
+                <div className="pending-ad-actions">
                   <button
                     onClick={() => handleApproveAd(ad.ad_id)}
-                    style={{
-                      fontSize: "0.85rem",
-                      padding: "8px 20px",
-                      backgroundColor: "#27ae60",
-                      color: "#fff",
-                      border: "none",
-                      borderRadius: "6px",
-                      cursor: "pointer",
-                      fontWeight: "bold",
-                      transition: "background 0.2s",
-                      width: "100%",
-                    }}
-                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#229954")}
-                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#27ae60")}
+                    className="pending-ad-approve-button"
                   >
                     Approve
                   </button>
                   <button
                     onClick={() => handleRejectAd(ad.ad_id)}
-                    style={{
-                      fontSize: "0.85rem",
-                      padding: "8px 20px",
-                      backgroundColor: "#e74c3c",
-                      color: "#fff",
-                      border: "none",
-                      borderRadius: "6px",
-                      cursor: "pointer",
-                      fontWeight: "bold",
-                      transition: "background 0.2s",
-                      width: "100%",
-                    }}
-                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#c0392b")}
-                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#e74c3c")}
+                    className="pending-ad-reject-button"
                   >
                     Reject
                   </button>
@@ -276,26 +218,18 @@ export default function Account() {
 
   return (
     <>
-      <h1 className="text-2xl font-bold mb-6">My Account</h1>
-      <p className="text-lg">
+      <h1 className="account-title">My Account</h1>
+      <p className="account-subtitle">
         Manage your account information here.
       </p>
-      <p className="text-sm mb-6 text-gray-500">
+      <p className="account-description">
         If you want to view your stats in-game, copy the User ID into the settings prompted by the popup.
       </p>
       {user && (
-        <div
-          style={{
-            marginBottom: "2rem",
-            padding: "1rem",
-            backgroundColor: "rgba(255, 255, 255, 0.05)",
-            borderRadius: "8px",
-            border: "1px solid rgba(255, 255, 255, 0.1)",
-          }}
-        >
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "0.5rem" }}>
+        <div className="account-user-info">
+          <div className="account-user-details">
             <div>
-              <strong>User ID: </strong> {user.id} <button onClick={handleCopyUserId} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
+              <strong>User ID: </strong> {user.id} <button onClick={handleCopyUserId} className="account-copy-button">
                 {copied ? (
                   <>
                     <DoneIcon />
@@ -312,26 +246,10 @@ export default function Account() {
         </div>
       )}
 
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: "1em",
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            gap: "1em",
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-        >
+      <div className="account-actions">
+        <div className="account-actions-row">
           <button
-            className="nine-slice-button"
-            style={{ color: "#fff" }}
+            className="nine-slice-button account-delete-button"
             onClick={async () => {
               if (
                 !confirm(
@@ -373,8 +291,7 @@ export default function Account() {
 
         {user?.is_admin && (
           <button
-            className="nine-slice-button"
-            style={{ color: "#fff" }}
+            className="nine-slice-button account-admin-button"
             onClick={() => {
               window.location.href = "/admin";
             }}

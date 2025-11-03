@@ -1,3 +1,63 @@
+.banned-title {
+  color: #e74c3c;
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 1.5rem;
+}
+
+.banned-text {
+  color: #e74c3c;
+  font-size: 1.125rem;
+}
+
+.mobile-menu-btn {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  z-index: 100;
+  display: none;
+}
+
+.sidebar-wrapper {
+  position: absolute;
+}
+
+.user-container-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.user-info-container {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 15px;
+  flex-wrap: nowrap;
+  flex: 0;
+}
+
+.user-details {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.username-text {
+  font-size: 0.9rem;
+}
+
+.logout-button {
+  padding: 2px 4px;
+  font-size: 10px;
+  flex-shrink: 0;
+}
+
+.logout-icon {
+  scale: 1;
+}
+
 @media (max-width: 1200px) {
   * {
     box-sizing: border-box;
@@ -36,7 +96,7 @@
     max-height: none !important;
     border-style: solid !important;
     border-width: 1px !important;
-    border-image: url('./assets/square03.png') 100 fill stretch !important;
+    border-image: url('../assets/square03.png') 100 fill stretch !important;
     padding: 0.5rem !important;
     margin: 0 !important;
     display: flex !important;
@@ -78,7 +138,7 @@
     margin: 0 !important;
     border-style: solid !important;
     border-width: 10px !important;
-    border-image: url('./assets/blacksquare.png') 16 fill stretch !important;
+    border-image: url('../assets/blacksquare.png') 16 fill stretch !important;
     padding: 1rem !important;
     display: none;
     flex-direction: column;
@@ -113,7 +173,7 @@
     padding: 0rem 1rem !important;
     border-style: solid !important;
     border-width: 10px !important;
-    border-image: url('./assets/blacksquare.png') 16 fill stretch !important;
+    border-image: url('../assets/blacksquare.png') 16 fill stretch !important;
     z-index: 100;
     pointer-events: auto;
     display: flex !important;
@@ -179,7 +239,7 @@
     max-height: none !important;
     margin: 0 !important;
     border-width: 10px !important;
-    border-image: url('./assets/blacksquare.png') 16 fill stretch !important;
+    border-image: url('../assets/blacksquare.png') 16 fill stretch !important;
     padding: 1rem !important;
     background: transparent;
     border-radius: 0;
