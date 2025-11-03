@@ -26,8 +26,12 @@ func init() {
 
 		// Require logged-in user
 		uid, err := access.GetSessionUserID(r)
-		if err != nil || uid == "" {
-			log.Error("Unauthorized access to /stats/get: %s", err.Error())
+		if err != nil {
+			log.Error("Failed to get session ID: %s", err.Error())
+			http.Error(w, "Failed to get session ID", http.StatusInternalServerError)
+			return
+		} else if uid == "" {
+			log.Error("Unauthorized access to /stats/get")
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}

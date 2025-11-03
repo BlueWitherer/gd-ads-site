@@ -31,26 +31,6 @@ CREATE TABLE IF NOT EXISTS advertisements (
     CONSTRAINT fk_ads_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;
 
-CREATE TABLE IF NOT EXISTS views (
-    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-    ad_id BIGINT UNSIGNED NOT NULL,
-    user_id VARCHAR(32) NOT NULL,
-    timestamp DATETIME NOT NULL,
-    PRIMARY KEY (id),
-    KEY idx_ad_id (ad_id),
-    KEY idx_user_id (user_id)
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;
-
-CREATE TABLE IF NOT EXISTS clicks (
-    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-    ad_id BIGINT UNSIGNED NOT NULL,
-    user_id VARCHAR(32) NOT NULL,
-    timestamp DATETIME NOT NULL,
-    PRIMARY KEY (id),
-    KEY idx_ad_id (ad_id),
-    KEY idx_user_id (user_id)
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;
-
 CREATE TABLE IF NOT EXISTS sessions (
     id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
     user_id VARCHAR(32) NOT NULL,

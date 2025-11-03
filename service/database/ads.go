@@ -359,7 +359,7 @@ func GetAdStats(adId int64) (int, int, error) {
 	}
 
 	// Count views for this ad
-	viewStmt, err := utils.PrepareStmt(dat, "SELECT COUNT(*) FROM views WHERE ad_id = ?")
+	viewStmt, err := utils.PrepareStmt(dat, "SELECT views FROM advertisements WHERE ad_id = ?")
 	if err != nil {
 		return 0, 0, err
 	}
@@ -371,7 +371,7 @@ func GetAdStats(adId int64) (int, int, error) {
 	}
 
 	// Count clicks for this ad
-	clickStmt, err := utils.PrepareStmt(dat, "SELECT COUNT(*) FROM clicks WHERE ad_id = ?")
+	clickStmt, err := utils.PrepareStmt(dat, "SELECT clicks FROM advertisements WHERE ad_id = ?")
 	if err != nil {
 		return 0, 0, err
 	}
@@ -383,4 +383,60 @@ func GetAdStats(adId int64) (int, int, error) {
 	}
 
 	return views, clicks, nil
+}
+
+func MigrateAdStats(statType utils.AdEvent) error {
+	log.Info("Step 1: Fetch all ad IDs")
+	stmt, err := utils.PrepareStmt(dat, "SELECT ad_id FROM advertisements")
+	if err != nil {
+		return fmt.Errorf("failed to prepare ad ID query: %w", err)
+	}
+	defer stmt.Close()
+
+	rows, err := stmt.Query()
+	if err != nil {
+		return fmt.Errorf("failed to query ad IDs: %w", err)
+	}
+	defer rows.Close()
+
+	adIDs := make([]int64, 0)
+	for rows.Next() {
+		var adID int64
+		if err := rows.Scan(&adID); err != nil {
+			return fmt.Errorf("failed to scan ad ID: %w", err)
+		}
+		adIDs = append(adIDs, adID)
+	}
+
+	log.Info("Step 2: Prepare count query")
+	countSQL := fmt.Sprintf("SELECT COUNT(*) FROM %s WHERE ad_id = ?", statType)
+	countStmt, err := utils.PrepareStmt(dat, countSQL)
+	if err != nil {
+		return fmt.Errorf("failed to prepare count query for %s: %w", statType, err)
+	}
+	defer countStmt.Close()
+
+	log.Info("Step 3: Prepare update query")
+	updateSQL := fmt.Sprintf("UPDATE advertisements SET %s = ? WHERE ad_id = ?", statType)
+	updateStmt, err := utils.PrepareStmt(dat, updateSQL)
+	if err != nil {
+		return fmt.Errorf("failed to prepare update query for %s: %w", statType, err)
+	}
+	defer updateStmt.Close()
+
+	log.Info("Step 4: Migrate stats")
+	for _, adID := range adIDs {
+		var count int64
+		if err := countStmt.QueryRow(adID).Scan(&count); err != nil {
+			return fmt.Errorf("failed to count %s for ad %d: %w", statType, adID, err)
+		}
+
+		if _, err := updateStmt.Exec(count, adID); err != nil {
+			return fmt.Errorf("failed to update %s for ad %d: %w", statType, adID, err)
+		}
+
+		log.Print("Updated ad %d: %s = %d", adID, statType, count)
+	}
+
+	return nil
 }
