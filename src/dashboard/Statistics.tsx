@@ -17,19 +17,20 @@ export default function Statistics() {
     async function fetchStats(): Promise<number> {
       try {
         const res = await fetch(`/stats/get`);
-        if (res.ok) return await res.json().then((data) => {
-          setViews(data.views);
-          setClicks(data.clicks);
+        if (res.ok)
+          return await res.json().then((data) => {
+            setViews(data.views);
+            setClicks(data.clicks);
 
-          return 1;
-        });
+            return 1;
+          });
 
         return 1;
       } catch (err) {
         console.error("Error fetching ad stats:", err);
         return -1;
-      };
-    };
+      }
+    }
 
     fetchStats();
   }, []);
@@ -62,17 +63,33 @@ export default function Statistics() {
     <>
       <h1 className="stats-title">Statistics</h1>
       <div className="stats-warning">
-        <p>Please update the Geode Mod to v1.0.6 or higher for clicks and views to be tracked properly.</p>
+        <p>
+          Please update the Geode Mod to v1.0.6 or higher for clicks and views
+          to be tracked properly.
+        </p>
       </div>
       <div className="stats-personal-container">
         <div className="stat-box stats-chart-box">
-          {views !== null && clicks !== null && globalViews !== null && globalClicks !== null ? (
+          {views !== null &&
+          clicks !== null &&
+          globalViews !== null &&
+          globalClicks !== null ? (
             <PieChart
               series={[
                 {
                   data: [
-                    { id: 0, value: views, label: "My Views", color: "#2196f3" },
-                    { id: 1, value: clicks, label: "My Clicks", color: "#4caf50" },
+                    {
+                      id: 0,
+                      value: views,
+                      label: "My Views",
+                      color: "#2196f3",
+                    },
+                    {
+                      id: 1,
+                      value: clicks,
+                      label: "My Clicks",
+                      color: "#4caf50",
+                    },
                   ],
                   highlightScope: { fade: "global", highlight: "item" },
                   faded: {
@@ -126,7 +143,9 @@ export default function Statistics() {
         <div className="stat-box">
           <h3 className="text-xl font-bold mb-2">Total Clicks</h3>
           <p className="text-4xl font-bold">
-            {globalClicks !== null ? globalClicks.toLocaleString() : "Loading..."}
+            {globalClicks !== null
+              ? globalClicks.toLocaleString()
+              : "Loading..."}
           </p>
         </div>
         <div className="stat-box">

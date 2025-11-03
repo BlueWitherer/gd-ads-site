@@ -169,27 +169,22 @@ export default function App() {
               alt={`Advertisement ${ad.id}`}
               className={`ad-slide ${ad.fadeIn ? "fade-in" : ""}`}
               style={{
-                position: "absolute",
                 top: `${ad.top}%`,
                 transform: `scale(${ad.scale})`,
-                pointerEvents: "none",
-                height: "auto",
-                width: "auto",
-                maxHeight: "30%",
-                maxWidth: "30%",
                 animationDelay: `${ad.delay}s`,
                 animationDuration: `${ad.speed}s`,
               }}
             />
           ))}
         </div>
-
         {/* Login Section */}
         <div id="login-section" className="login-section-wrapper">
           <div className="maintenance-banner">
             <p>
               GD Advertisement Manager is currently in a process of overhauling
-              the backend of the server for <strong>better performance</strong>.
+              the backend of the server for better performance.
+            </p>
+            <p>
               Expect some downtime and issues during this period. We will have
               some exciting features coming soon! :D
             </p>

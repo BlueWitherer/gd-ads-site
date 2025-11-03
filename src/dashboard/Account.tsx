@@ -41,11 +41,11 @@ export default function Account() {
         if (res.ok) {
           const data = await res.json();
           setUser(data);
-        };
+        }
       } catch (err) {
         console.error("Failed to fetch user:", err);
-      };
-    };
+      }
+    }
 
     fetchUser();
   }, []);
@@ -71,11 +71,11 @@ export default function Account() {
         const txt = await res.text();
         console.warn("Pending ads endpoint:", res.status, txt);
         alert("Failed to fetch pending ads: " + txt);
-      };
+      }
     } catch (err) {
       console.error(err);
       alert("Failed to fetch pending ads.");
-    };
+    }
   };
 
   const handleApproveAd = async (adId: number) => {
@@ -96,7 +96,10 @@ export default function Account() {
   };
 
   const handleRejectAd = async (adId: number) => {
-    if (!confirm("Are you sure you want to reject and delete this advertisement?")) return;
+    if (
+      !confirm("Are you sure you want to reject and delete this advertisement?")
+    )
+      return;
 
     try {
       const res = await fetch(`/ads/delete?id=${adId}`, {
@@ -136,9 +139,7 @@ export default function Account() {
           </button>
         </div>
         {!pendingAds || pendingAds.length === 0 ? (
-          <div className="pending-ads-empty">
-            No pending advertisements
-          </div>
+          <div className="pending-ads-empty">No pending advertisements</div>
         ) : (
           <div className="pending-ads-list">
             {pendingAds.map((ad) => (
@@ -182,8 +183,12 @@ export default function Account() {
                         cursor: "pointer",
                         transition: "color 0.2s ease",
                       }}
-                      onMouseEnter={(e) => (e.currentTarget.style.color = "#3b82f6")}
-                      onMouseLeave={(e) => (e.currentTarget.style.color = "#60a5fa")}
+                      onMouseEnter={(e) =>
+                        (e.currentTarget.style.color = "#3b82f6")
+                      }
+                      onMouseLeave={(e) =>
+                        (e.currentTarget.style.color = "#60a5fa")
+                      }
                     >
                       {ad.level_id}
                     </a>
@@ -192,7 +197,8 @@ export default function Account() {
                     <strong>Type:</strong> {ad.type}
                   </div>
                   <div>
-                    <strong>Created:</strong> {new Date(ad.created_at).toLocaleString()}
+                    <strong>Created:</strong>{" "}
+                    {new Date(ad.created_at).toLocaleString()}
                   </div>
                 </div>
                 <div className="pending-ad-actions">
@@ -221,16 +227,21 @@ export default function Account() {
     <>
       <h1 className="account-title">My Account</h1>
       <p className="account-subtitle">
-        Manage your account information here.
+        View and interact with your account information.
       </p>
       <p className="account-description">
-        If you want to view your stats in-game, copy the User ID into the settings prompted by the popup.
+        If you want to view your advertisements' stats in-game, copy the User ID
+        into the settings prompted by the in-game popup.
       </p>
       {user && (
         <div className="account-user-info">
           <div className="account-user-details">
             <div>
-              <strong>User ID: </strong> {user.id} <button onClick={handleCopyUserId} className="account-copy-button">
+              <strong>User ID: </strong> {user.id}{" "}
+              <button
+                onClick={handleCopyUserId}
+                className="account-copy-button"
+              >
                 {copied ? (
                   <>
                     <DoneIcon />
@@ -241,7 +252,8 @@ export default function Account() {
               </button>
             </div>
             <div>
-              <strong>Account Created: </strong> {new Date(user.created_at).toLocaleString()}
+              <strong>Account Created: </strong>{" "}
+              {new Date(user.created_at).toLocaleString()}
             </div>
           </div>
         </div>
@@ -281,10 +293,7 @@ export default function Account() {
           </button>
 
           {(user?.is_admin || user?.is_staff) && (
-            <button
-              className="nine-slice-button"
-              onClick={handlePendingAds}
-            >
+            <button className="nine-slice-button" onClick={handlePendingAds}>
               Pending Ads
             </button>
           )}

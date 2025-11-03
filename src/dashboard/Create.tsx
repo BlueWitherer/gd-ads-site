@@ -6,6 +6,7 @@ import UploadFileIcon from "@mui/icons-material/UploadFileOutlined";
 import SearchIcon from "@mui/icons-material/SearchOutlined";
 import SyncIcon from "@mui/icons-material/SyncOutlined";
 import CheckCircleIcon from "@mui/icons-material/CheckCircleOutlined";
+import RulesButton from "../popup/Rules";
 
 export default function Create() {
   const [selectedSize, setSelectedSize] = useState<
@@ -180,7 +181,9 @@ export default function Create() {
     }
 
     if (activeAdCount !== null && activeAdCount >= 10) {
-      alert("You have reached the maximum number of active advertisements (10). Please delete some existing ads first.");
+      alert(
+        "You have reached the maximum number of active advertisements (10). Please delete some existing ads first."
+      );
       return;
     }
 
@@ -265,44 +268,26 @@ export default function Create() {
       </p>
       <p className="create-description">
         Each advertisement expires after 7 days.{" "}
-        <b>You may have a maximum of 10 active advertisements at a time.</b>{" "}
-        You can create multiple advertisements per type. Before it can be shown in game, your advertisement must first be
-        approved by an admin.
+        <b>You may have a maximum of 10 active advertisements at a time.</b> You
+        can create multiple advertisements per type. Before it can be shown in
+        game, your advertisement must first be approved by an admin.
       </p>
+      <RulesButton />
       {activeAdCount !== null && (
         <div className="create-ad-limit-info">
-          <p>Active advertisements: <b>{activeAdCount}/10</b></p>
+          <p>
+            Active advertisements: <b>{activeAdCount}/10</b>
+          </p>
         </div>
       )}
       {activeAdCount === 10 && (
         <div className="create-ad-limit-warning">
-          <p><WarningIcon /> You have reached the maximum number of active advertisements. Delete some to submit new ones.</p>
+          <p>
+            <WarningIcon /> You have reached the maximum number of active
+            advertisements. Delete some to submit new ones.
+          </p>
         </div>
       )}
-      {/* Rules */}
-      <div className="create-rules">
-        <p>
-          <WarningIcon /> Do not upload inappropriate or controversial
-          advertisements.
-        </p>
-        <p>
-          <WarningIcon /> Do not self-promote anything non-Geometry Dash related. Memes or well-known creators are allowed.
-        </p>
-        <p>
-          <WarningIcon /> No profanity or excessive text in the advertisement.
-        </p>
-        <p>
-          <WarningIcon /> Do not promote any harmful, illegal, or offensive
-          material including both your Geometry Dash level and your
-          advertisement!
-        </p>
-        <p>
-          <WarningIcon /> AI Generated Advertisements are hard rejection.
-        </p>
-        <p>
-          <WarningIcon /> Violating this may result in a ban. <b>No appeals!</b>
-        </p>
-      </div>
       <div className="form-group mb-6">
         <label className="text-lg font-bold mb-2 block">
           Advertisement Size

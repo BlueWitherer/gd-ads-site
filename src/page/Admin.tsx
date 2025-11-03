@@ -4,18 +4,18 @@ import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { copyText } from "./Login";
 
-import ReplyIcon from '@mui/icons-material/ReplyOutlined';
-import SearchIcon from '@mui/icons-material/SearchOutlined';
+import ReplyIcon from "@mui/icons-material/ReplyOutlined";
+import SearchIcon from "@mui/icons-material/SearchOutlined";
 import ContentCopyIcon from "@mui/icons-material/ContentCopyOutlined";
 import DoneIcon from "@mui/icons-material/DoneOutlined";
-import PersonPinIcon from '@mui/icons-material/PersonPinOutlined';
-import BadgeIcon from '@mui/icons-material/BadgeOutlined';
-import VisibilityIcon from '@mui/icons-material/VisibilityOutlined';
-import MouseIcon from '@mui/icons-material/MouseOutlined';
+import PersonPinIcon from "@mui/icons-material/PersonPinOutlined";
+import BadgeIcon from "@mui/icons-material/BadgeOutlined";
+import VisibilityIcon from "@mui/icons-material/VisibilityOutlined";
+import MouseIcon from "@mui/icons-material/MouseOutlined";
 import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
-import GavelIcon from '@mui/icons-material/GavelOutlined';
-import AccessTimeIcon from '@mui/icons-material/AccessTimeOutlined';
-import DeleteForeverIcon from '@mui/icons-material/DeleteForeverOutlined';
+import GavelIcon from "@mui/icons-material/GavelOutlined";
+import AccessTimeIcon from "@mui/icons-material/AccessTimeOutlined";
+import DeleteForeverIcon from "@mui/icons-material/DeleteForeverOutlined";
 
 type User = {
   id: string;
@@ -55,7 +55,7 @@ export default function Admin() {
   const [searchResult, setSearchResult] = useState<SearchResult | null>(null);
   const [searching, setSearching] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'info' | 'ads'>('info');
+  const [activeTab, setActiveTab] = useState<"info" | "ads">("info");
 
   const [copied, setCopied] = useState(false);
 
@@ -68,18 +68,18 @@ export default function Admin() {
           if (!user.is_admin) {
             navigate("/dashboard");
             return;
-          };
+          }
           setIsAdmin(true);
         } else {
           navigate("/");
-        };
+        }
       } catch (err) {
         console.error("Failed to fetch user:", err);
         navigate("/");
       } finally {
         setLoading(false);
-      };
-    };
+      }
+    }
 
     checkAdmin();
   }, [navigate]);
@@ -164,7 +164,11 @@ export default function Admin() {
   };
 
   const handleDeleteUser = async (userId: string) => {
-    if (!confirm("Are you sure you want to delete this user? This cannot be undone."))
+    if (
+      !confirm(
+        "Are you sure you want to delete this user? This cannot be undone."
+      )
+    )
       return;
 
     try {
@@ -251,14 +255,14 @@ export default function Admin() {
           {searchResult && (
             <div className="mobile-tabs">
               <button
-                className={`mobile-tab ${activeTab === 'info' ? 'active' : ''}`}
-                onClick={() => setActiveTab('info')}
+                className={`mobile-tab ${activeTab === "info" ? "active" : ""}`}
+                onClick={() => setActiveTab("info")}
               >
                 User Info
               </button>
               <button
-                className={`mobile-tab ${activeTab === 'ads' ? 'active' : ''}`}
-                onClick={() => setActiveTab('ads')}
+                className={`mobile-tab ${activeTab === "ads" ? "active" : ""}`}
+                onClick={() => setActiveTab("ads")}
               >
                 Advertisements
               </button>
@@ -266,11 +270,7 @@ export default function Admin() {
           )}
 
           <div className="results-container" data-active-tab={activeTab}>
-            {error && (
-              <div className="error-message">
-                {error}
-              </div>
-            )}
+            {error && <div className="error-message">{error}</div>}
 
             {!error && !searchResult && (
               <div className="empty-state">
@@ -280,13 +280,19 @@ export default function Admin() {
 
             {searchResult && (
               <>
-                <div style={{ flex: "0 0 350px", width: "100%" }} className="user-info-section">
+                <div
+                  style={{ flex: "0 0 350px", width: "100%" }}
+                  className="user-info-section"
+                >
                   <div className="user-info-box">
                     <div className="user-info-item">
-                      <PersonPinIcon /><strong>Username:</strong> {searchResult.user.username}
+                      <PersonPinIcon />
+                      <strong>Username:</strong> {searchResult.user.username}
                     </div>
                     <div className="user-info-item">
-                      <BadgeIcon /><strong>User ID:</strong> {searchResult.user.id} <button
+                      <BadgeIcon />
+                      <strong>User ID:</strong> {searchResult.user.id}{" "}
+                      <button
                         onClick={handleCopyUserId}
                         className="copy-button"
                         aria-label="Copy user id"
@@ -301,16 +307,24 @@ export default function Admin() {
                       </button>
                     </div>
                     <div className="user-info-item">
-                      <VisibilityIcon /><strong>Total Views:</strong> {searchResult.user.total_views}
+                      <VisibilityIcon />
+                      <strong>Total Views:</strong>{" "}
+                      {searchResult.user.total_views}
                     </div>
                     <div className="user-info-item">
-                      <MouseIcon /><strong>Total Clicks:</strong> {searchResult.user.total_clicks}
+                      <MouseIcon />
+                      <strong>Total Clicks:</strong>{" "}
+                      {searchResult.user.total_clicks}
                     </div>
                     <div className="user-info-item">
-                      <AdminPanelSettingsIcon /><strong>Admin:</strong> {searchResult.user.is_admin ? "Yes" : "No"}
+                      <AdminPanelSettingsIcon />
+                      <strong>Admin:</strong>{" "}
+                      {searchResult.user.is_admin ? "Yes" : "No"}
                     </div>
                     <div className="user-info-item">
-                      <GavelIcon /><strong>Banned:</strong> {searchResult.user.banned ? "Yes" : "No"}
+                      <GavelIcon />
+                      <strong>Banned:</strong>{" "}
+                      {searchResult.user.banned ? "Yes" : "No"}
                     </div>
                   </div>
 
@@ -334,8 +348,13 @@ export default function Admin() {
                   </div>
                 </div>
 
-                <div style={{ flex: "1", width: "100%" }} className="advertisements-section">
-                  <h3 className="ads-section-title">Advertisements ({searchResult.ads?.length || 0})</h3>
+                <div
+                  style={{ flex: "1", width: "100%" }}
+                  className="advertisements-section"
+                >
+                  <h3 className="ads-section-title">
+                    Advertisements ({searchResult.ads?.length || 0})
+                  </h3>
                   {!searchResult.ads || searchResult.ads.length === 0 ? (
                     <div className="no-ads-message">No advertisements</div>
                   ) : (
@@ -369,7 +388,8 @@ export default function Admin() {
                             <strong>Type:</strong> {ad.type}
                           </div>
                           <div>
-                            <strong>Views:</strong> {ad.view_count || 0} | <strong>Clicks:</strong> {ad.click_count || 0}
+                            <strong>Views:</strong> {ad.view_count || 0} |{" "}
+                            <strong>Clicks:</strong> {ad.click_count || 0}
                           </div>
                           <button
                             className="nine-slice-button delete-ad-button"
@@ -388,9 +408,8 @@ export default function Admin() {
               </>
             )}
           </div>
-        </div >
-      ) : null
-      }
+        </div>
+      ) : null}
     </>
   );
 }

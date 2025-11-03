@@ -139,6 +139,12 @@
 }
 
 .ad-slide {
+  position: absolute;
+  pointer-events: none;
+  height: auto;
+  width: auto;
+  max-height: 30%;
+  max-width: 30%;
   animation: slideRight linear infinite, fadeInOut linear infinite;
   filter: blur(3px);
   backdrop-filter: blur(128px);
@@ -373,8 +379,8 @@
 }
 
 .maintenance-banner {
-  margin-bottom: 1.5rem;
-  padding: 0.75rem;
+  margin-bottom: 2rem;
+  padding: .5rem;
   border-radius: 0.25rem;
   background-color: rgba(120, 53, 15, 0.3);
   border: 1px solid rgb(234, 179, 8);
@@ -382,7 +388,7 @@
 }
 
 .login-title {
-  margin-bottom: 6rem;
+  padding-bottom: 3rem;
   color: white;
 }
 

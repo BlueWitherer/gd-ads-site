@@ -8,19 +8,20 @@ import Leaderboard from "../dashboard/Leaderboard";
 import Manage from "../dashboard/Manage";
 import Account from "../dashboard/Account";
 import CreditsButton from "../popup/Credits";
+import { useAutoSessionValidation } from "../utils/useSessionValidation";
 import "../misc/Log.mjs";
 
 import LogoutIcon from "@mui/icons-material/LogoutOutlined";
 import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
-import BuildIcon from '@mui/icons-material/Build';
-import VerifiedIcon from '@mui/icons-material/Verified';
-import NoteAddIcon from '@mui/icons-material/NoteAddOutlined';
-import QueryStatsIcon from '@mui/icons-material/QueryStatsOutlined';
-import EmojiEventsIcon from '@mui/icons-material/EmojiEventsOutlined';
-import AppSettingsAltIcon from '@mui/icons-material/AppSettingsAltOutlined';
-import AccountCircleIcon from '@mui/icons-material/AccountCircleOutlined';
-import MenuIcon from '@mui/icons-material/MenuOutlined';
-import CloseIcon from '@mui/icons-material/CloseOutlined';
+import BuildIcon from "@mui/icons-material/Build";
+import VerifiedIcon from "@mui/icons-material/Verified";
+import NoteAddIcon from "@mui/icons-material/NoteAddOutlined";
+import QueryStatsIcon from "@mui/icons-material/QueryStatsOutlined";
+import EmojiEventsIcon from "@mui/icons-material/EmojiEventsOutlined";
+import AppSettingsAltIcon from "@mui/icons-material/AppSettingsAltOutlined";
+import AccountCircleIcon from "@mui/icons-material/AccountCircleOutlined";
+import MenuIcon from "@mui/icons-material/MenuOutlined";
+import CloseIcon from "@mui/icons-material/CloseOutlined";
 import Avatar from "@mui/material/Avatar";
 
 export default function Dashboard() {
@@ -40,6 +41,8 @@ export default function Dashboard() {
     avatar?: string | null;
     discriminator?: string | null;
   } | null>(null);
+
+  useAutoSessionValidation();
 
   useEffect(() => {
     fetch("/session", { credentials: "include" })
@@ -201,20 +204,19 @@ export default function Dashboard() {
                     }.png`
                   : null;
               return avatarUrl ? (
-                <Avatar
-                  alt={user.username}
-                  src={avatarUrl}
-                />
+                <Avatar alt={user.username} src={avatarUrl} />
               ) : null;
             })()}
 
             <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-              {
-                isAdmin && <AdminPanelSettingsIcon titleAccess="Administrator" />
-                || isStaff && <BuildIcon titleAccess="Staff" />
-                || verified && <VerifiedIcon titleAccess="Verified" />
-              }
-              <span style={{ fontSize: "0.9rem" }}>{user !== null ? user.username : "Guest"}</span>
+              {(isAdmin && (
+                <AdminPanelSettingsIcon titleAccess="Administrator" />
+              )) ||
+                (isStaff && <BuildIcon titleAccess="Staff" />) ||
+                (verified && <VerifiedIcon titleAccess="Verified" />)}
+              <span style={{ fontSize: "0.9rem" }}>
+                {user !== null ? user.username : "Guest"}
+              </span>
             </div>
           </div>
 

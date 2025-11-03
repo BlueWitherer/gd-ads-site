@@ -118,14 +118,9 @@ export default function Leaderboard() {
                     </td>
                     <td className="px-4 py-3 flex items-center gap-2">
                       {user.avatar_url ? (
-                        <Avatar
-                          alt={user.username}
-                          src={user.avatar_url}
-                        />
+                        <Avatar alt={user.username} src={user.avatar_url} />
                       ) : (
-                        <Avatar
-                          alt={user.username}
-                        >
+                        <Avatar alt={user.username}>
                           {user.username.charAt(0).toUpperCase()}
                         </Avatar>
                       )}
