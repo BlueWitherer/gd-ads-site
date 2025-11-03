@@ -198,7 +198,9 @@ export default function App() {
         <div id="login-section" style={{ position: "relative", zIndex: 2 }}>
           <div className="text-lg mb-6 p-3 rounded bg-yellow-900/30 border border-yellow-500">
             <p>
-              The website may break due to overhaul changes in the backend. Expect downtime during peak time.
+              GD Advertisement Manager is currently in a process of overhauling
+              the backend of the server. Expect some downtime and issues during
+              this period.
             </p>
           </div>
           <h1 style={{ marginBottom: "2rem", color: "white" }}>
