@@ -16,7 +16,7 @@ interface User {
   banned: boolean;
   created_at: string;
   updated_at: string;
-}
+};
 
 export default function Leaderboard() {
   const [leaderboardData, setLeaderboardData] = useState<User[]>([]);
@@ -108,7 +108,11 @@ export default function Leaderboard() {
                     </td>
                     <td className="px-4 py-3 flex items-center gap-2">
                       {user.username}
-                      {user.is_admin && <AdminPanelSettingsIcon /> || user.is_staff && <BuildIcon /> || user.verified && <VerifiedIcon />}
+                      {
+                        user.is_admin && <AdminPanelSettingsIcon titleAccess="Administrator" />
+                        || user.is_staff && <BuildIcon titleAccess="Staff" />
+                        || user.verified && <VerifiedIcon titleAccess="Verified" />
+                      }
                     </td>
                     <td className="px-4 py-3 text-right">
                       {sortBy === "views" ? user.total_views : user.total_clicks}

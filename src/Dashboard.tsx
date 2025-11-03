@@ -12,6 +12,8 @@ import "./Log.mjs";
 
 import LogoutIcon from "@mui/icons-material/LogoutOutlined";
 import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
+import BuildIcon from '@mui/icons-material/Build';
+import VerifiedIcon from '@mui/icons-material/Verified';
 import NoteAddIcon from '@mui/icons-material/NoteAddOutlined';
 import QueryStatsIcon from '@mui/icons-material/QueryStatsOutlined';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEventsOutlined';
@@ -28,8 +30,8 @@ export default function Dashboard() {
   >("statistics");
   const [isBanned, setIsBanned] = useState<boolean>(false);
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
-  // const [isStaff, setIsStaff] = useState<boolean>(false);
-  // const [verified, setVerified] = useState<boolean>(false);
+  const [isStaff, setIsStaff] = useState<boolean>(false);
+  const [verified, setVerified] = useState<boolean>(false);
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
 
   const [user, setUser] = useState<{
@@ -52,15 +54,15 @@ export default function Dashboard() {
           });
 
           // Check if user is banned
-          fetch("/account/user", { credentials: "include" })
+          fetch("/account/me", { credentials: "include" })
             .then((res) => {
               if (res.status === 403) {
                 setIsBanned(true);
               } else if (res.ok) {
                 res.json().then((userData) => {
                   setIsAdmin(userData.is_admin);
-                  // setIsStaff(userData.is_staff);
-                  // setVerified(userData.verified);
+                  setIsStaff(userData.is_staff);
+                  setVerified(userData.verified);
                 });
               }
             })
@@ -215,7 +217,11 @@ export default function Dashboard() {
             })()}
 
             <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-              {isAdmin && <AdminPanelSettingsIcon />}
+              {
+                isAdmin && <AdminPanelSettingsIcon titleAccess="Administrator" />
+                || isStaff && <BuildIcon titleAccess="Staff" />
+                || verified && <VerifiedIcon titleAccess="Verified" />
+              }
               <span style={{ fontSize: "0.9rem" }}>{user !== null ? user.username : "Guest"}</span>
             </div>
           </div>

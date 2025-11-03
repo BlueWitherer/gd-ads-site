@@ -76,6 +76,22 @@ func generateSessionID() string {
 	return uuid.New().String() // uuid v4
 }
 
+func getAvatarURL(userID, avatarHash string) string {
+	if avatarHash == "" {
+		var avId int
+		if len(userID) > 0 {
+			lastChar := userID[len(userID)-1]
+			avId = int(lastChar) % 5
+		} else {
+			avId = 0
+		}
+
+		return fmt.Sprintf("https://cdn.discordapp.com/embed/avatars/%d.png", avId)
+	}
+
+	return fmt.Sprintf("https://cdn.discordapp.com/avatars/%s/%s.webp", userID, avatarHash)
+}
+
 func init() {
 	log.Info("Starting authorization handlers...")
 
@@ -216,7 +232,7 @@ func init() {
 				return
 			}
 
-			if err := database.UpsertUser(user.ID, user.Username); err != nil {
+			if err := database.UpsertUser(user.ID, user.Username, getAvatarURL(user.ID, user.Avatar)); err != nil {
 				log.Error("Failed to upsert user: %s", err.Error())
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
@@ -324,7 +340,7 @@ func init() {
 		w.Write([]byte("Logged out successfully"))
 	})
 
-	http.HandleFunc("/account/user", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/account/me", func(w http.ResponseWriter, r *http.Request) {
 		header := w.Header()
 
 		header.Set("Access-Control-Allow-Origin", "*")

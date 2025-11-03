@@ -54,7 +54,7 @@ func GetAdUnixExpiry(ad utils.Ad) int64 {
 
 // fetches all ads for a given user
 func ListAllAdvertisements() ([]utils.Ad, error) {
-	stmt, err := utils.PrepareStmt(dat, "SELECT ad_id, user_id, level_id, type, image_url, created_at, pending FROM advertisements ORDER BY ad_id DESC")
+	stmt, err := utils.PrepareStmt(dat, "SELECT * FROM advertisements ORDER BY ad_id DESC")
 	if err != nil {
 		return nil, err
 	}
@@ -69,7 +69,18 @@ func ListAllAdvertisements() ([]utils.Ad, error) {
 	var out []utils.Ad
 	for rows.Next() {
 		var r utils.Ad
-		if err := rows.Scan(&r.AdID, &r.UserID, &r.LevelID, &r.Type, &r.ImageURL, &r.Created, &r.Pending); err != nil {
+		if err := rows.Scan(
+			&r.AdID,
+			&r.UserID,
+			&r.LevelID,
+			&r.Type,
+			&r.Views,
+			&r.Clicks,
+			&r.ImageURL,
+			&r.Created,
+			&r.Pending,
+			&r.BoostCount,
+		); err != nil {
 			return nil, err
 		}
 
@@ -98,7 +109,18 @@ func ListPendingAdvertisements() ([]utils.Ad, error) {
 	out := make([]utils.Ad, 0)
 	for rows.Next() {
 		var r utils.Ad
-		if err := rows.Scan(&r.AdID, &r.UserID, &r.LevelID, &r.Type, &r.ImageURL, &r.Created, &r.Pending); err != nil {
+		if err := rows.Scan(
+			&r.AdID,
+			&r.UserID,
+			&r.LevelID,
+			&r.Type,
+			&r.Views,
+			&r.Clicks,
+			&r.ImageURL,
+			&r.Created,
+			&r.Pending,
+			&r.BoostCount,
+		); err != nil {
 			return nil, err
 		}
 
@@ -174,7 +196,18 @@ func GetAdvertisement(adId int64) (utils.Ad, error) {
 	row := stmt.QueryRow(adId)
 	if row != nil {
 		var r utils.Ad
-		if err := row.Scan(&r.AdID, &r.UserID, &r.LevelID, &r.Type, &r.ImageURL, &r.Created, &r.Pending); err != nil {
+		if err := row.Scan(
+			&r.AdID,
+			&r.UserID,
+			&r.LevelID,
+			&r.Type,
+			&r.Views,
+			&r.Clicks,
+			&r.ImageURL,
+			&r.Created,
+			&r.Pending,
+			&r.BoostCount,
+		); err != nil {
 			if err == sql.ErrNoRows {
 				return utils.Ad{}, nil
 			}
@@ -285,7 +318,7 @@ func DeleteAllExpiredAds() error {
 				log.Error("Failed to remove file %s: %s", path, err.Error())
 			}
 		} else {
-			log.Debug("utils.Ad %s is still valid", path)
+			log.Debug("Advertisement %s is still valid", path)
 		}
 
 		return nil
@@ -299,7 +332,7 @@ func DeleteAllExpiredAds() error {
 	return nil
 }
 
-// CountActiveAdvertisementsByUser returns the count of active (non-expired) advertisements for a user
+// returns the count of active (non-expired) advertisements for a user
 func CountActiveAdvertisementsByUser(userId string) (int, error) {
 	if userId == "" {
 		return 0, fmt.Errorf("empty user id")

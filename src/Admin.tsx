@@ -62,7 +62,7 @@ export default function Admin() {
   useEffect(() => {
     async function checkAdmin() {
       try {
-        const res = await fetch("/account/user", { credentials: "include" });
+        const res = await fetch("/account/me", { credentials: "include" });
         if (res.ok) {
           const user: User = await res.json();
           if (!user.is_admin) {
