@@ -44,7 +44,7 @@ func newStat(r *http.Request, adEvent utils.AdEvent) (int, error) {
 			log.Error("Failed to create database click statistic: %s", err.Error())
 			return http.StatusInternalServerError, err
 		} else {
-			log.Info("click passed: %d", body.AccountID)
+			log.Info("%s passed for player %d", adEvent, body.AccountID)
 		}
 	} else {
 		return http.StatusUnauthorized, fmt.Errorf("argon user invalid")

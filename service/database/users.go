@@ -8,17 +8,17 @@ import (
 	"service/utils"
 )
 
-func GetUser(id string) (utils.User, error) {
+func GetUser(id string) (*utils.User, error) {
 	if id == "" {
-		return utils.User{}, fmt.Errorf("empty user id")
+		return nil, fmt.Errorf("empty user id")
 	}
 
 	stmt, err := utils.PrepareStmt(dat, "SELECT * FROM users WHERE id = ?")
 	if err != nil {
-		return utils.User{}, err
+		return nil, err
 	}
 
-	var user utils.User
+	user := new(utils.User)
 	err = stmt.QueryRow(id).Scan(
 		&user.ID,
 		&user.Username,
@@ -34,13 +34,13 @@ func GetUser(id string) (utils.User, error) {
 		&user.Updated,
 	)
 	if err != nil {
-		return utils.User{}, err
+		return nil, err
 	}
 
 	return user, nil
 }
 
-func GetAllUsers() ([]utils.User, error) {
+func GetAllUsers() ([]*utils.User, error) {
 	stmt, err := utils.PrepareStmt(dat, "SELECT * FROM users ORDER BY id DESC")
 	if err != nil {
 		return nil, err
@@ -53,9 +53,9 @@ func GetAllUsers() ([]utils.User, error) {
 	}
 	defer users.Close()
 
-	var out []utils.User
+	var out []*utils.User
 	for users.Next() {
-		var u utils.User
+		u := new(utils.User)
 		if err := users.Scan(
 			&u.ID,
 			&u.Username,
@@ -128,17 +128,17 @@ func IncrementUserStats(userId string, viewsDelta int, clicksDelta int) error {
 	return err
 }
 
-func BanUser(id string) (utils.User, error) {
+func BanUser(id string) (*utils.User, error) {
 	// delete all advertisements associated with the user
 	deleteAdsStmt, err := utils.PrepareStmt(dat, "SELECT * FROM advertisements WHERE user_id = ?")
 	if err != nil {
-		return utils.User{}, err
+		return nil, err
 	}
 	defer deleteAdsStmt.Close()
 
 	rows, err := deleteAdsStmt.Query(id)
 	if err != nil {
-		return utils.User{}, err
+		return nil, err
 	}
 
 	ads := make([]utils.Ad, 0)
@@ -156,7 +156,7 @@ func BanUser(id string) (utils.User, error) {
 			&r.Pending,
 			&r.BoostCount,
 		); err != nil {
-			return utils.User{}, err
+			return nil, err
 		}
 
 		ads = append(ads, r)
@@ -164,54 +164,54 @@ func BanUser(id string) (utils.User, error) {
 
 	user, err := GetUser(id)
 	if err != nil {
-		return utils.User{}, err
+		return nil, err
 	}
 
 	for _, a := range ads {
 		t, err := utils.AdTypeFromInt(a.Type)
 		if err != nil {
-			return utils.User{}, err
+			return nil, err
 		}
 
 		adDir := filepath.Join("..", "ad_storage", string(t), fmt.Sprintf("%s-%d.webp", a.UserID, a.AdID))
 		err = os.Remove(adDir)
 		if err != nil {
-			return utils.User{}, err
+			return nil, err
 		}
 	}
 
 	// ban the user
 	stmt, err := utils.PrepareStmt(dat, "UPDATE users SET banned = TRUE WHERE id = ?")
 	if err != nil {
-		return utils.User{}, err
+		return nil, err
 	}
 	defer stmt.Close()
 
 	_, err = stmt.Exec(id)
 	if err != nil {
-		return utils.User{}, err
+		return nil, err
 	}
 
 	return user, nil
 }
 
-func UnbanUser(id string) (utils.User, error) {
+func UnbanUser(id string) (*utils.User, error) {
 	// unban the user
 	stmt, err := utils.PrepareStmt(dat, "UPDATE users SET banned = FALSE WHERE id = ?")
 	if err != nil {
-		return utils.User{}, err
+		return nil, err
 	}
 	defer stmt.Close()
 
 	_, err = stmt.Exec(id)
 	if err != nil {
-		return utils.User{}, err
+		return nil, err
 	}
 
 	return GetUser(id)
 }
 
-func UserLeaderboard(stat utils.StatBy, page uint64, maxPerPage uint64) ([]utils.User, error) {
+func UserLeaderboard(stat utils.StatBy, page uint64, maxPerPage uint64) ([]*utils.User, error) {
 	stmt, err := utils.PrepareStmt(dat, fmt.Sprintf("SELECT * FROM users WHERE banned = FALSE ORDER BY %s DESC", stat))
 	if err != nil {
 		return nil, err
@@ -224,35 +224,34 @@ func UserLeaderboard(stat utils.StatBy, page uint64, maxPerPage uint64) ([]utils
 	}
 	defer rows.Close()
 
-	var out []utils.User
+	var out []*utils.User
 	for rows.Next() {
-		var r utils.User
-
+		u := new(utils.User)
 		if err := rows.Scan(
-			&r.ID,
-			&r.Username,
-			&r.AvatarURL,
-			&r.TotalViews,
-			&r.TotalClicks,
-			&r.IsAdmin,
-			&r.IsStaff,
-			&r.Verified,
-			&r.Banned,
-			&r.BoostCount,
-			&r.Created,
-			&r.Updated,
+			&u.ID,
+			&u.Username,
+			&u.AvatarURL,
+			&u.TotalViews,
+			&u.TotalClicks,
+			&u.IsAdmin,
+			&u.IsStaff,
+			&u.Verified,
+			&u.Banned,
+			&u.BoostCount,
+			&u.Created,
+			&u.Updated,
 		); err != nil {
 			return nil, err
 		}
 
-		out = append(out, r)
+		out = append(out, u)
 	}
 
 	start := page * maxPerPage
 	end := start + maxPerPage
 
 	if start >= uint64(len(out)) {
-		return []utils.User{}, nil
+		return make([]*utils.User, 0), nil
 	}
 
 	if end > uint64(len(out)) {

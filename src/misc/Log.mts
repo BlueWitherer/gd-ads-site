@@ -38,8 +38,9 @@ const logMsg = (
 ): [string, ...string[]] => {
     const txt = args.join(' ');
     return [
-        `%c${time} | %c${tag} | %c${txt}`,
+        `%c${time}%c | %c${tag} | %c${txt}`,
         LogFormat.gray,
+        color,
         `${LogFormat.bold};${color}`,
         color,
     ];

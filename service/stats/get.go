@@ -7,7 +7,6 @@ import (
 	"service/access"
 	"service/database"
 	"service/log"
-	"service/utils"
 )
 
 func init() {
@@ -38,16 +37,11 @@ func init() {
 
 		header.Set("Content-Type", "application/json")
 
-		views, clicks, err := database.GetUserTotals(uid)
+		stats, err := database.GetUserTotals(uid)
 		if err != nil {
 			log.Error("Failed to fetch user totals: %s", err.Error())
 			http.Error(w, "Failed to fetch stats", http.StatusInternalServerError)
 			return
-		}
-
-		stats := utils.Stats{
-			Views:  views,
-			Clicks: clicks,
 		}
 
 		log.Info("Retrieved stats for user: %s", uid)
@@ -74,22 +68,16 @@ func init() {
 		}
 
 		// Get global stats from database
-		totalViews, totalClicks, adCount, err := database.GetGlobalStats()
+		stats, err := database.GetGlobalStats()
 		if err != nil {
 			log.Error("Failed to fetch global stats: %s", err.Error())
 			http.Error(w, "Failed to fetch stats", http.StatusInternalServerError)
 			return
 		}
 
-		globalStats := utils.GlobalStats{
-			TotalViews:  totalViews,
-			TotalClicks: totalClicks,
-			AdCount:     adCount,
-		}
-
-		log.Debug("Retrieved global stats - Views: %d, Clicks: %d, Ads: %d", totalViews, totalClicks, adCount)
+		log.Debug("Retrieved global stats - Views: %d, Clicks: %d, Ads: %d", stats.TotalViews, stats.TotalClicks, stats.AdCount)
 		w.WriteHeader(http.StatusOK)
-		if err := json.NewEncoder(w).Encode(globalStats); err != nil {
+		if err := json.NewEncoder(w).Encode(stats); err != nil {
 			log.Error("Failed to encode global stats response: %s", err.Error())
 			http.Error(w, "Failed to encode response", http.StatusInternalServerError)
 			return
