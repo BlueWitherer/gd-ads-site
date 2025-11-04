@@ -262,7 +262,7 @@ export default function Account() {
       <div className="account-actions">
         <div className="account-actions-row">
           <button
-            className="nine-slice-button account-delete-button"
+            className="nine-slice-button small account-delete-button"
             onClick={async () => {
               if (
                 !confirm(
@@ -293,7 +293,7 @@ export default function Account() {
           </button>
 
           {(user?.is_admin || user?.is_staff) && (
-            <button className="nine-slice-button" onClick={handlePendingAds}>
+            <button className="nine-slice-button small" onClick={handlePendingAds}>
               Pending Ads
             </button>
           )}
@@ -301,7 +301,7 @@ export default function Account() {
 
         {user?.is_admin && (
           <button
-            className="nine-slice-button account-admin-button"
+            className="nine-slice-button small account-admin-button"
             onClick={() => {
               window.location.href = "/admin";
             }}

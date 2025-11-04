@@ -142,8 +142,7 @@ function Manage() {
                     </div>
                     <div className="stat-item">
                       <strong>
-                        Click/View Ratio:
-                        {advert.views && advert.views > 0
+                        Click/View Ratio: {advert.views && advert.views > 0
                           ? (
                               ((advert.clicks || 0) / advert.views) *
                               100

@@ -148,7 +148,7 @@ export default function Leaderboard() {
             <button
               onClick={() => setPage(Math.max(0, page - 1))}
               disabled={page === 0}
-              className="nine-slice-button leaderboard-pagination-button"
+              className="nine-slice-button small leaderboard-pagination-button"
             >
               Previous
             </button>
@@ -156,7 +156,7 @@ export default function Leaderboard() {
             <button
               onClick={() => setPage(page + 1)}
               disabled={!hasNext}
-              className="nine-slice-button leaderboard-pagination-button"
+              className="nine-slice-button small leaderboard-pagination-button"
             >
               Next
             </button>

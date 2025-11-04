@@ -181,12 +181,8 @@ export default function App() {
         <div id="login-section" className="login-section-wrapper">
           <div className="maintenance-banner">
             <p>
-              GD Advertisement Manager is currently in a process of overhauling
-              the backend of the server for better performance.
-            </p>
-            <p>
-              Expect some downtime and issues during this period. We will have
-              some exciting features coming soon! :D
+              Views and Clicks does not currently work on v1.0.6 or older.
+              Please update your Geode Mod to v1.0.7 or newer.
             </p>
           </div>
           <h1 className="login-title">GD Advertisement Manager</h1>

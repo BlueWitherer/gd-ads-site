@@ -348,14 +348,6 @@
   object-fit: contain;
 }
 
-.credit-popup-bg {
-  border-style: solid;
-  border-width: 16px;
-  border-image: url('../assets/square03.png') 16 fill stretch;
-  background: transparent;
-  padding: 15px;
-}
-
 
 .login-button {
   display: inline-flex;

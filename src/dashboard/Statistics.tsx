@@ -62,12 +62,6 @@ export default function Statistics() {
   return (
     <>
       <h1 className="stats-title">Statistics</h1>
-      <div className="stats-warning">
-        <p>
-          Please update the Geode Mod to v1.0.6 or higher for clicks and views
-          to be tracked properly.
-        </p>
-      </div>
       <div className="stats-personal-container">
         <div className="stat-box stats-chart-box">
           {views !== null &&
@@ -81,13 +75,13 @@ export default function Statistics() {
                     {
                       id: 0,
                       value: views,
-                      label: "My Views",
+                      label: "Total Views",
                       color: "#2196f3",
                     },
                     {
                       id: 1,
                       value: clicks,
-                      label: "My Clicks",
+                      label: "Total Clicks",
                       color: "#4caf50",
                     },
                   ],
