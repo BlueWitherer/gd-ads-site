@@ -13,6 +13,8 @@ import BadgeIcon from "@mui/icons-material/BadgeOutlined";
 import VisibilityIcon from "@mui/icons-material/VisibilityOutlined";
 import MouseIcon from "@mui/icons-material/MouseOutlined";
 import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
+import BuildIcon from "@mui/icons-material/Build";
+import VerifiedIcon from "@mui/icons-material/Verified";
 import GavelIcon from "@mui/icons-material/GavelOutlined";
 import AccessTimeIcon from "@mui/icons-material/AccessTimeOutlined";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForeverOutlined";
@@ -21,6 +23,8 @@ type User = {
   id: string;
   username: string;
   is_admin: boolean;
+  is_staff: boolean;
+  verified: boolean;
 };
 
 type Ad = {
@@ -42,6 +46,8 @@ type SearchResult = {
     total_views: number;
     total_clicks: number;
     is_admin: boolean;
+    is_staff: boolean;
+    verified: boolean;
     banned: boolean;
   };
   ads: Ad[];
@@ -50,6 +56,8 @@ type SearchResult = {
 export default function Admin() {
   const navigate = useNavigate();
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
+  const [isStaff, setIsStaff] = useState<boolean>(false);
+  const [verified, setVerified] = useState<boolean>(false);
   const [loading, setLoading] = useState(true);
   const [searchInput, setSearchInput] = useState("");
   const [searchResult, setSearchResult] = useState<SearchResult | null>(null);
@@ -68,8 +76,12 @@ export default function Admin() {
           if (!user.is_admin) {
             navigate("/dashboard");
             return;
-          }
+          };
+
           setIsAdmin(true);
+
+          setIsStaff(user.is_staff);
+          setVerified(user.verified);
         } else {
           navigate("/");
         }
@@ -78,8 +90,8 @@ export default function Admin() {
         navigate("/");
       } finally {
         setLoading(false);
-      }
-    }
+      };
+    };
 
     checkAdmin();
   }, [navigate]);
@@ -288,6 +300,11 @@ export default function Admin() {
                     <div className="user-info-item">
                       <PersonPinIcon />
                       <strong>Username:</strong> {searchResult.user.username}
+                    </div>
+                    <div className="user-info-item">
+                      {(isAdmin && <AdminPanelSettingsIcon titleAccess="Administrator" />)}
+                      {(isStaff && <BuildIcon titleAccess="Staff" />)}
+                      {(verified && <VerifiedIcon titleAccess="Verified" />)}
                     </div>
                     <div className="user-info-item">
                       <BadgeIcon />

@@ -12,6 +12,56 @@ import (
 	"service/utils"
 )
 
+func newAds() *[]*utils.Ad {
+	return new([]*utils.Ad)
+}
+
+var currentAds *[]*utils.Ad = newAds()
+var currentAdsSince = time.Now()
+
+func getAds() *[]*utils.Ad {
+	if currentAds != nil {
+		log.Debug("Returning cached ads list")
+		currentAdsSince = time.Now()
+		return currentAds
+	}
+
+	return newAds()
+}
+
+func findAd(id int64) (*utils.Ad, bool) {
+	if ads := getAds(); ads != nil {
+		for _, a := range *ads {
+			if a.AdID == id {
+				return a, true
+			}
+		}
+	}
+
+	return nil, false
+}
+
+func setAd(ad *utils.Ad) *[]*utils.Ad {
+	if ads := getAds(); ads != nil {
+		log.Debug("Caching ad %d", ad.AdID)
+		*currentAds = append(*ads, ad)
+	}
+
+	return currentAds
+}
+
+func deleteAd(id int64) *[]*utils.Ad {
+	if ads := getAds(); ads != nil {
+		for i, a := range *ads {
+			if a.AdID == id {
+				*currentAds = append((*ads)[:i], (*ads)[i+1:]...)
+			}
+		}
+	}
+
+	return currentAds
+}
+
 func ApproveAd(id int64) (*utils.Ad, error) {
 	stmt, err := utils.PrepareStmt(dat, "UPDATE advertisements SET pending = FALSE WHERE ad_id = ?")
 	if err != nil {
@@ -43,6 +93,10 @@ func CreateAdvertisement(userId string, levelID string, adType int) (int64, erro
 	res, err := stmt.Exec(userId, levelID, adType, true)
 	if err != nil {
 		return 0, err
+	}
+
+	if time.Since(currentAdsSince) > 15*time.Minute {
+		currentAds = nil
 	}
 
 	return res.LastInsertId()
@@ -87,6 +141,9 @@ func ListAllAdvertisements() ([]*utils.Ad, error) {
 		}
 
 		r.Expiry = GetAdUnixExpiry(r)
+
+		currentAds = setAd(r)
+
 		out = append(out, r)
 	}
 
@@ -125,6 +182,8 @@ func ListPendingAdvertisements() ([]*utils.Ad, error) {
 		}
 
 		r.Expiry = GetAdUnixExpiry(r)
+
+		currentAds = setAd(r)
 
 		out = append(out, r)
 	}
@@ -187,6 +246,10 @@ func FilterAdsByType(rows []*utils.Ad, adType utils.AdType) ([]*utils.Ad, error)
 }
 
 func GetAdvertisement(adId int64) (*utils.Ad, error) {
+	if val, found := findAd(adId); found {
+		return val, nil
+	}
+
 	stmt, err := utils.PrepareStmt(dat, "SELECT * FROM advertisements WHERE ad_id = ?")
 	if err != nil {
 		return nil, err
@@ -218,6 +281,8 @@ func GetAdvertisement(adId int64) (*utils.Ad, error) {
 
 		r.Expiry = GetAdUnixExpiry(r)
 
+		currentAds = setAd(r)
+
 		return r, nil
 	} else {
 		return nil, fmt.Errorf("ad not found")
@@ -226,6 +291,10 @@ func GetAdvertisement(adId int64) (*utils.Ad, error) {
 
 // returns the owning user_id for an ad
 func GetAdvertisementOwnerId(adId int64) (string, error) {
+	if val, found := findAd(adId); found {
+		return val.UserID, nil
+	}
+
 	var uid string
 
 	stmt, err := utils.PrepareStmt(dat, "SELECT user_id FROM advertisements WHERE ad_id = ?")
@@ -252,6 +321,11 @@ func UpdateAdvertisementImageURL(adId int64, imageURL string) error {
 		return err
 	}
 	defer stmt.Close()
+
+	if val, found := findAd(adId); found {
+		val.ImageURL = imageURL
+		currentAds = setAd(val)
+	}
 
 	_, err = stmt.Exec(imageURL, adId)
 	return err
@@ -284,6 +358,8 @@ func DeleteAdvertisement(adId int64) (*utils.Ad, error) {
 	if err != nil {
 		return ad, err
 	}
+
+	currentAds = deleteAd(adId)
 
 	return ad, nil
 }
