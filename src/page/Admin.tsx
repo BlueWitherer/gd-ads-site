@@ -56,8 +56,6 @@ type SearchResult = {
 export default function Admin() {
   const navigate = useNavigate();
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
-  const [isStaff, setIsStaff] = useState<boolean>(false);
-  const [verified, setVerified] = useState<boolean>(false);
   const [loading, setLoading] = useState(true);
   const [searchInput, setSearchInput] = useState("");
   const [searchResult, setSearchResult] = useState<SearchResult | null>(null);
@@ -79,9 +77,6 @@ export default function Admin() {
           };
 
           setIsAdmin(true);
-
-          setIsStaff(user.is_staff);
-          setVerified(user.verified);
         } else {
           navigate("/");
         }
@@ -302,9 +297,10 @@ export default function Admin() {
                       <strong>Username:</strong> {searchResult.user.username}
                     </div>
                     <div className="user-info-item">
-                      {(isAdmin && <AdminPanelSettingsIcon titleAccess="Administrator" />)}
-                      {(isStaff && <BuildIcon titleAccess="Staff" />)}
-                      {(verified && <VerifiedIcon titleAccess="Verified" />)}
+                      {(searchResult.user.is_admin && <><AdminPanelSettingsIcon titleAccess="Administrator" /> Administrator{((searchResult.user.is_staff || searchResult.user.verified) && <br />)}</>)}
+                      {(searchResult.user.is_staff && <><BuildIcon titleAccess="Staff" /> Staff{(searchResult.user.verified && <br />)}</>)}
+                      {(searchResult.user.verified && <><VerifiedIcon titleAccess="Verified" /> Verified</>)}
+                      {(!searchResult.user.is_admin && !searchResult.user.is_staff && !searchResult.user.verified) && <>No roles</>}
                     </div>
                     <div className="user-info-item">
                       <BadgeIcon />
@@ -312,12 +308,10 @@ export default function Admin() {
                       <button
                         onClick={handleCopyUserId}
                         className="copy-button"
-                        aria-label="Copy user id"
+                        aria-label="Copy user ID"
                       >
                         {copied ? (
-                          <>
-                            <DoneIcon />
-                          </>
+                          <DoneIcon />
                         ) : (
                           <ContentCopyIcon />
                         )}
@@ -332,11 +326,6 @@ export default function Admin() {
                       <MouseIcon />
                       <strong>Total Clicks:</strong>{" "}
                       {searchResult.user.total_clicks}
-                    </div>
-                    <div className="user-info-item">
-                      <AdminPanelSettingsIcon />
-                      <strong>Admin:</strong>{" "}
-                      {searchResult.user.is_admin ? "Yes" : "No"}
                     </div>
                     <div className="user-info-item">
                       <GavelIcon />
