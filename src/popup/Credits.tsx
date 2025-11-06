@@ -68,7 +68,7 @@ export default function CreditsButton() {
               Privacy Policy
             </a>
             <button
-              className="nine-slice-button large credits-close-button"
+              className="nine-slice-button small credits-close-button"
               onClick={() => setOpen(false)}
             >
               Close

@@ -229,14 +229,14 @@ export default function Dashboard() {
             })()}
 
             <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+              <span style={{ fontSize: "1rem" }}>
+                {user !== null ? user.username : "Guest"}
+              </span>
               {(isAdmin && (
                 <AdminPanelSettingsIcon titleAccess="Administrator" />
               )) ||
                 (isStaff && <BuildIcon titleAccess="Staff" />) ||
                 (verified && <VerifiedIcon titleAccess="Verified" />)}
-              <span style={{ fontSize: "0.9rem" }}>
-                {user !== null ? user.username : "Guest"}
-              </span>
             </div>
           </div>
 

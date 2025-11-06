@@ -9,10 +9,10 @@ export default function RulesButton() {
   return (
     <>
       <button
-        className="nine-slice-button rules-button"
+        className="nine-slice-button small rules-button"
         onClick={() => setOpen(true)}
       >
-        Rules
+        Submission Rules
       </button>
       {open &&
         createPortal(
@@ -53,10 +53,7 @@ export default function RulesButton() {
                   </div>
                   <div className="rule-item">
                     <WarningIcon className="rule-icon" />
-                    <p>
-                      AI Generated advertisements are not allowed. Expect if is
-                      a well-known generated image like brainrot.
-                    </p>
+                    <p>AI generated advertisements are not allowed.</p>
                   </div>
                   <div className="rule-item">
                     <WarningIcon className="rule-icon" />
@@ -69,13 +66,23 @@ export default function RulesButton() {
                   <div className="rule-item warning">
                     <WarningIcon className="rule-icon" />
                     <p>
-                      Violating this may result in a ban. <b>No appeals!</b>
+                      Do not attempt to inflate your views/clicks using bots or
+                      other methods. Not only this negatively impacts the server
+                      performance, but ruins the experiences for other users.
+                      Caught doing this will result in an immediate ban.
+                    </p>
+                  </div>
+                  <div className="rule-item warning">
+                    <WarningIcon className="rule-icon" />
+                    <p>
+                      Violating the rules may result in a ban or your
+                      advertisement/s removal without warning. No appeals!
                     </p>
                   </div>
                 </div>
               </div>
               <button
-                className="nine-slice-button large rules-close-button"
+                className="nine-slice-button small rules-close-button"
                 onClick={() => setOpen(false)}
               >
                 Close

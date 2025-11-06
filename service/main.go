@@ -131,22 +131,13 @@ func main() {
 		log.Info("Server pinged!")
 		header := w.Header()
 
-		asciiArt, err := os.ReadFile("../src/assets/aw-ascii.txt")
-		if err != nil {
-			log.Error("Failed to read ASCII art: %s", err.Error())
+		header.Set("Access-Control-Allow-Origin", "*")
+		header.Set("Access-Control-Allow-Methods", "GET")
+		header.Set("Access-Control-Allow-Headers", "Content-Type")
+		header.Set("Content-Type", "text/plain")
 
-			header.Set("Access-Control-Allow-Origin", "*")
-			header.Set("Access-Control-Allow-Methods", "GET")
-			header.Set("Access-Control-Allow-Headers", "Content-Type")
-			header.Set("Content-Type", "text/plain")
-
-			w.WriteHeader(http.StatusOK)
-			w.Write([]byte("pong!"))
-		} else {
-			header.Set("Content-Type", "text/plain")
-			w.WriteHeader(http.StatusOK)
-			w.Write(asciiArt)
-		}
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("pong!"))
 	})
 
 	go func() {
