@@ -13,6 +13,8 @@ import BadgeIcon from "@mui/icons-material/BadgeOutlined";
 import VisibilityIcon from "@mui/icons-material/VisibilityOutlined";
 import MouseIcon from "@mui/icons-material/MouseOutlined";
 import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
+import BuildIcon from "@mui/icons-material/Build";
+import VerifiedIcon from "@mui/icons-material/Verified";
 import GavelIcon from "@mui/icons-material/GavelOutlined";
 import AccessTimeIcon from "@mui/icons-material/AccessTimeOutlined";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForeverOutlined";
@@ -21,6 +23,8 @@ type User = {
   id: string;
   username: string;
   is_admin: boolean;
+  is_staff: boolean;
+  verified: boolean;
 };
 
 type Ad = {
@@ -42,6 +46,8 @@ type SearchResult = {
     total_views: number;
     total_clicks: number;
     is_admin: boolean;
+    is_staff: boolean;
+    verified: boolean;
     banned: boolean;
   };
   ads: Ad[];
@@ -68,7 +74,8 @@ export default function Admin() {
           if (!user.is_admin) {
             navigate("/dashboard");
             return;
-          }
+          };
+
           setIsAdmin(true);
         } else {
           navigate("/");
@@ -78,8 +85,8 @@ export default function Admin() {
         navigate("/");
       } finally {
         setLoading(false);
-      }
-    }
+      };
+    };
 
     checkAdmin();
   }, [navigate]);
@@ -290,17 +297,21 @@ export default function Admin() {
                       <strong>Username:</strong> {searchResult.user.username}
                     </div>
                     <div className="user-info-item">
+                      {(searchResult.user.is_admin && <><AdminPanelSettingsIcon titleAccess="Administrator" /> Administrator{((searchResult.user.is_staff || searchResult.user.verified) && <br />)}</>)}
+                      {(searchResult.user.is_staff && <><BuildIcon titleAccess="Staff" /> Staff{(searchResult.user.verified && <br />)}</>)}
+                      {(searchResult.user.verified && <><VerifiedIcon titleAccess="Verified" /> Verified</>)}
+                      {(!searchResult.user.is_admin && !searchResult.user.is_staff && !searchResult.user.verified) && <>No roles</>}
+                    </div>
+                    <div className="user-info-item">
                       <BadgeIcon />
                       <strong>User ID:</strong> {searchResult.user.id}{" "}
                       <button
                         onClick={handleCopyUserId}
                         className="copy-button"
-                        aria-label="Copy user id"
+                        aria-label="Copy user ID"
                       >
                         {copied ? (
-                          <>
-                            <DoneIcon />
-                          </>
+                          <DoneIcon />
                         ) : (
                           <ContentCopyIcon />
                         )}
@@ -315,11 +326,6 @@ export default function Admin() {
                       <MouseIcon />
                       <strong>Total Clicks:</strong>{" "}
                       {searchResult.user.total_clicks}
-                    </div>
-                    <div className="user-info-item">
-                      <AdminPanelSettingsIcon />
-                      <strong>Admin:</strong>{" "}
-                      {searchResult.user.is_admin ? "Yes" : "No"}
                     </div>
                     <div className="user-info-item">
                       <GavelIcon />

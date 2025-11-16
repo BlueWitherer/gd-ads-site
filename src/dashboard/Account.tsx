@@ -261,9 +261,7 @@ export default function Account() {
                 className="account-copy-button"
               >
                 {copied ? (
-                  <>
-                    <DoneIcon />
-                  </>
+                  <DoneIcon />
                 ) : (
                   <ContentCopyIcon />
                 )}
