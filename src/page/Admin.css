@@ -80,22 +80,26 @@
   font-size: 0.85rem;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
   position: relative;
   pointer-events: auto;
+  overflow: hidden;
 }
 
 .pending-badge {
   position: absolute;
   top: 0.5rem;
-  right: 0.5rem;
+  left: 0.5rem;
   background-color: #f39c12;
   color: black;
   padding: 0.25rem 0.5rem;
   border-radius: 3px;
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   font-weight: bold;
   z-index: 10;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  width: fit-content;
 }
 
 .ad-image-link {

@@ -31,6 +31,7 @@ export default function Account() {
   const [user, setUser] = useState<User | null>(null);
   const [pendingAds, setPendingAds] = useState<Ad[] | null>(null);
   const [showingPending, setShowingPending] = useState(false);
+  const [pendingCount, setPendingCount] = useState<number>(0);
 
   const [copied, setCopied] = useState(false);
 
@@ -47,7 +48,23 @@ export default function Account() {
       }
     }
 
+    async function fetchPendingCount() {
+      try {
+        const res = await fetch("/ads/pending", {
+          method: "GET",
+          credentials: "include",
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setPendingCount(Array.isArray(data) ? data.length : 0);
+        }
+      } catch (err) {
+        console.error("Failed to fetch pending ads count:", err);
+      }
+    }
+
     fetchUser();
+    fetchPendingCount();
   }, []);
 
   const handleCopyUserId = async () => {
@@ -66,6 +83,7 @@ export default function Account() {
         console.log("Is array?", Array.isArray(data));
         console.log("Length:", data?.length);
         setPendingAds(data);
+        setPendingCount(Array.isArray(data) ? data.length : 0);
         setShowingPending(true);
       } else {
         const txt = await res.text();
@@ -294,7 +312,7 @@ export default function Account() {
 
           {(user?.is_admin || user?.is_staff) && (
             <button className="nine-slice-button small" onClick={handlePendingAds}>
-              Pending Ads
+              Pending Ads ({pendingCount})
             </button>
           )}
         </div>
