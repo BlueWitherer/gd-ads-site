@@ -78,6 +78,7 @@ func GetUserTotals(userId string) (utils.Stats, error) {
 	if err != nil {
 		return stats, err
 	}
+	defer stmt.Close()
 
 	err = stmt.QueryRow(userId).Scan(&stats.Views, &stats.Clicks)
 	if err != nil {

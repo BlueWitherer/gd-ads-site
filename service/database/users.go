@@ -17,6 +17,7 @@ func GetUser(id string) (*utils.User, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer stmt.Close()
 
 	user := new(utils.User)
 	err = stmt.QueryRow(id).Scan(
@@ -140,6 +141,7 @@ func BanUser(id string) (*utils.User, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 
 	ads := make([]utils.Ad, 0)
 	for rows.Next() {

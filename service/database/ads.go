@@ -445,6 +445,7 @@ func GetAdStats(adId int64) (int, int, error) {
 	if err != nil {
 		return 0, 0, err
 	}
+	defer viewStmt.Close()
 
 	var views int
 	err = viewStmt.QueryRow(adId).Scan(&views)
@@ -457,6 +458,7 @@ func GetAdStats(adId int64) (int, int, error) {
 	if err != nil {
 		return 0, 0, err
 	}
+	defer clickStmt.Close()
 
 	var clicks int
 	err = clickStmt.QueryRow(adId).Scan(&clicks)
