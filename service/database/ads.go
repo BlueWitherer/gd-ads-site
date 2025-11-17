@@ -110,6 +110,10 @@ func GetAdUnixExpiry(ad *utils.Ad) int64 {
 
 // fetches all ads for a given user
 func ListAllAdvertisements() ([]*utils.Ad, error) {
+	if ads := getAds(); ads != nil {
+		return *ads, nil
+	}
+
 	stmt, err := utils.PrepareStmt(dat, "SELECT * FROM advertisements ORDER BY ad_id DESC")
 	if err != nil {
 		return nil, err
@@ -467,4 +471,96 @@ func GetAdStats(adId int64) (int, int, error) {
 	}
 
 	return views, clicks, nil
+}
+
+func NewReport(adId int64, accountId int, description string) error {
+	stmt, err := utils.PrepareStmt(dat, "INSERT INTO reports (ad_id, account_id, description) VALUES (?, ?, ?)")
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(adId, accountId, description)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func GetReport(id int64) (*utils.Report, error) {
+	stmt, err := utils.PrepareStmt(dat, "SELECT * FROM reports WHERE id = ?")
+	if err != nil {
+		return nil, err
+	}
+	defer stmt.Close()
+
+	report := new(utils.Report)
+	var adId int64
+	err = stmt.QueryRow(id).Scan(&report.ID, &adId, &report.AccountID, &report.Description, &report.Created)
+	if err != nil {
+		return nil, err
+	}
+
+	ad, err := GetAdvertisement(adId)
+	if err != nil {
+		return nil, err
+	}
+
+	report.Ad = *ad
+
+	return report, nil
+}
+
+func ListAllReports() ([]*utils.Report, error) {
+	stmt, err := utils.PrepareStmt(dat, "SELECT * FROM reports ORDER BY created_at ASC")
+	if err != nil {
+		return nil, err
+	}
+	defer stmt.Close()
+
+	rows, err := stmt.Query()
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var out []*utils.Report
+	for rows.Next() {
+		r := new(utils.Report)
+		var adId int64
+		if err := rows.Scan(
+			&adId,
+			&r.AccountID,
+			&r.Description,
+			&r.Created,
+		); err != nil {
+			return nil, err
+		}
+
+		ad, err := GetAdvertisement(adId)
+		if err != nil {
+			return nil, err
+		}
+		r.Ad = *ad
+
+		out = append(out, r)
+	}
+
+	return out, rows.Err()
+}
+
+func FinishReport(report *utils.Report) error {
+	stmt, err := utils.PrepareStmt(dat, "DELETE FROM reports WHERE id = ?")
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(report.ID)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

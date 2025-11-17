@@ -52,7 +52,6 @@ func init() {
 			query := r.URL.Query()
 			user := query.Get("user")
 
-			// Optional: filter by specific user if user parameter is provided
 			if user != "" {
 				adList, err = database.FilterAdsByUser(adList, user)
 				if err != nil {

@@ -440,7 +440,6 @@ func init() {
 				return
 			}
 
-			// if user is banned
 			if u.Banned {
 				http.Error(w, "User is banned", http.StatusForbidden)
 				return

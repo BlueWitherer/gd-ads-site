@@ -27,6 +27,13 @@ const (
 	StatByClicks StatBy = "total_clicks" // Filter stats by user
 )
 
+type ReportAction int
+
+const (
+	ReportActionDelete ReportAction = 1 // Delete the user's advertisement
+	ReportActionBan    ReportAction = 2 // Ban the user who owns the advertisement
+)
+
 type Stats struct {
 	Views  int `json:"views"`
 	Clicks int `json:"clicks"`
@@ -51,6 +58,14 @@ type Ad struct {
 	Expiry     int64     `json:"expiry"`      // Unix time of expiration
 	Pending    bool      `json:"pending"`     // Under review
 	BoostCount uint      `json:"boost_count"` // Available boosts
+}
+
+type Report struct {
+	ID          int64     `json:"id"`
+	Ad          Ad        `json:"ad"`
+	AccountID   int       `json:"account_id"`
+	Description string    `json:"description"`
+	Created     time.Time `json:"created_at"`
 }
 
 func AdTypeFromInt(t int) (AdType, error) {

@@ -129,6 +129,36 @@ func IncrementUserStats(userId string, viewsDelta int, clicksDelta int) error {
 	return err
 }
 
+func VerifyUser(id string) (*utils.User, error) {
+	stmt, err := utils.PrepareStmt(dat, "UPDATE users SET verified = TRUE WHERE id = ?")
+	if err != nil {
+		return nil, err
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(id)
+	if err != nil {
+		return nil, err
+	}
+
+	return GetUser(id)
+}
+
+func StaffUser(id string) (*utils.User, error) {
+	stmt, err := utils.PrepareStmt(dat, "UPDATE users SET is_staff = TRUE WHERE id = ?")
+	if err != nil {
+		return nil, err
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(id)
+	if err != nil {
+		return nil, err
+	}
+
+	return GetUser(id)
+}
+
 func BanUser(id string) (*utils.User, error) {
 	// delete all advertisements associated with the user
 	deleteAdsStmt, err := utils.PrepareStmt(dat, "SELECT * FROM advertisements WHERE user_id = ?")
@@ -164,11 +194,6 @@ func BanUser(id string) (*utils.User, error) {
 		ads = append(ads, r)
 	}
 
-	user, err := GetUser(id)
-	if err != nil {
-		return nil, err
-	}
-
 	for _, a := range ads {
 		t, err := utils.AdTypeFromInt(a.Type)
 		if err != nil {
@@ -180,6 +205,11 @@ func BanUser(id string) (*utils.User, error) {
 		if err != nil {
 			return nil, err
 		}
+	}
+
+	user, err := GetUser(id)
+	if err != nil {
+		return nil, err
 	}
 
 	// ban the user

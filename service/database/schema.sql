@@ -1,5 +1,3 @@
--- MariaDB schema for gd-ads-site
-
 CREATE TABLE IF NOT EXISTS users (
     id VARCHAR(32) NOT NULL,
     username VARCHAR(100) NOT NULL,
@@ -45,8 +43,19 @@ CREATE TABLE IF NOT EXISTS sessions (
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;
 
 CREATE TABLE IF NOT EXISTS argon (
-    account_id int(11) NOT NULL,
-    authtoken varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+    account_id INT(11) NOT NULL,
+    authtoken VARCHAR(255) COLLATE utf8_unicode_ci DEFAULT NULL,
     valid_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (account_id)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;
+
+CREATE TABLE IF NOT EXISTS reports (
+    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    ad_id BIGINT UNSIGNED NOT NULL,
+    account_id INT(11) NOT NULL,
+    description TEXT NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    KEY idx_ad_id (ad_id),
+    CONSTRAINT fx_ads_ad FOREIGN KEY (ad_id) REFERENCES advertisements (ad_id) ON DELETE CASCADE ON UPDATE CASCADE
+)
