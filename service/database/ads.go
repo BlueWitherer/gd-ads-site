@@ -110,10 +110,6 @@ func GetAdUnixExpiry(ad *utils.Ad) int64 {
 
 // fetches all ads for a given user
 func ListAllAdvertisements() ([]*utils.Ad, error) {
-	if ads := getAds(); ads != nil {
-		return *ads, nil
-	}
-
 	stmt, err := utils.PrepareStmt(dat, "SELECT * FROM advertisements ORDER BY ad_id DESC")
 	if err != nil {
 		return nil, err
