@@ -10,14 +10,14 @@ import (
 )
 
 func init() {
-	http.HandleFunc("/ads/get", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/ads/boost", func(w http.ResponseWriter, r *http.Request) {
 		header := w.Header()
 
 		header.Set("Access-Control-Allow-Origin", "*")
-		header.Set("Access-Control-Allow-Methods", "GET")
+		header.Set("Access-Control-Allow-Methods", "POST")
 		header.Set("Access-Control-Allow-Headers", "Content-Type")
 
-		if r.Method == http.MethodGet {
+		if r.Method == http.MethodPost {
 			header.Set("Content-Type", "application/json")
 
 			// require login
