@@ -16,22 +16,24 @@ func newAds() *[]*utils.Ad {
 	return new([]*utils.Ad)
 }
 
-var currentAds *[]*utils.Ad = newAds()
-var currentAdsSince = time.Now()
+// Current ads cache
+var currentAds *[]*utils.Ad = nil
+var currentAdsSince time.Time = time.Now()
 
 func getAds() *[]*utils.Ad {
 	if currentAds != nil {
 		log.Debug("Returning cached ads list")
-		currentAdsSince = time.Now()
 		return currentAds
 	}
+
+	currentAdsSince = time.Now()
 
 	return newAds()
 }
 
 func findAd(id int64) (*utils.Ad, bool) {
-	if ads := getAds(); ads != nil {
-		for _, a := range *ads {
+	if currentAds != nil {
+		for _, a := range *currentAds {
 			if a.AdID == id {
 				return a, true
 			}
@@ -42,24 +44,24 @@ func findAd(id int64) (*utils.Ad, bool) {
 }
 
 func setAd(ad *utils.Ad) *[]*utils.Ad {
-	if ads := getAds(); ads != nil {
+	if currentAds != nil {
 		log.Debug("Caching ad %d", ad.AdID)
-		*currentAds = append(*ads, ad)
+		*currentAds = append(*currentAds, ad)
 	}
 
-	return currentAds
+	return getAds()
 }
 
 func deleteAd(id int64) *[]*utils.Ad {
-	if ads := getAds(); ads != nil {
-		for i, a := range *ads {
+	if currentAds != nil {
+		for i, a := range *currentAds {
 			if a.AdID == id {
-				*currentAds = append((*ads)[:i], (*ads)[i+1:]...)
+				*currentAds = append((*currentAds)[:i], (*currentAds)[i+1:]...)
 			}
 		}
 	}
 
-	return currentAds
+	return getAds()
 }
 
 func ApproveAd(id int64) (*utils.Ad, error) {
@@ -95,10 +97,6 @@ func CreateAdvertisement(userId string, levelID string, adType int) (int64, erro
 		return 0, err
 	}
 
-	if time.Since(currentAdsSince) > 15*time.Minute {
-		currentAds = nil
-	}
-
 	return res.LastInsertId()
 }
 
@@ -110,6 +108,15 @@ func GetAdUnixExpiry(ad *utils.Ad) int64 {
 
 // fetches all ads for a given user
 func ListAllAdvertisements() ([]*utils.Ad, error) {
+	if time.Since(currentAdsSince) > 15*time.Minute {
+		currentAds = nil
+	}
+
+	if currentAds != nil && len(*currentAds) > 0 {
+		log.Debug("Returning cached ads list")
+		return *getAds(), nil
+	}
+
 	stmt, err := utils.PrepareStmt(dat, "SELECT * FROM advertisements ORDER BY ad_id DESC")
 	if err != nil {
 		return nil, err
@@ -256,7 +263,6 @@ func GetAdvertisement(adId int64) (*utils.Ad, error) {
 	}
 	defer stmt.Close()
 
-	// QueryRow is more convenient when expecting a single row
 	row := stmt.QueryRow(adId)
 	if row != nil {
 		r := new(utils.Ad)
@@ -322,10 +328,13 @@ func UpdateAdvertisementImageURL(adId int64, imageURL string) error {
 	}
 	defer stmt.Close()
 
-	if val, found := findAd(adId); found {
-		val.ImageURL = imageURL
-		currentAds = setAd(val)
+	ad, err := GetAdvertisement(adId)
+	if err != nil {
+		return err
 	}
+
+	ad.ImageURL = imageURL
+	currentAds = setAd(ad)
 
 	_, err = stmt.Exec(imageURL, adId)
 	return err
@@ -410,6 +419,8 @@ func DeleteAllExpiredAds() error {
 		return err
 	}
 
+	currentAds = nil // clear cache
+
 	return nil
 }
 
@@ -467,6 +478,47 @@ func GetAdStats(adId int64) (int, int, error) {
 	}
 
 	return views, clicks, nil
+}
+
+func BoostAd(adId int64, boosts uint, user string) error {
+	deductStmt, err := utils.PrepareStmt(dat, "UPDATE users SET boost_count = boost_count - ? WHERE id = ?")
+	if err != nil {
+		return err
+	}
+	defer deductStmt.Close()
+
+	_, err = deductStmt.Exec(boosts, user)
+	if err != nil {
+		return err
+	}
+
+	stmt, err := utils.PrepareStmt(dat, "UPDATE advertisements SET boost_count = boost_count + ? WHERE ad_id = ?")
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(adId, boosts)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func AddBoostsToUser(userId string, boosts uint) error {
+	stmt, err := utils.PrepareStmt(dat, "UPDATE users SET boost_count = boost_count + ? WHERE id = ?")
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(boosts, userId)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func NewReport(adId int64, accountId int, description string) error {
@@ -559,4 +611,14 @@ func FinishReport(report *utils.Report) error {
 	}
 
 	return nil
+}
+
+func init() {
+	ads, err := ListAllAdvertisements()
+	if err != nil {
+		log.Error("Failed to initialize ads cache: %s", err.Error())
+	} else {
+		currentAds = &ads
+		log.Info("Initialized ads cache with %d ads", len(ads))
+	}
 }

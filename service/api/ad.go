@@ -78,8 +78,33 @@ func init() {
 			}
 
 			log.Debug("Getting random %s type ad...", adFolder)
-			i := rand.Intn(len(ads))
-			ad := ads[i]
+			totalWeight := 0
+			weights := make([]int, len(ads))
+			for idx, a := range ads {
+				w := 1
+				if a.BoostCount > 0 {
+					w += int(a.BoostCount)
+				}
+
+				weights[idx] = w
+				totalWeight += w
+			}
+
+			var chosenIdx int
+			if totalWeight <= 0 {
+				chosenIdx = rand.Intn(len(ads))
+			} else {
+				rn := rand.Intn(totalWeight)
+				cn := 0
+				for idx, w := range weights {
+					cn += w
+					if rn < cn {
+						chosenIdx = idx
+						break
+					}
+				}
+			}
+			ad := ads[chosenIdx]
 
 			// Get view and click stats for this ad
 			views, clicks, err := database.GetAdStats(ad.AdID)
