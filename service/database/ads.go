@@ -65,7 +65,7 @@ func deleteAd(id int64) *[]*utils.Ad {
 }
 
 func ApproveAd(id int64) (*utils.Ad, error) {
-	stmt, err := utils.PrepareStmt(dat, "UPDATE advertisements SET pending = FALSE WHERE ad_id = ?")
+	stmt, err := utils.PrepareStmt(dat, "UPDATE advertisements SET pending = FALSE, created_at = NOW() WHERE ad_id = ?")
 	if err != nil {
 		return nil, err
 	}
@@ -76,7 +76,29 @@ func ApproveAd(id int64) (*utils.Ad, error) {
 		return nil, err
 	}
 
-	return GetAdvertisement(id)
+	// fetch the ad so we can return it and touch its image file
+	ad, err := GetAdvertisement(id)
+	if err != nil {
+		return nil, err
+	}
+
+	// try to touch the ad image to reset its modification time
+	if ad != nil {
+		if adType, err := utils.AdTypeFromInt(ad.Type); err == nil {
+			adPath := filepath.Join("..", "ad_storage", string(adType), fmt.Sprintf("%s-%d.webp", ad.UserID, ad.AdID))
+			now := time.Now()
+
+			if err := os.Chtimes(adPath, now, now); err != nil {
+				log.Error("Failed to reset image for ad approval %s: %s", adPath, err.Error())
+			} else {
+				log.Info("Reset image %s for ad approval", adPath)
+			}
+		} else {
+			log.Error("Failed to determine ad type for resetting file: %s", err.Error())
+		}
+	}
+
+	return ad, nil
 }
 
 // inserts or updates an ad row
@@ -451,28 +473,15 @@ func GetAdStats(adId int64) (int, int, error) {
 		return 0, 0, fmt.Errorf("invalid ad id")
 	}
 
-	// Count views for this ad
-	viewStmt, err := utils.PrepareStmt(dat, "SELECT views FROM advertisements WHERE ad_id = ?")
+	stmt, err := utils.PrepareStmt(dat, "SELECT views, clicks FROM advertisements WHERE ad_id = ?")
 	if err != nil {
 		return 0, 0, err
 	}
-	defer viewStmt.Close()
+	defer stmt.Close()
 
 	var views int
-	err = viewStmt.QueryRow(adId).Scan(&views)
-	if err != nil {
-		return 0, 0, err
-	}
-
-	// Count clicks for this ad
-	clickStmt, err := utils.PrepareStmt(dat, "SELECT clicks FROM advertisements WHERE ad_id = ?")
-	if err != nil {
-		return 0, 0, err
-	}
-	defer clickStmt.Close()
-
 	var clicks int
-	err = clickStmt.QueryRow(adId).Scan(&clicks)
+	err = stmt.QueryRow(adId).Scan(&views, &clicks)
 	if err != nil {
 		return 0, 0, err
 	}

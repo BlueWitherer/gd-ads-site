@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"math"
 	"math/rand"
 	"net/http"
 	"strconv"
@@ -10,7 +11,11 @@ import (
 	"service/database"
 	"service/log"
 	"service/utils"
+
+	"github.com/patrickmn/go-cache"
 )
+
+var globalStats = cache.New(10*time.Minute, 15*time.Minute)
 
 func init() {
 	http.HandleFunc("/api/ad", func(w http.ResponseWriter, r *http.Request) {
@@ -79,12 +84,26 @@ func init() {
 			}
 
 			log.Debug("Getting random %s type ad...", adFolder)
-			totalWeight := 0
-			weights := make([]int, len(ads))
+			totalWeight := 0.0
+			weights := make([]float64, len(ads))
 			for idx, a := range ads {
-				w := 1
+				w := 1.0
+				globalClicks := uint64(1)
+
+				if val, found := globalStats.Get("global_clicks"); found {
+					globalClicks = val.(uint64)
+				} else {
+					stats, err := database.GetGlobalStats()
+					if err != nil {
+						log.Error("Failed to get global ad stats: %s", err.Error())
+					} else {
+						globalClicks = uint64(stats.TotalClicks)
+						globalStats.Set("global_clicks", globalClicks, cache.DefaultExpiration)
+					}
+				}
+
 				if a.BoostCount > 0 {
-					w += int(a.BoostCount)
+					w += float64(a.BoostCount)
 				}
 
 				u, err := database.GetUser(a.UserID)
@@ -104,11 +123,16 @@ func init() {
 					}
 				}
 
-				if a.Clicks <= 3 && time.Since(a.Created).Hours() < 36 {
-					w += 2
-				} else {
-					w += int(a.Clicks) / 125
+				if time.Since(a.Created).Hours() < 36 {
+					denom := 0.05 * float64(globalClicks)
+					if denom < 1 {
+						denom = 1
+					}
+
+					w += 3 * math.Exp(-float64(a.Clicks)/denom)
 				}
+
+				w += float64(a.Clicks) * 0.125
 
 				weights[idx] = w
 				totalWeight += w
@@ -118,8 +142,8 @@ func init() {
 			if totalWeight <= 0 {
 				chosenIdx = rand.Intn(len(ads))
 			} else {
-				rn := rand.Intn(totalWeight)
-				cn := 0
+				rn := rand.Float64() * totalWeight
+				cn := 0.0
 				for idx, w := range weights {
 					cn += w
 					if rn < cn {
