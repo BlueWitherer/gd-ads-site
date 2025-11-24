@@ -46,6 +46,13 @@ func findAd(id int64) (*utils.Ad, bool) {
 func setAd(ad *utils.Ad) *[]*utils.Ad {
 	if currentAds != nil {
 		log.Debug("Caching ad %d", ad.AdID)
+		for i, a := range *currentAds {
+			if a.AdID == ad.AdID {
+				(*currentAds)[i] = ad
+				return getAds()
+			}
+		}
+
 		*currentAds = append(*currentAds, ad)
 	}
 
@@ -96,6 +103,8 @@ func ApproveAd(id int64) (*utils.Ad, error) {
 		} else {
 			log.Error("Failed to determine ad type for resetting file: %s", err.Error())
 		}
+
+		currentAds = setAd(ad)
 	}
 
 	return ad, nil
@@ -276,6 +285,14 @@ func FilterAdsByType(rows []*utils.Ad, adType utils.AdType) ([]*utils.Ad, error)
 
 func GetAdvertisement(adId int64) (*utils.Ad, error) {
 	if val, found := findAd(adId); found {
+		views, clicks, err := GetAdStats(adId)
+		if err != nil {
+			return nil, err
+		}
+
+		val.Views = uint64(views)
+		val.Clicks = uint64(clicks)
+
 		return val, nil
 	}
 
@@ -469,10 +486,6 @@ func CountActiveAdvertisementsByUser(userId string) (int, error) {
 
 // returns total_views and total_clicks for a given ad id
 func GetAdStats(adId int64) (int, int, error) {
-	if adId == 0 {
-		return 0, 0, fmt.Errorf("invalid ad id")
-	}
-
 	stmt, err := utils.PrepareStmt(dat, "SELECT views, clicks FROM advertisements WHERE ad_id = ?")
 	if err != nil {
 		return 0, 0, err

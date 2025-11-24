@@ -174,9 +174,9 @@ func init() {
 			if user.IsAdmin || user.IsStaff || user.Verified {
 				newAd, err := database.ApproveAd(adID)
 				if err != nil {
-					log.Error("Failed to auto-approve new ad by admin: %s", err.Error())
+					log.Error("Failed to auto-approve new ad by verified user: %s", err.Error())
 				} else {
-					log.Info("Auto-approved ad %s (%v) by admin %s (%s)", newAd.ImageURL, newAd.AdID, user.Username, user.ID)
+					log.Info("Auto-approved ad %s (%v) by verified user %s (%s)", newAd.ImageURL, newAd.AdID, user.Username, user.ID)
 				}
 			}
 
