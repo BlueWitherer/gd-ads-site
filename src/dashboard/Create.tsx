@@ -25,7 +25,8 @@ export default function Create() {
   const [levelValid, setLevelValid] = useState<boolean | null>(null);
   const [levelName, setLevelName] = useState<string>("");
   const [checkingLevel, setCheckingLevel] = useState<boolean>(false);
-  const [activeAdCount, setActiveAdCount] = useState<number | null>(null);
+  const [activeAdCount, setActiveAdCount] = useState<number | null>(0);
+  const [maxAdCount, setMaxAdCount] = useState<number | null>(10);
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -53,6 +54,13 @@ export default function Create() {
         if (data?.id) setUserId(data.id);
       })
       .catch(() => setUserId(null));
+
+    fetch("/account/me", { credentials: "include" })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data?.verified || data?.is_staff || data?.is_admin) setMaxAdCount(20);
+      })
+      .catch(() => { setMaxAdCount(10) });
   }, []);
 
   useEffect(() => {
@@ -68,11 +76,11 @@ export default function Create() {
             (ad: any) => ad.expiry && ad.expiry > now
           ).length;
           setActiveAdCount(activeCount);
-        }
+        };
       } catch (err) {
         console.error("Failed to fetch active ad count:", err);
-      }
-    }
+      };
+    };
 
     if (userId) {
       fetchActiveAdCount();
@@ -180,9 +188,9 @@ export default function Create() {
       return;
     }
 
-    if (activeAdCount !== null && activeAdCount >= 10) {
+    if (activeAdCount !== null && maxAdCount !== null && activeAdCount >= maxAdCount) {
       alert(
-        "You have reached the maximum number of active advertisements (10). Please delete some existing ads first."
+        "You have reached the maximum number of active advertisements ({maxAdCount}). Please delete some existing ads first."
       );
       return;
     }
@@ -268,7 +276,7 @@ export default function Create() {
       </p>
       <p className="create-description">
         Each advertisement expires after 7 days.{" "}
-        <b>You may have a maximum of 10 active advertisements at a time.</b> You
+        <b>You may have a maximum of {maxAdCount} active advertisements at a time.</b> You
         can create multiple advertisements per type. Before it can be shown in
         game, your advertisement must first be approved by an admin.
       </p>
@@ -276,11 +284,11 @@ export default function Create() {
       {activeAdCount !== null && (
         <div className="create-ad-limit-info">
           <p>
-            Active advertisements: <b>{activeAdCount}/10</b>
+            <b>{activeAdCount} / {maxAdCount}</b> Active Advertisements
           </p>
         </div>
       )}
-      {activeAdCount === 10 && (
+      {activeAdCount === maxAdCount && (
         <div className="create-ad-limit-warning">
           <p>
             <WarningIcon /> You have reached the maximum number of active
