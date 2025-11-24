@@ -5,6 +5,7 @@ import (
 	"math/rand"
 	"net/http"
 	"strconv"
+	"time"
 
 	"service/database"
 	"service/log"
@@ -49,14 +50,14 @@ func init() {
 				return
 			}
 
-			safeRows, err := database.FilterAdsFromBannedUsers(rows)
+			safeAds, err := database.FilterAdsFromBannedUsers(rows)
 			if err != nil {
 				log.Error("Failed to filter safe ads: %s", err.Error())
 				http.Error(w, "Failed to filter safe ads", http.StatusInternalServerError)
 				return
 			}
 
-			adList, err := database.FilterAdsByPending(safeRows, false)
+			liveAds, err := database.FilterAdsByPending(safeAds, false)
 			if err != nil {
 				log.Error("Failed to filter pending ads: %s", err.Error())
 				http.Error(w, "Failed to filter pending ads", http.StatusInternalServerError)
@@ -64,7 +65,7 @@ func init() {
 			}
 
 			log.Debug("Filtering for %s type ads...", adFolder)
-			ads, err := database.FilterAdsByType(adList, adFolder)
+			ads, err := database.FilterAdsByType(liveAds, adFolder)
 			if err != nil {
 				log.Error("Failed to filter through ads: %s", err.Error())
 				http.Error(w, "Failed to filter through ads", http.StatusInternalServerError)
@@ -84,6 +85,29 @@ func init() {
 				w := 1
 				if a.BoostCount > 0 {
 					w += int(a.BoostCount)
+				}
+
+				u, err := database.GetUser(a.UserID)
+				if err != nil {
+					log.Error("Failed to get ad owner for boosting: %s", err.Error())
+				} else {
+					if u.IsAdmin {
+						w += 1
+					}
+
+					if u.IsStaff {
+						w += 2
+					}
+
+					if u.Verified {
+						w += 3
+					}
+				}
+
+				if a.Clicks <= 3 && time.Since(a.Created).Hours() < 36 {
+					w += 2
+				} else {
+					w += int(a.Clicks) / 125
 				}
 
 				weights[idx] = w

@@ -4,13 +4,71 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"time"
 
+	"service/log"
 	"service/utils"
 )
+
+func newUsers() *[]*utils.User {
+	return new([]*utils.User)
+}
+
+// Current users cache
+var currentUsers *[]*utils.User = nil
+var currentUsersSince time.Time = time.Now()
+
+func getUsers() *[]*utils.User {
+	if currentUsers != nil {
+		log.Debug("Returning cached ads list")
+		return currentUsers
+	}
+
+	currentUsersSince = time.Now()
+
+	return newUsers()
+}
+
+func findUser(id string) (*utils.User, bool) {
+	if currentUsers != nil {
+		for _, u := range *currentUsers {
+			if u.ID == id {
+				return u, true
+			}
+		}
+	}
+
+	return nil, false
+}
+
+func setUser(user *utils.User) *[]*utils.User {
+	if currentUsers != nil {
+		log.Debug("Caching user %d", user.ID)
+		*currentUsers = append(*currentUsers, user)
+	}
+
+	return getUsers()
+}
+
+func deleteUser(id string) *[]*utils.User {
+	if currentUsers != nil {
+		for i, u := range *currentUsers {
+			if u.ID == id {
+				*currentUsers = append((*currentUsers)[:i], (*currentUsers)[i+1:]...)
+			}
+		}
+	}
+
+	return getUsers()
+}
 
 func GetUser(id string) (*utils.User, error) {
 	if id == "" {
 		return nil, fmt.Errorf("empty user id")
+	}
+
+	if val, found := findUser(id); found {
+		return val, nil
 	}
 
 	stmt, err := utils.PrepareStmt(dat, "SELECT * FROM users WHERE id = ?")
@@ -38,10 +96,21 @@ func GetUser(id string) (*utils.User, error) {
 		return nil, err
 	}
 
+	currentUsers = setUser(user)
+
 	return user, nil
 }
 
 func GetAllUsers() ([]*utils.User, error) {
+	if time.Since(currentUsersSince) > 15*time.Minute {
+		currentUsers = nil
+	}
+
+	if currentUsers != nil && len(*currentUsers) > 0 {
+		log.Debug("Returning cached ads list")
+		return *getUsers(), nil
+	}
+
 	stmt, err := utils.PrepareStmt(dat, "SELECT * FROM users ORDER BY id DESC")
 	if err != nil {
 		return nil, err
@@ -73,6 +142,8 @@ func GetAllUsers() ([]*utils.User, error) {
 		); err != nil {
 			return nil, err
 		}
+
+		currentUsers = setUser(u)
 
 		out = append(out, u)
 	}
@@ -224,6 +295,8 @@ func BanUser(id string) (*utils.User, error) {
 		return nil, err
 	}
 
+	currentUsers = deleteUser(id)
+
 	return user, nil
 }
 
@@ -291,4 +364,14 @@ func UserLeaderboard(stat utils.StatBy, page uint64, maxPerPage uint64) ([]*util
 	}
 
 	return out[start:end], nil
+}
+
+func init() {
+	users, err := GetAllUsers()
+	if err != nil {
+		log.Error("Failed to initialize users cache: %s", err.Error())
+	} else {
+		currentUsers = &users
+		log.Info("Initialized users cache with %d users", len(users))
+	}
 }

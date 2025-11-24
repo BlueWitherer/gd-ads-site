@@ -45,7 +45,6 @@ func init() {
 				return
 			}
 
-			// Check if user has reached the maximum number of active ads (10)
 			activeAdCount, err := database.CountActiveAdvertisementsByUser(uid)
 			if err != nil {
 				log.Error("Failed to count active advertisements: %s", err.Error())
@@ -53,9 +52,14 @@ func init() {
 				return
 			}
 
-			if activeAdCount >= 10 {
-				log.Warn("User %s attempted to submit ad but has reached maximum (10) active advertisements", user.Username)
-				http.Error(w, "You have reached the maximum number of active advertisements (10)", http.StatusBadRequest)
+			maxAllowed := 10
+			if user.IsAdmin || user.IsStaff || user.Verified {
+				maxAllowed = 20
+			}
+
+			if activeAdCount >= maxAllowed {
+				log.Error("User %s attempted to submit ad but has reached maximum %d active advertisements", user.Username, activeAdCount)
+				http.Error(w, "User reached the maximum number of active advertisements", http.StatusBadRequest)
 				return
 			}
 
