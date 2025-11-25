@@ -83,6 +83,10 @@ func ApproveAd(id int64) (*utils.Ad, error) {
 		return nil, err
 	}
 
+	if val, found := findAd(id); found {
+		val.Pending = false
+	}
+
 	// fetch the ad so we can return it and touch its image file
 	ad, err := GetAdvertisement(id)
 	if err != nil {

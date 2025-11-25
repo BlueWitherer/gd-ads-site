@@ -179,12 +179,12 @@ export default function App() {
         </div>
         {/* Login Section */}
         <div id="login-section" className="login-section-wrapper">
-          <div className="maintenance-banner">
+          {/* <div className="maintenance-banner">
             <p>
               Views and Clicks does not currently work on v1.0.6 or older.
               Please update your Geode Mod to v1.0.7 or newer.
             </p>
-          </div>
+          </div> */}
           <h1 className="login-title">GD Advertisement Manager</h1>
           <h2>
             Welcome to the GD Advertisement Manager! Manage all your Geometry
