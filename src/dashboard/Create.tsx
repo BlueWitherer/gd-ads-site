@@ -275,7 +275,7 @@ export default function Create() {
         Select the size and upload an image for your advertisement.
       </p>
       <p className="create-description">
-        Each advertisement expires after 7 days.{" "}
+        Each advertisement expires after 14 days.{" "}
         <b>You may have a maximum of {maxAdCount} active advertisements at a time.</b> You
         can create multiple advertisements per type. Before it can be shown in
         game, your advertisement must first be approved by an admin.

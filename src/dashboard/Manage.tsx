@@ -23,11 +23,11 @@ function getDaysRemaining(expirationTimestamp: number): {
   const diffMs = expirationMs - now;
   const days = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
 
-  let color = "#e74c3c"; // Red (1 day or less)
-  if (days >= 5) {
-    color = "#27ae60"; // Green (7-5 days)
-  } else if (days >= 2) {
-    color = "#f39c12"; // Orange (4-2 days)
+  let color = "#e74c3c"; // Red (2 days or less)
+  if (days >= 7) {
+    color = "#27ae60"; // Green (7-14 days)
+  } else if (days >= 3) {
+    color = "#f39c12"; // Orange (3-6 days)
   }
 
   return { days: Math.max(0, days), color };
@@ -144,9 +144,9 @@ function Manage() {
                       <strong>
                         Click/View Ratio: {advert.views && advert.views > 0
                           ? (
-                              ((advert.clicks || 0) / advert.views) *
-                              100
-                            ).toFixed(2)
+                            ((advert.clicks || 0) / advert.views) *
+                            100
+                          ).toFixed(2)
                           : "0.00"}
                         %
                       </strong>

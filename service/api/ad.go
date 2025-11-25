@@ -123,8 +123,8 @@ func init() {
 					}
 				}
 
-				if time.Since(a.Created).Hours() < 36 {
-					denom := 0.05 * float64(globalClicks)
+				if time.Since(a.Created).Hours() < 60 {
+					denom := 0.025 * float64(globalClicks)
 					if denom < 1 {
 						denom = 1
 					}

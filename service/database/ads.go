@@ -132,7 +132,7 @@ func CreateAdvertisement(userId string, levelID string, adType int) (int64, erro
 }
 
 func GetAdUnixExpiry(ad *utils.Ad) int64 {
-	expiry := ad.Created.Unix() + int64((7 * 24 * time.Hour).Seconds())
+	expiry := ad.Created.Unix() + int64((14 * 24 * time.Hour).Seconds())
 
 	return expiry
 }
@@ -413,7 +413,7 @@ func DeleteAdvertisement(adId int64) (*utils.Ad, error) {
 }
 
 func DeleteAllExpiredAds() error {
-	stmt, err := utils.PrepareStmt(dat, "DELETE FROM advertisements WHERE created_at < NOW() - INTERVAL 7 DAY")
+	stmt, err := utils.PrepareStmt(dat, "DELETE FROM advertisements WHERE created_at < NOW() - INTERVAL 14 DAY")
 	if err != nil {
 		return err
 	}
@@ -441,7 +441,7 @@ func DeleteAllExpiredAds() error {
 			return nil
 		}
 
-		if time.Since(info.ModTime()) > 7*24*time.Hour {
+		if time.Since(info.ModTime()) > 14*24*time.Hour {
 			log.Info("Removing expired ad %s (%v B)", path, info.Size())
 			if err := os.Remove(path); err != nil {
 				log.Error("Failed to remove file %s: %s", path, err.Error())
@@ -469,7 +469,7 @@ func CountActiveAdvertisementsByUser(userId string) (int, error) {
 		return 0, fmt.Errorf("empty user id")
 	}
 
-	stmt, err := utils.PrepareStmt(dat, "SELECT COUNT(*) FROM advertisements WHERE user_id = ? AND created_at > NOW() - INTERVAL 7 DAY")
+	stmt, err := utils.PrepareStmt(dat, "SELECT COUNT(*) FROM advertisements WHERE user_id = ? AND created_at > NOW() - INTERVAL 14 DAY")
 	if err != nil {
 		return 0, err
 	}
