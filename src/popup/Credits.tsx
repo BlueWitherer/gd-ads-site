@@ -1,6 +1,7 @@
 import { useState } from "react";
 import "../page/Login.css";
 import "./Credits.css";
+
 import newsIcon from "../assets/newsIcon.png";
 
 export default function CreditsButton() {
@@ -46,7 +47,7 @@ export default function CreditsButton() {
                     rel="noopener noreferrer"
                   >
                     <img
-                      src="https://avatars.githubusercontent.com/u/47698640?v=4"
+                      src="https://avatars.githubusercontent.com/u/47698640"
                       alt="Cheeseworks avatar"
                       className="credits-avatar"
                     />

@@ -30,7 +30,7 @@ func NewStat(event utils.AdEvent, adId int64) error {
 		return err
 	}
 
-	_, err = GetAdvertisement(adId)
+	ad, err := GetAdvertisement(adId)
 	if err != nil {
 		log.Error("Failed to get advertisement %d: %s", adId, err.Error())
 		return err
@@ -40,9 +40,10 @@ func NewStat(event utils.AdEvent, adId int64) error {
 	switch event {
 	case utils.AdEventView:
 		viewsDelta = 1
+		ad.Views += uint64(viewsDelta)
 	case utils.AdEventClick:
 		clicksDelta = 1
-
+		ad.Clicks += uint64(clicksDelta)
 	default:
 		return fmt.Errorf("invalid ad event")
 	}

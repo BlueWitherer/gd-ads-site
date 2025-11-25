@@ -2,12 +2,14 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"math"
 	"math/rand"
 	"net/http"
 	"strconv"
 	"time"
 
+	"service/access"
 	"service/database"
 	"service/log"
 	"service/utils"
@@ -22,6 +24,7 @@ func init() {
 		log.Debug("Getting random ad...")
 		header := w.Header()
 
+		header.Set("Access-Control-Allow-Origin", "*")
 		header.Set("Access-Control-Allow-Methods", "GET")
 		header.Set("Access-Control-Allow-Headers", "Content-Type")
 
@@ -125,11 +128,22 @@ func init() {
 
 				if time.Since(a.Created).Hours() < 60 {
 					denom := 0.025 * float64(globalClicks)
-					if denom < 1 {
+					if denom <= 1 {
 						denom = 1
 					}
 
 					w += 3 * math.Exp(-float64(a.Clicks)/denom)
+				}
+
+				if time.Since(a.Created).Hours() >= 24 {
+					p := float64(a.Clicks+1) / float64(a.Views+2)
+					if p <= 0 {
+						p = 0
+					} else if p >= 2 {
+						p = 2
+					}
+
+					w += p
 				}
 
 				w += float64(a.Clicks) * 0.125
@@ -153,6 +167,15 @@ func init() {
 				}
 			}
 			ad := ads[chosenIdx]
+
+			if ad.ImageURL == "" {
+				err = database.UpdateAdvertisementImageURL(ad.AdID, fmt.Sprintf("%s/cdn/%s/%s?v=%d", access.GetDomain(r), adFolder, fmt.Sprintf("%s-%d.webp", ad.UserID, ad.AdID), time.Now().Unix()))
+				if err != nil {
+					log.Error("Failed to fix advertisement image URL: %s", err.Error())
+					http.Error(w, "Failed to fix advertisement image URL", http.StatusInternalServerError)
+					return
+				}
+			}
 
 			// Get view and click stats for this ad
 			views, clicks, err := database.GetAdStats(ad.AdID)
@@ -179,6 +202,7 @@ func init() {
 		log.Debug("Getting ad by id...")
 		header := w.Header()
 
+		header.Set("Access-Control-Allow-Origin", "*")
 		header.Set("Access-Control-Allow-Methods", "GET")
 		header.Set("Access-Control-Allow-Headers", "Content-Type")
 
@@ -201,6 +225,22 @@ func init() {
 				log.Error("Failed to get ad: %s", err.Error())
 				http.Error(w, "Failed to get ad", http.StatusInternalServerError)
 				return
+			}
+
+			if ad.ImageURL == "" {
+				adFolder, err := utils.AdTypeFromInt(ad.Type)
+				if err != nil {
+					log.Error("Failed to get ad type: %s", err.Error())
+					http.Error(w, "Failed to get ad type", http.StatusInternalServerError)
+					return
+				}
+
+				err = database.UpdateAdvertisementImageURL(ad.AdID, fmt.Sprintf("%s/cdn/%s/%s?v=%d", access.GetDomain(r), adFolder, fmt.Sprintf("%s-%d.webp", ad.UserID, ad.AdID), time.Now().Unix()))
+				if err != nil {
+					log.Error("Failed to fix advertisement image URL: %s", err.Error())
+					http.Error(w, "Failed to fix advertisement image URL", http.StatusInternalServerError)
+					return
+				}
 			}
 
 			user, err := database.GetUser(ad.UserID)

@@ -43,7 +43,7 @@ func findUser(id string) (*utils.User, bool) {
 
 func setUser(user *utils.User) *[]*utils.User {
 	if currentUsers != nil {
-		log.Debug("Caching user %d", user.ID)
+		log.Debug("Caching user %s", user.ID)
 		*currentUsers = append(*currentUsers, user)
 	}
 
@@ -364,6 +364,70 @@ func UserLeaderboard(stat utils.StatBy, page uint64, maxPerPage uint64) ([]*util
 	}
 
 	return out[start:end], nil
+}
+
+func NewAnnouncement(userID string, title string, content string) error {
+	stmt, err := utils.PrepareStmt(dat, "INSERT INTO announcements (user_id, title, content) VALUES (?, ?)")
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(userID, title, content)
+	return err
+}
+
+func GetLatestAnnouncement() (*utils.Announcement, error) {
+	stmt, err := utils.PrepareStmt(dat, "SELECT * FROM announcements ORDER BY created_at DESC LIMIT 1")
+	if err != nil {
+		return nil, err
+	}
+	defer stmt.Close()
+
+	announcement := new(utils.Announcement)
+	err = stmt.QueryRow().Scan(
+		&announcement.ID,
+		&announcement.UserID,
+		&announcement.Title,
+		&announcement.Content,
+		&announcement.Created,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return announcement, nil
+}
+
+func GetAllAnnouncements() ([]*utils.Announcement, error) {
+	stmt, err := utils.PrepareStmt(dat, "SELECT * FROM announcements ORDER BY created_at DESC")
+	if err != nil {
+		return nil, err
+	}
+	defer stmt.Close()
+
+	rows, err := stmt.Query()
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var out []*utils.Announcement
+	for rows.Next() {
+		a := new(utils.Announcement)
+		if err := rows.Scan(
+			&a.ID,
+			&a.UserID,
+			&a.Title,
+			&a.Content,
+			&a.Created,
+		); err != nil {
+			return nil, err
+		}
+		out = append(out, a)
+	}
+
+	return out, nil
 }
 
 func init() {

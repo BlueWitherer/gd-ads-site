@@ -67,7 +67,6 @@ func init() {
 			return
 		}
 
-		// Get global stats from database
 		stats, err := database.GetGlobalStats()
 		if err != nil {
 			log.Error("Failed to fetch global stats: %s", err.Error())
