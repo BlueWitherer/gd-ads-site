@@ -15,8 +15,8 @@ var dat *sql.DB
 var globals = cache.New(5*time.Minute, 10*time.Minute)
 
 // Register a new client event for an ad
-func NewStat(event utils.AdEvent, adId int64, userID string) error {
-	log.Debug("Registering new %s for user %s on ad %d", event, userID, adId)
+func NewStat(event utils.AdEvent, adId int64) error {
+	log.Debug("Registering new %s on ad %d", event, adId)
 
 	query := fmt.Sprintf("UPDATE advertisements SET %s = %s + 1 WHERE ad_id = ?", event, event)
 

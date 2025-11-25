@@ -14,7 +14,6 @@ import (
 func newStat(r *http.Request, adEvent utils.AdEvent) (int, error) {
 	var body struct {
 		AdID      int64  `json:"ad_id"`
-		UserID    string `json:"user_id"`
 		AccountID int    `json:"account_id"`
 		AuthToken string `json:"authtoken"`
 	}
@@ -24,7 +23,7 @@ func newStat(r *http.Request, adEvent utils.AdEvent) (int, error) {
 		return http.StatusInternalServerError, err
 	}
 
-	log.Debug("Body decoded - AdID: %v, UserID: %s", body.AdID, body.UserID)
+	log.Debug("Body decoded - AdID: %v", body.AdID)
 
 	user := utils.ArgonUser{Account: body.AccountID, Token: body.AuthToken}
 	valid, err := access.ValidateArgonUser(user)
@@ -34,12 +33,7 @@ func newStat(r *http.Request, adEvent utils.AdEvent) (int, error) {
 	}
 
 	if valid {
-		if body.UserID == "" {
-			log.Error("User ID is empty")
-			return http.StatusBadRequest, err
-		}
-
-		err := database.NewStat(adEvent, body.AdID, body.UserID)
+		err := database.NewStat(adEvent, body.AdID)
 		if err != nil {
 			log.Error("Failed to create database click statistic: %s", err.Error())
 			return http.StatusInternalServerError, err
