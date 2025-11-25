@@ -59,3 +59,13 @@ CREATE TABLE IF NOT EXISTS reports (
     KEY idx_ad_id (ad_id),
     CONSTRAINT fx_ads_ad FOREIGN KEY (ad_id) REFERENCES advertisements (ad_id) ON DELETE CASCADE ON UPDATE CASCADE
 )
+
+CREATE TABLE announcements (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id VARCHAR(32) NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    body TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    KEY idx_user_id (user_id),
+    CONSTRAINT fk_sessions_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE ON UPDATE CASCADE
+);

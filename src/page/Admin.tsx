@@ -8,7 +8,7 @@ import ReplyIcon from "@mui/icons-material/ReplyOutlined";
 import SearchIcon from "@mui/icons-material/SearchOutlined";
 import ContentCopyIcon from "@mui/icons-material/ContentCopyOutlined";
 import DoneIcon from "@mui/icons-material/DoneOutlined";
-import PersonPinIcon from "@mui/icons-material/PersonPinOutlined";
+// import PersonPinIcon from "@mui/icons-material/PersonPinOutlined";
 import BadgeIcon from "@mui/icons-material/BadgeOutlined";
 import VisibilityIcon from "@mui/icons-material/VisibilityOutlined";
 import MouseIcon from "@mui/icons-material/MouseOutlined";
@@ -18,13 +18,18 @@ import VerifiedIcon from "@mui/icons-material/Verified";
 import GavelIcon from "@mui/icons-material/GavelOutlined";
 import AccessTimeIcon from "@mui/icons-material/AccessTimeOutlined";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForeverOutlined";
+import Avatar from "@mui/material/Avatar";
 
 type User = {
   id: string;
   username: string;
+  avatar_url: string;
+  total_views: number;
+  total_clicks: number;
   is_admin: boolean;
   is_staff: boolean;
   verified: boolean;
+  banned: boolean;
 };
 
 type Ad = {
@@ -40,16 +45,7 @@ type Ad = {
 };
 
 type SearchResult = {
-  user: {
-    id: string;
-    username: string;
-    total_views: number;
-    total_clicks: number;
-    is_admin: boolean;
-    is_staff: boolean;
-    verified: boolean;
-    banned: boolean;
-  };
+  user: User;
   ads: Ad[];
 };
 
@@ -293,8 +289,7 @@ export default function Admin() {
                 >
                   <div className="user-info-box">
                     <div className="user-info-item">
-                      <PersonPinIcon />
-                      <strong>Username:</strong> {searchResult.user.username}
+                      <Avatar alt={searchResult.user.username} src={searchResult.user.avatar_url} /> {searchResult.user.username}
                     </div>
                     <div className="user-info-item">
                       {(searchResult.user.is_admin && <><AdminPanelSettingsIcon titleAccess="Administrator" /> Administrator{((searchResult.user.is_staff || searchResult.user.verified) && <br />)}</>)}

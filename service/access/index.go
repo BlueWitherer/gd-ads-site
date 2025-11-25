@@ -276,17 +276,6 @@ func init() {
 				return
 			}
 
-			// Populate view/click counts for each ad
-			for i := range userAds {
-				views, clicks, err := database.GetAdStats(userAds[i].AdID)
-				if err != nil {
-					log.Debug("Failed to get ad stats: %s", err.Error())
-				} else {
-					userAds[i].Views = uint64(views)
-					userAds[i].Clicks = uint64(clicks)
-				}
-			}
-
 			response := map[string]interface{}{
 				"user": targetUser,
 				"ads":  userAds,
@@ -372,17 +361,6 @@ func init() {
 				log.Error("Failed to filter ads: %s", err.Error())
 				http.Error(w, "Failed to filter ads", http.StatusInternalServerError)
 				return
-			}
-
-			// Populate view/click counts for each ad
-			for i := range userAds {
-				views, clicks, err := database.GetAdStats(userAds[i].AdID)
-				if err != nil {
-					log.Debug("Failed to get ad stats: %s", err.Error())
-				} else {
-					userAds[i].Views = uint64(views)
-					userAds[i].Clicks = uint64(clicks)
-				}
 			}
 
 			response := map[string]interface{}{

@@ -2,7 +2,10 @@ import { useState } from "react";
 import { createPortal } from "react-dom";
 import "../page/Login.css";
 import "./Rules.css";
+
 import WarningIcon from "@mui/icons-material/WarningOutlined";
+import InfoIcon from '@mui/icons-material/InfoOutlined';
+import { FaDiscord } from "react-icons/fa";
 
 export default function RulesButton() {
   const [open, setOpen] = useState(false);
@@ -28,55 +31,60 @@ export default function RulesButton() {
                   <div className="rule-item">
                     <WarningIcon className="rule-icon" />
                     <p>
-                      Do not upload inappropriate or controversial
-                      advertisements.
+                      Do not upload generally inappropriate or controversial ads.
                     </p>
                   </div>
                   <div className="rule-item">
                     <WarningIcon className="rule-icon" />
                     <p>
-                      Do not self-promote anything non-Geometry Dash related.
+                      Do not use ads to promote anything non-Geometry Dash related.
                       Memes or well-known creators are allowed.
                     </p>
                   </div>
                   <div className="rule-item">
                     <WarningIcon className="rule-icon" />
-                    <p>No profanity or offensive text in the advertisement.</p>
-                  </div>
-                  <div className="rule-item">
-                    <WarningIcon className="rule-icon" />
                     <p>
-                      Do not promote any harmful, illegal, or offensive material
-                      including both your Geometry Dash level and your
-                      advertisement!
+                      No profanity or offensive text in the ad.
                     </p>
                   </div>
                   <div className="rule-item">
                     <WarningIcon className="rule-icon" />
-                    <p>AI generated advertisements are not allowed.</p>
+                    <p>
+                      Do not promote any harmful, illegal, or offensive material,
+                      including both within your Geometry Dash level and ad!
+                    </p>
+                  </div>
+                  <div className="rule-item">
+                    <WarningIcon className="rule-icon" />
+                    <p>AI-generated ads are not allowed.</p>
                   </div>
                   <div className="rule-item">
                     <WarningIcon className="rule-icon" />
                     <p>
-                      Do not post the same advertisement multiple times. Most
-                      likely your duplicated advertisements will be rejected or
-                      deleted.
+                      Do not post the same ad multiple times. Your
+                      duplicated submissions will most likely be removed.
                     </p>
                   </div>
                   <div className="rule-item warning">
                     <WarningIcon className="rule-icon" />
                     <p>
                       Do not attempt to inflate your views/clicks using bots or
-                      other methods. Not only this negatively impacts the server
-                      performance, but ruins the experiences for other users.
-                      Caught doing this will result in an immediate ban.
+                      other methods. Getting caught doing this will almost immediately
+                      result in a ban.
                     </p>
                   </div>
                   <div className="rule-item warning">
                     <WarningIcon className="rule-icon" />
                     <p>
-                      Violating the rules may result in a ban or your
-                      advertisement/s removal without warning. No appeals!
+                      Violating the rules may result in a ban or removal of your ad/s
+                      without warning. No appeals!
+                    </p>
+                  </div>
+                  <div className="rule-item info">
+                    <InfoIcon className="rule-icon" />
+                    <p>
+                      Enforcement of these rules is at the discretion of staff. If you are
+                      unsure about something, feel free to ask in the <a href="https://discord.gg/gXcppxTNxC" target="_blank" rel="noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: "0.25rem" }}><FaDiscord size={15} aria-hidden="true" /> Discord server</a>.
                     </p>
                   </div>
                 </div>
@@ -87,10 +95,11 @@ export default function RulesButton() {
               >
                 Close
               </button>
-            </div>
+            </div >
           </>,
           document.body
-        )}
+        )
+      }
     </>
   );
 }
