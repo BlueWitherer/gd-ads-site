@@ -74,6 +74,10 @@ func ApproveAd(id int64) (*utils.Ad, error) {
 		return nil, err
 	}
 
+	if val, found := findAd(id); found {
+		val.Pending = false
+	}
+
 	return GetAdvertisement(id)
 }
 
@@ -328,7 +332,6 @@ func UpdateAdvertisementImageURL(adId int64, imageURL string) error {
 
 	if val, found := findAd(adId); found {
 		val.ImageURL = imageURL
-		currentAds = setAd(val)
 	}
 
 	_, err = stmt.Exec(imageURL, adId)
