@@ -604,6 +604,7 @@ func ListAllReports() ([]*utils.Report, error) {
 		r := new(utils.Report)
 		var adId int64
 		if err := rows.Scan(
+			&r.ID,
 			&adId,
 			&r.AccountID,
 			&r.Description,
