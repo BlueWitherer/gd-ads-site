@@ -480,55 +480,53 @@ export default function Account() {
       )}
 
       <div className="account-actions">
-        <div className="account-actions-row">
-          <button
-            className="nine-slice-button small account-delete-button"
-            onClick={async () => {
-              if (
-                !confirm(
-                  "Are you sure you want to delete your account? This cannot be undone."
-                )
+        <button
+          className="nine-slice-button small account-delete-button"
+          onClick={async () => {
+            if (
+              !confirm(
+                "Are you sure you want to delete your account? This cannot be undone."
               )
-                return;
-              try {
-                const res = await fetch("/account/delete", {
-                  method: "POST",
-                  credentials: "include",
-                });
-                if (res.ok) {
-                  alert("Account deleted. You will be logged out.");
-                  window.location.href = "/";
-                } else {
-                  const txt = await res.text();
-                  console.error("Delete failed:", txt);
-                  alert("Failed to delete account.");
-                }
-              } catch (err) {
-                console.error(err);
+            )
+              return;
+            try {
+              const res = await fetch("/account/delete", {
+                method: "POST",
+                credentials: "include",
+              });
+              if (res.ok) {
+                alert("Account deleted. You will be logged out.");
+                window.location.href = "/";
+              } else {
+                const txt = await res.text();
+                console.error("Delete failed:", txt);
                 alert("Failed to delete account.");
               }
-            }}
-          >
-            Delete Account
-          </button>
+            } catch (err) {
+              console.error(err);
+              alert("Failed to delete account.");
+            }
+          }}
+        >
+          Delete Account
+        </button>
 
-          {(user?.is_admin || user?.is_staff) && (
-            <>
-              <button
-                className="nine-slice-button small"
-                onClick={handlePendingAds}
-              >
-                Pending Ads ({pendingCount})
-              </button>
-              <button
-                className="nine-slice-button small"
-                onClick={handleReportedAds}
-              >
-                Reported Ads ({reportedCount})
-              </button>
-            </>
-          )}
-        </div>
+        {(user?.is_admin || user?.is_staff) && (
+          <>
+            <button
+              className="nine-slice-button small"
+              onClick={handlePendingAds}
+            >
+              Pending Ads ({pendingCount})
+            </button>
+            <button
+              className="nine-slice-button small"
+              onClick={handleReportedAds}
+            >
+              Reported Ads ({reportedCount})
+            </button>
+          </>
+        )}
 
         {user?.is_admin && (
           <button
