@@ -288,44 +288,66 @@ export default function Admin() {
                   className="user-info-section"
                 >
                   <div className="user-info-box">
-                    <div className="user-info-item">
-                      <Avatar alt={searchResult.user.username} src={searchResult.user.avatar_url} /> {searchResult.user.username}
+                    <div className="user-info-item user-header">
+                      <Avatar alt={searchResult.user.username} src={searchResult.user.avatar_url} />
+                      <span className="username">{searchResult.user.username}</span>
                     </div>
-                    <div className="user-info-item">
-                      {(searchResult.user.is_admin && <><AdminPanelSettingsIcon titleAccess="Administrator" /> Administrator{((searchResult.user.is_staff || searchResult.user.verified) && <br />)}</>)}
-                      {(searchResult.user.is_staff && <><BuildIcon titleAccess="Staff" /> Staff{(searchResult.user.verified && <br />)}</>)}
-                      {(searchResult.user.verified && <><VerifiedIcon titleAccess="Verified" /> Verified</>)}
-                      {(!searchResult.user.is_admin && !searchResult.user.is_staff && !searchResult.user.verified) && <>No roles</>}
+                    
+                    <div className="user-info-item roles-section">
+                      <strong>Roles:</strong>
+                      <div className="roles-list">
+                        {searchResult.user.is_admin && (
+                          <div className="role-item">
+                            <AdminPanelSettingsIcon titleAccess="Administrator" />
+                            <span>Administrator</span>
+                          </div>
+                        )}
+                        {searchResult.user.is_staff && (
+                          <div className="role-item">
+                            <BuildIcon titleAccess="Staff" />
+                            <span>Staff</span>
+                          </div>
+                        )}
+                        {searchResult.user.verified && (
+                          <div className="role-item">
+                            <VerifiedIcon titleAccess="Verified" />
+                            <span>Verified</span>
+                          </div>
+                        )}
+                        {!searchResult.user.is_admin && !searchResult.user.is_staff && !searchResult.user.verified && (
+                          <span className="no-roles">None</span>
+                        )}
+                      </div>
                     </div>
+                    
                     <div className="user-info-item">
                       <BadgeIcon />
-                      <strong>User ID:</strong> {searchResult.user.id}{" "}
+                      <strong>UID:</strong> {searchResult.user.id}
                       <button
                         onClick={handleCopyUserId}
                         className="copy-button"
                         aria-label="Copy user ID"
                       >
-                        {copied ? (
-                          <DoneIcon />
-                        ) : (
-                          <ContentCopyIcon />
-                        )}
+                        {copied ? <DoneIcon /> : <ContentCopyIcon />}
                       </button>
                     </div>
+                    
                     <div className="user-info-item">
                       <VisibilityIcon />
-                      <strong>Total Views:</strong>{" "}
-                      {searchResult.user.total_views}
+                      <span className="info-label"><strong>Total Views:</strong></span>
+                      <span className="info-value">{searchResult.user.total_views}</span>
                     </div>
+                    
                     <div className="user-info-item">
                       <MouseIcon />
-                      <strong>Total Clicks:</strong>{" "}
-                      {searchResult.user.total_clicks}
+                      <span className="info-label"><strong>Total Clicks:</strong></span>
+                      <span className="info-value">{searchResult.user.total_clicks}</span>
                     </div>
+                    
                     <div className="user-info-item">
                       <GavelIcon />
-                      <strong>Banned:</strong>{" "}
-                      {searchResult.user.banned ? "Yes" : "No"}
+                      <span className="info-label"><strong>Banned:</strong></span>
+                      <span className="info-value">{searchResult.user.banned ? "Yes" : "No"}</span>
                     </div>
                   </div>
 
@@ -362,11 +384,6 @@ export default function Admin() {
                     <div className="ads-grid">
                       {searchResult.ads.map((ad) => (
                         <div key={ad.ad_id} className="ad-card">
-                          {ad.pending && (
-                            <div className="pending-badge">
-                              <AccessTimeIcon /> PENDING
-                            </div>
-                          )}
                           <a
                             href={ad.image_url}
                             target="_blank"
@@ -379,6 +396,11 @@ export default function Admin() {
                               className="ad-image"
                             />
                           </a>
+                          {ad.pending && (
+                            <div className="pending-badge">
+                              <AccessTimeIcon /> PENDING
+                            </div>
+                          )}
                           <div>
                             <strong>Ad ID:</strong> {ad.ad_id}
                           </div>

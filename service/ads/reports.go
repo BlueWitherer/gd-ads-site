@@ -112,7 +112,7 @@ func init() {
 				return
 			}
 
-			action, err := strconv.Atoi(idStr)
+			action, err := strconv.Atoi(actionStr)
 			if err != nil {
 				log.Error("Invalid ad ID parameter: %s", err.Error())
 				http.Error(w, "Invalid ad ID parameter", http.StatusBadRequest)

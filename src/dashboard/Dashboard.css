@@ -36,18 +36,12 @@
 }
 
 .account-actions {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(2, auto);
   gap: 1em;
   justify-content: center;
   align-items: center;
-}
-
-.account-actions-row {
-  display: flex;
-  gap: 1em;
-  justify-content: center;
-  align-items: center;
+  margin-top: 1em;
 }
 
 .account-delete-button {
