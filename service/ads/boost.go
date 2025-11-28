@@ -1,6 +1,7 @@
 package ads
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -73,7 +74,7 @@ func init() {
 			}
 
 			w.WriteHeader(http.StatusOK)
-			w.Write([]byte("Successfully boosted ad"))
+			fmt.Fprint(w, "Successfully boosted ad")
 		} else {
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		}

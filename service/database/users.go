@@ -385,9 +385,10 @@ func GetLatestAnnouncement() (*utils.Announcement, error) {
 	defer stmt.Close()
 
 	announcement := new(utils.Announcement)
+	uid := ""
 	err = stmt.QueryRow().Scan(
 		&announcement.ID,
-		&announcement.UserID,
+		&uid,
 		&announcement.Title,
 		&announcement.Content,
 		&announcement.Created,
@@ -395,6 +396,13 @@ func GetLatestAnnouncement() (*utils.Announcement, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	user, err := GetUser(uid)
+	if err != nil {
+		return nil, err
+	}
+
+	announcement.User = *user
 
 	return announcement, nil
 }
@@ -415,15 +423,24 @@ func GetAllAnnouncements() ([]*utils.Announcement, error) {
 	var out []*utils.Announcement
 	for rows.Next() {
 		a := new(utils.Announcement)
+		uid := ""
 		if err := rows.Scan(
 			&a.ID,
-			&a.UserID,
+			&uid,
 			&a.Title,
 			&a.Content,
 			&a.Created,
 		); err != nil {
 			return nil, err
 		}
+
+		user, err := GetUser(uid)
+		if err != nil {
+			return nil, err
+		}
+
+		a.User = *user
+
 		out = append(out, a)
 	}
 

@@ -1,6 +1,7 @@
 package ads
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -71,7 +72,7 @@ func init() {
 				log.Info("Deleted advertisement of ID %d", ad.AdID)
 
 				w.WriteHeader(http.StatusOK)
-				w.Write([]byte(`{"status":"success","message":"Advertisement deleted successfully"}`))
+				fmt.Fprint(w, "Advertisement deleted successfully")
 			} else {
 				log.Error("Unauthorized deletion attempt for ad ID %d by user %s", id, uid)
 				http.Error(w, "Unauthorized", http.StatusUnauthorized)

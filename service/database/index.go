@@ -2,7 +2,11 @@ package database
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
+	"strings"
 	"time"
 
 	"service/log"
@@ -139,6 +143,56 @@ func GetGlobalStats() (utils.GlobalStats, error) {
 	globals.Set("global", stats, cache.DefaultExpiration)
 
 	return stats, nil
+}
+
+func GetModDownloads() (uint64, error) {
+	req, err := http.NewRequest(http.MethodGet, "https://api.geode-sdk.org/v1/mods/arcticwoof.player_advertisements", nil)
+	if err != nil {
+		return 0, err
+	}
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return 0, err
+	}
+	defer resp.Body.Close()
+
+	dlBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return 0, err
+	}
+
+	log.Debug("Mod endpoint status: %s", resp.Status)
+
+	if !strings.Contains(resp.Header.Get("Content-Type"), "application/json") {
+		log.Error("Geode returned non-JSON: %s", string(dlBody))
+		return 0, fmt.Errorf("request returned non-json")
+	}
+
+	if resp.Request != nil {
+		log.Debug("Mod endpoint final URL: %s", resp.Request.URL.String())
+	}
+
+	type payload struct {
+		DownloadCount uint64 `json:"download_count"`
+	}
+
+	var dlResp struct {
+		Error   string  `json:"error"`
+		Payload payload `json:"payload"`
+	}
+
+	if err := json.Unmarshal(dlBody, &dlResp); err != nil {
+		log.Error("Failed to decode mod response: %s", err.Error())
+		return 0, err
+	}
+
+	if dlResp.Error != "" {
+		return 0, fmt.Errorf("error: %s", dlResp.Error)
+	}
+
+	return dlResp.Payload.DownloadCount, nil
 }
 
 func init() {

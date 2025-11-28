@@ -137,7 +137,7 @@ func main() {
 		header.Set("Content-Type", "text/plain")
 
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("pong!"))
+		fmt.Fprint(w, "pong!")
 	})
 
 	go func() {

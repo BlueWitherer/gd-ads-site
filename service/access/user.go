@@ -255,7 +255,6 @@ func init() {
 				http.Error(w, "Token exchange failed", http.StatusInternalServerError)
 				return
 			}
-
 			defer resp.Body.Close()
 
 			tokenResp := Token{}
@@ -413,7 +412,7 @@ func init() {
 		http.SetCookie(w, clearCookie)
 
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("Logged out successfully"))
+		fmt.Fprint(w, "Logged out successfully")
 	})
 
 	http.HandleFunc("/account/me", func(w http.ResponseWriter, r *http.Request) {

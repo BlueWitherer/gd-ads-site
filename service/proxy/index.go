@@ -1,6 +1,7 @@
 package proxy
 
 import (
+	"fmt"
 	"net/http"
 
 	"service/log"
@@ -16,6 +17,6 @@ func init() {
 		header.Set("Access-Control-Allow-Headers", "Content-Type")
 
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("pong!"))
+		fmt.Fprint(w, "pong!")
 	})
 }

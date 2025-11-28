@@ -2,6 +2,7 @@ package ads
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"service/access"
 	"service/database"
@@ -163,7 +164,7 @@ func init() {
 			}
 
 			w.WriteHeader(http.StatusOK)
-			w.Write([]byte("Took action with report successfully"))
+			fmt.Fprint(w, "Took action with report successfully")
 		} else {
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		}
@@ -230,7 +231,7 @@ func init() {
 			}
 
 			w.WriteHeader(http.StatusOK)
-			w.Write([]byte("Rejected report successfully"))
+			fmt.Fprint(w, "Rejected report successfully")
 		} else {
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		}

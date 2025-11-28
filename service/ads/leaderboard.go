@@ -2,6 +2,7 @@ package ads
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -21,7 +22,7 @@ func init() {
 		header.Set("Content-Type", "text/plain")
 
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("pong!"))
+		fmt.Fprint(w, "pong!")
 	})
 
 	http.HandleFunc("/ads/leaderboard/views", func(w http.ResponseWriter, r *http.Request) {

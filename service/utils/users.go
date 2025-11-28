@@ -21,7 +21,7 @@ type User struct {
 
 type Announcement struct {
 	ID      uint      `json:"id"`         // Announcement ID
-	UserID  string    `json:"user_id"`    // Discord user ID
+	User    User      `json:"user"`       // Announcement author
 	Title   string    `json:"title"`      // Announcement title
 	Content string    `json:"content"`    // Announcement content
 	Created time.Time `json:"created_at"` // Created timestamp

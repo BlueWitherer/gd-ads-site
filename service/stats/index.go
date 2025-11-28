@@ -1,6 +1,7 @@
 package stats
 
 import (
+	"fmt"
 	"net/http"
 
 	"service/log"
@@ -17,6 +18,6 @@ func init() {
 		header.Set("Content-Type", "text/plain")
 
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("pong!"))
+		fmt.Fprint(w, "pong!")
 	})
 }
