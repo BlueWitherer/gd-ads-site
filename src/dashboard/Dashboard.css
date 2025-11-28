@@ -1,458 +1,458 @@
 /* Account Component */
 .account-title {
-  font-size: 1.5rem;
-  font-weight: bold;
-  margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 1.5rem;
 }
 
 .account-subtitle {
-  font-size: 1.125rem;
+    font-size: 1.125rem;
 }
 
 .account-description {
-  font-size: 0.875rem;
-  margin-bottom: 1.5rem;
-  color: #9ca3af;
+    font-size: 0.875rem;
+    margin-bottom: 1.5rem;
+    color: #9ca3af;
 }
 
 .account-user-info {
-  margin-bottom: 2rem;
-  padding: 1rem;
-  background-color: rgba(255, 255, 255, 0.05);
-  border-radius: 8px;
+    margin-bottom: 2rem;
+    padding: 1rem;
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
 }
 
 .account-user-details {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
 }
 
 .account-copy-button {
-  background: none;
-  border: none;
-  cursor: pointer;
+    background: none;
+    border: none;
+    cursor: pointer;
 }
 
 .account-actions {
-  display: grid;
-  grid-template-columns: repeat(2, auto);
-  gap: 1em;
-  justify-content: center;
-  align-items: center;
-  margin-top: 1em;
+    display: grid;
+    grid-template-columns: repeat(2, auto);
+    gap: 1em;
+    justify-content: center;
+    align-items: center;
+    margin-top: 1em;
 }
 
 .account-delete-button {
-  color: #fff;
+    color: #fff;
 }
 
 .account-admin-button {
-  color: #fff;
+    color: #fff;
 }
 
 /* Pending Ads Section */
 .pending-ads-header {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
 }
 
 .pending-ads-header h2 {
-  font-size: 1.5rem;
-  font-weight: bold;
+    font-size: 1.5rem;
+    font-weight: bold;
 }
 
 .pending-ads-actions {
-  display: flex;
-  gap: 0.5rem;
-  justify-content: center;
-  margin-bottom: 1.5rem;
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    margin-bottom: 1.5rem;
 }
 
 .pending-ads-action-button {
-  font-size: 0.65rem;
-  padding: 2px 8px;
+    font-size: 0.65rem;
+    padding: 2px 8px;
 }
 
 .pending-ads-empty {
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 1.1rem;
-  text-align: center;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 1.1rem;
+    text-align: center;
 }
 
 .pending-ads-list {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  max-height: 600px;
-  overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    max-height: 600px;
+    overflow-y: auto;
 }
 
 .pending-ad-card {
-  padding: 1rem;
-  border-style: solid;
-  border-width: 12px;
-  background: transparent;
-  border-radius: 0px;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  align-items: center;
+    padding: 1rem;
+    border-style: solid;
+    border-width: 12px;
+    background: transparent;
+    border-radius: 0px;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    align-items: center;
 }
 
 .pending-ad-image-wrapper {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-shrink: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-shrink: 0;
 }
 
 .pending-ad-image-link {
-  display: block;
-  flex-shrink: 0;
-  text-decoration: none;
+    display: block;
+    flex-shrink: 0;
+    text-decoration: none;
 }
 
 .pending-ad-image {
-  width: 200px;
-  height: auto;
-  aspect-ratio: 16 / 9;
-  object-fit: contain;
-  background-color: rgba(0, 0, 0, 0.5);
-  cursor: pointer;
-  transition: opacity 0.2s ease;
-  border-radius: 4px;
+    width: 200px;
+    height: auto;
+    aspect-ratio: 16 / 9;
+    object-fit: contain;
+    background-color: rgba(0, 0, 0, 0.5);
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+    border-radius: 4px;
 }
 
 .pending-ad-image:hover {
-  opacity: 0.8;
+    opacity: 0.8;
 }
 
 .pending-ad-info {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  text-align: center;
-  width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    text-align: center;
+    width: 100%;
 }
 
 .pending-ad-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    width: 100%;
 }
 
 .pending-ad-approve-button {
-  font-size: 0.85rem;
-  padding: 8px 20px;
-  background-color: #27ae60;
-  color: #fff;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: bold;
-  transition: background 0.2s;
-  width: 100%;
+    font-size: 0.85rem;
+    padding: 8px 20px;
+    background-color: #27ae60;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.2s;
+    width: 100%;
 }
 
 .pending-ad-approve-button:hover {
-  background-color: #229954;
+    background-color: #229954;
 }
 
 .pending-ad-reject-button {
-  font-size: 0.85rem;
-  padding: 8px 20px;
-  background-color: #e74c3c;
-  color: #fff;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: bold;
-  transition: background 0.2s;
-  width: 100%;
+    font-size: 0.85rem;
+    padding: 8px 20px;
+    background-color: #e74c3c;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.2s;
+    width: 100%;
 }
 
 .pending-ad-reject-button:hover {
-  background-color: #c0392b;
+    background-color: #c0392b;
 }
 
 /* Create Component */
 .create-title {
-  font-size: 1.5rem;
-  font-weight: bold;
-  margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 1.5rem;
 }
 
 .create-subtitle {
-  font-size: 1.125rem;
+    font-size: 1.125rem;
 }
 
 .create-description {
-  font-size: 0.875rem;
-  margin-bottom: 1.5rem;
-  color: #9ca3af;
+    font-size: 0.875rem;
+    margin-bottom: 1.5rem;
+    color: #9ca3af;
 }
 
 .create-ad-limit-info {
-  font-size: 0.875rem;
-  margin-bottom: 1.5rem;
-  padding: 0.75rem;
-  border-radius: 0.25rem;
-  background-color: rgba(30, 64, 175, 0.3);
-  border: 1px solid rgb(59, 130, 246);
+    font-size: 0.875rem;
+    margin-bottom: 1.5rem;
+    padding: 0.75rem;
+    border-radius: 0.25rem;
+    background-color: rgba(30, 64, 175, 0.3);
+    border: 1px solid rgb(59, 130, 246);
 }
 
 .create-ad-limit-warning {
-  font-size: 0.875rem;
-  margin-bottom: 1.5rem;
-  padding: 0.75rem;
-  border-radius: 0.25rem;
-  background-color: rgba(127, 29, 29, 0.3);
-  border: 1px solid rgb(239, 68, 68);
-  color: #fca5a5;
+    font-size: 0.875rem;
+    margin-bottom: 1.5rem;
+    padding: 0.75rem;
+    border-radius: 0.25rem;
+    background-color: rgba(127, 29, 29, 0.3);
+    border: 1px solid rgb(239, 68, 68);
+    color: #fca5a5;
 }
 
 .create-rules {
-  font-size: 0.875rem;
-  color: rgb(249, 115, 22);
-  margin-bottom: 1.5rem;
+    font-size: 0.875rem;
+    color: rgb(249, 115, 22);
+    margin-bottom: 1.5rem;
 }
 
 .create-image-upload-wrapper {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
 }
 
 .create-level-input-wrapper {
-  display: flex;
-  align-items: center;
-  gap: 1em;
+    display: flex;
+    align-items: center;
+    gap: 1em;
 }
 
 .create-level-validation {
-  margin-top: 8px;
-  font-size: 0.9em;
+    margin-top: 8px;
+    font-size: 0.9em;
 }
 
 .create-submit-wrapper {
-  display: flex;
-  justify-content: center;
+    display: flex;
+    justify-content: center;
 }
 
 /* Leaderboard Component */
 .leaderboard-container {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  overflow: auto;
-  max-height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    overflow: auto;
+    max-height: 100%;
 }
 
 .leaderboard-title {
-  font-size: 1.5rem;
-  font-weight: bold;
+    font-size: 1.5rem;
+    font-weight: bold;
 }
 
 .leaderboard-tabs {
-  display: flex;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-  justify-content: center;
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    justify-content: center;
 }
 
 .leaderboard-tab-button {
-  font-size: 0.65rem;
-  padding: 2px 8px;
+    font-size: 0.65rem;
+    padding: 2px 8px;
 }
 
 .leaderboard-loading {
-  text-align: center;
+    text-align: center;
 }
 
 .leaderboard-empty {
-  text-align: center;
-  color: rgb(239, 68, 68);
+    text-align: center;
+    color: rgb(239, 68, 68);
 }
 
 .leaderboard-pagination {
-  margin-top: 1rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+    margin-top: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .leaderboard-pagination-button {
-  font-size: 0.75rem;
-  padding: 4px 12px;
+    font-size: 0.75rem;
+    padding: 4px 12px;
 }
 
 /* Manage Component */
 .manage-title {
-  font-size: 1.5rem;
-  font-weight: bold;
-  margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 1.5rem;
 }
 
 .manage-subtitle {
-  font-size: 1.125rem;
+    font-size: 1.125rem;
 }
 
 .manage-description {
-  font-size: 0.875rem;
-  color: #9ca3af;
+    font-size: 0.875rem;
+    color: #9ca3af;
 }
 
 .manage-error {
-  color: #f87171;
+    color: #f87171;
 }
 
 .manage-ads-list {
-  display: flex;
-  flex-direction: column;
-  gap: 2em;
-  margin-top: 1em;
+    display: flex;
+    flex-direction: column;
+    gap: 2em;
+    margin-top: 1em;
 }
 
 .manage-ad-card {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  color: #fff;
-  border-style: solid;
-  border-width: 12px;
-  background: transparent;
-  border-radius: 0px;
-  padding: 1em;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  max-width: 800px;
-  position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    color: #fff;
+    border-style: solid;
+    border-width: 12px;
+    background: transparent;
+    border-radius: 0px;
+    padding: 1em;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    max-width: 800px;
+    position: relative;
 }
 
 .manage-ad-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
 }
 
 .manage-ad-image-link {
-  display: block;
-  flex-shrink: 0;
-  text-decoration: none;
-  cursor: pointer;
+    display: block;
+    flex-shrink: 0;
+    text-decoration: none;
+    cursor: pointer;
 }
 
 .manage-ad-image {
-  width: 200px;
-  height: auto;
-  aspect-ratio: 16 / 9;
-  object-fit: contain;
-  background-color: rgba(0, 0, 0, 0.5);
-  cursor: pointer;
-  transition: opacity 0.2s ease;
-  border-radius: 4px;
+    width: 200px;
+    height: auto;
+    aspect-ratio: 16 / 9;
+    object-fit: contain;
+    background-color: rgba(0, 0, 0, 0.5);
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+    border-radius: 4px;
 }
 
 .manage-ad-image:hover {
-  opacity: 0.8;
+    opacity: 0.8;
 }
 
 .manage-ad-info {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  text-align: center;
-  width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    text-align: center;
+    width: 100%;
 }
 
 .manage-ad-badge-wrapper {
-  display: flex;
-  justify-content: center;
+    display: flex;
+    justify-content: center;
 }
 
 .manage-ad-pending-badge {
-  background-color: #f39c12;
-  color: black;
-  padding: 0.25rem 0.75rem;
-  border-radius: 4px;
-  font-size: 0.85rem;
-  font-weight: bold;
-  width: fit-content;
+    background-color: #f39c12;
+    color: black;
+    padding: 0.25rem 0.75rem;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: bold;
+    width: fit-content;
 }
 
 .manage-ad-approved-badge {
-  background-color: #27ae60;
-  color: white;
-  padding: 0.25rem 0.75rem;
-  border-radius: 4px;
-  font-size: 0.85rem;
-  font-weight: bold;
-  width: fit-content;
+    background-color: #27ae60;
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: bold;
+    width: fit-content;
 }
 
 .manage-ad-delete-button {
-  background-color: #e74c3c;
+    background-color: #e74c3c;
 }
 
 /* Statistics Component */
 .stats-title {
-  font-size: 1.5rem;
-  font-weight: bold;
-  margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 1.5rem;
 }
 
 .stats-warning {
-  font-size: 0.875rem;
-  margin-bottom: 1.5rem;
-  padding: 0.75rem;
-  border-radius: 0.25rem;
-  background-color: rgba(120, 53, 15, 0.3);
-  border: 1px solid rgb(234, 179, 8);
+    font-size: 0.875rem;
+    margin-bottom: 1.5rem;
+    padding: 0.75rem;
+    border-radius: 0.25rem;
+    background-color: rgba(120, 53, 15, 0.3);
+    border: 1px solid rgb(234, 179, 8);
 }
 
 .stats-personal-container {
-  display: flex;
-  gap: 24px;
-  align-items: flex-start;
-  flex-wrap: wrap;
-  justify-content: center;
-  margin-bottom: 48px;
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 48px;
 }
 
 .stats-chart-box {
-  flex: 0 0 auto;
-  min-width: 0;
+    flex: 0 0 auto;
+    min-width: 0;
 }
 
 .stats-numbers-container {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  flex: 1 1 auto;
-  min-width: 200px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    flex: 1 1 auto;
+    min-width: 200px;
 }
 
 .stats-ratio {
-  font-size: 1.2rem;
-  color: #4caf50;
-  margin-top: 12px;
+    font-size: 1.2rem;
+    color: #4caf50;
+    margin-top: 12px;
 }
 
 .stats-global-title {
-  font-size: 1.5rem;
-  font-weight: bold;
-  margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 1.5rem;
 }
 
 .stats-global-container {
-  display: flex;
-  gap: 24px;
-  flex-wrap: wrap;
-  justify-content: center;
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+    justify-content: center;
 }

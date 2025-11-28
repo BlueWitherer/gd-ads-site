@@ -3,6 +3,7 @@ import "./Dashboard.css";
 import { useEffect, useState } from "react";
 import square02 from "../assets/square02.png";
 import { copyText } from "../page/Login";
+import "../misc/Log.mjs"
 
 import ContentCopyIcon from "@mui/icons-material/ContentCopyOutlined";
 import DoneIcon from "@mui/icons-material/DoneOutlined";
@@ -57,8 +58,8 @@ export default function Account() {
                 }
             } catch (err) {
                 console.error("Failed to fetch user:", err);
-            }
-        }
+            };
+        };
 
         async function fetchPendingCount() {
             try {
@@ -72,8 +73,8 @@ export default function Account() {
                 }
             } catch (err) {
                 console.error("Failed to fetch pending ads count:", err);
-            }
-        }
+            };
+        };
 
         async function fetchReportedCount() {
             try {
@@ -87,8 +88,8 @@ export default function Account() {
                 }
             } catch (err) {
                 console.error("Failed to fetch reported ads count:", err);
-            }
-        }
+            };
+        };
 
         fetchUser();
         fetchPendingCount();
@@ -105,6 +106,7 @@ export default function Account() {
                 method: "GET",
                 credentials: "include",
             });
+
             if (res.ok) {
                 const data = await res.json();
                 console.log("Pending ads response:", data);
@@ -117,11 +119,11 @@ export default function Account() {
                 const txt = await res.text();
                 console.warn("Pending ads endpoint:", res.status, txt);
                 alert("Failed to fetch pending ads: " + txt);
-            }
+            };
         } catch (err) {
             console.error(err);
             alert("Failed to fetch pending ads.");
-        }
+        };
     };
 
     const handleApproveAd = async (adId: number) => {
@@ -130,15 +132,16 @@ export default function Account() {
                 method: "POST",
                 credentials: "include",
             });
+
             if (res.ok) {
                 handlePendingAds();
             } else {
                 alert("Failed to approve advertisement");
-            }
+            };
         } catch (err) {
             console.error("Approve failed:", err);
             alert("Failed to approve advertisement");
-        }
+        };
     };
 
     const handleRejectAd = async (adId: number) => {
@@ -152,16 +155,17 @@ export default function Account() {
                 method: "DELETE",
                 credentials: "include",
             });
+
             if (res.ok) {
                 // Refresh the pending ads list
                 handlePendingAds();
             } else {
                 alert("Failed to reject advertisement");
-            }
+            };
         } catch (err) {
             console.error("Reject failed:", err);
             alert("Failed to reject advertisement");
-        }
+        };
     };
 
     const handleReportedAds = async () => {
@@ -170,6 +174,7 @@ export default function Account() {
                 method: "GET",
                 credentials: "include",
             });
+
             if (res.ok) {
                 const data = await res.json();
                 setReportedAds(data);
@@ -178,11 +183,11 @@ export default function Account() {
             } else {
                 const txt = await res.text();
                 alert("Failed to fetch reported ads: " + txt);
-            }
+            };
         } catch (err) {
             console.error(err);
             alert("Failed to fetch reported ads.");
-        }
+        };
     };
 
     const handleDeleteReportedAd = async (reportId: number) => {
@@ -198,6 +203,7 @@ export default function Account() {
                 method: "POST",
                 credentials: "include",
             });
+
             if (res.ok) {
                 handleReportedAds();
             } else {
@@ -206,7 +212,7 @@ export default function Account() {
         } catch (err) {
             console.error("Delete failed:", err);
             alert("Failed to delete advertisement");
-        }
+        };
     };
 
     const handleRejectReport = async (reportId: number) => {
@@ -219,11 +225,11 @@ export default function Account() {
                 handleReportedAds();
             } else {
                 alert("Failed to reject report");
-            }
+            };
         } catch (err) {
             console.error("Reject failed:", err);
             alert("Failed to reject report");
-        }
+        };
     };
 
     if (showingReported) {
@@ -338,7 +344,7 @@ export default function Account() {
                 )}
             </>
         );
-    }
+    };
 
     if (showingPending) {
         return (
@@ -443,7 +449,7 @@ export default function Account() {
                 )}
             </>
         );
-    }
+    };
 
     return (
         <>
@@ -528,6 +534,7 @@ export default function Account() {
                                 method: "POST",
                                 credentials: "include",
                             });
+
                             if (res.ok) {
                                 alert("Account deleted. You will be logged out.");
                                 window.location.href = "/";
@@ -535,11 +542,11 @@ export default function Account() {
                                 const txt = await res.text();
                                 console.error("Delete failed:", txt);
                                 alert("Failed to delete account.");
-                            }
+                            };
                         } catch (err) {
                             console.error(err);
                             alert("Failed to delete account.");
-                        }
+                        };
                     }}
                 >
                     Delete Account
@@ -547,4 +554,4 @@ export default function Account() {
             </div>
         </>
     );
-}
+};
