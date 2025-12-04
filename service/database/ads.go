@@ -525,11 +525,7 @@ func BoostAd(adId int64, boosts uint, user string) error {
 	defer stmt.Close()
 
 	_, err = stmt.Exec(adId, boosts)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }
 
 func AddBoostsToUser(userId string, boosts uint) error {
@@ -540,14 +536,26 @@ func AddBoostsToUser(userId string, boosts uint) error {
 	defer stmt.Close()
 
 	_, err = stmt.Exec(boosts, userId)
+	return err
+}
+
+func NewReport(adId int64, accountId int, description string) error {
+	existsStmt, err := utils.PrepareStmt(dat, "SELECT EXISTS(SELECT 1 FROM reports WHERE ad_id = ? AND account_id = ?)")
+	if err != nil {
+		return err
+	}
+	defer existsStmt.Close()
+
+	var exists bool
+	err = existsStmt.QueryRow(adId, accountId).Scan(&exists)
 	if err != nil {
 		return err
 	}
 
-	return nil
-}
+	if exists {
+		return fmt.Errorf("report from this account for this ad already exists")
+	}
 
-func NewReport(adId int64, accountId int, description string) error {
 	stmt, err := utils.PrepareStmt(dat, "INSERT INTO reports (ad_id, account_id, description) VALUES (?, ?, ?)")
 	if err != nil {
 		return err
@@ -555,11 +563,7 @@ func NewReport(adId int64, accountId int, description string) error {
 	defer stmt.Close()
 
 	_, err = stmt.Exec(adId, accountId, description)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }
 
 func GetReport(id int64) (*utils.Report, error) {
@@ -633,11 +637,7 @@ func FinishReport(report *utils.Report) error {
 	defer stmt.Close()
 
 	_, err = stmt.Exec(report.ID)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }
 
 func init() {
