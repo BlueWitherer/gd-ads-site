@@ -2,6 +2,9 @@ package access
 
 import (
 	"context"
+	"crypto/rand"
+	"crypto/sha256"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -15,7 +18,6 @@ import (
 	"service/log"
 	"service/utils"
 
-	"github.com/google/uuid"
 	"github.com/patrickmn/go-cache"
 )
 
@@ -33,8 +35,23 @@ type Token struct {
 
 var sessionCache = cache.New(2*time.Hour, 10*time.Minute)
 
-func generateSessionID() string {
-	return uuid.New().String() // uuid v4
+func generateSessionID() (string, string, error) {
+	b := make([]byte, 64)
+	if _, err := rand.Read(b); err != nil {
+		return "", "", err
+	}
+
+	raw := base64.RawURLEncoding.EncodeToString(b)
+
+	h := sha256.Sum256([]byte(b))
+	hash := base64.RawURLEncoding.EncodeToString(h[:])
+
+	return raw, hash, nil
+}
+
+func hashSessionID(raw string) string {
+	h := sha256.Sum256([]byte(raw))
+	return base64.RawURLEncoding.EncodeToString(h[:])
 }
 
 func isSecure(r *http.Request) bool {
@@ -46,7 +63,11 @@ func isSecure(r *http.Request) bool {
 }
 
 func SetSession(w http.ResponseWriter, user DiscordUser, secure bool) (string, error) {
-	sessionId := generateSessionID()
+	sessionId, sessionIdHash, err := generateSessionID()
+	if err != nil {
+		return "", err
+	}
+
 	session := &http.Cookie{
 		Name:     "session_id",
 		Value:    sessionId,
@@ -68,7 +89,7 @@ func SetSession(w http.ResponseWriter, user DiscordUser, secure bool) (string, e
 	}
 	defer stmt.Close()
 
-	_, err = stmt.Exec(sessionId, user.ID, user.Username, user.Discriminator, user.Avatar)
+	_, err = stmt.Exec(sessionIdHash, user.ID, user.Username, user.Discriminator, user.Avatar)
 	if err != nil {
 		return "", err
 	}
@@ -76,14 +97,16 @@ func SetSession(w http.ResponseWriter, user DiscordUser, secure bool) (string, e
 	log.Debug("Setting session cookie...")
 	http.SetCookie(w, session)
 
-	sessionCache.Set(sessionId, user, cache.DefaultExpiration)
+	sessionCache.Set(sessionIdHash, user, cache.DefaultExpiration)
 
-	return sessionId, nil
+	return sessionIdHash, nil
 }
 
 func GetSessionFromId(id string) (*DiscordUser, error) {
+	sessionId := hashSessionID(id)
+
 	var user DiscordUser
-	if val, found := sessionCache.Get(id); found {
+	if val, found := sessionCache.Get(sessionId); found {
 		user = val.(DiscordUser)
 	}
 
@@ -93,7 +116,7 @@ func GetSessionFromId(id string) (*DiscordUser, error) {
 	}
 	defer stmt.Close()
 
-	err = stmt.QueryRow(id).Scan(&user.ID, &user.Username, &user.Discriminator, &user.Avatar)
+	err = stmt.QueryRow(sessionId).Scan(&user.ID, &user.Username, &user.Discriminator, &user.Avatar)
 	if err != nil {
 		return nil, err
 	}
@@ -104,7 +127,7 @@ func GetSessionFromId(id string) (*DiscordUser, error) {
 	}
 	defer updStmt.Close()
 
-	_, err = updStmt.Exec(id)
+	_, err = updStmt.Exec(sessionId)
 	if err != nil {
 		return nil, err
 	}
@@ -118,7 +141,7 @@ func GetSessionUserID(r *http.Request) (string, error) {
 		return "", err
 	}
 
-	u, err := GetSessionFromId(c.Value)
+	u, err := GetSessionFromId(hashSessionID(c.Value))
 	if err != nil || u == nil {
 		if err == nil {
 			err = fmt.Errorf("no user in session")
@@ -131,12 +154,12 @@ func GetSessionUserID(r *http.Request) (string, error) {
 }
 
 func GetSession(r *http.Request) (*DiscordUser, error) {
-	cookie, err := r.Cookie("session_id")
+	c, err := r.Cookie("session_id")
 	if err != nil {
 		return nil, err
 	}
 
-	user, err := GetSessionFromId(cookie.Value)
+	user, err := GetSessionFromId(hashSessionID(c.Value))
 	if err != nil {
 		return nil, err
 	}
