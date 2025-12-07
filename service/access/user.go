@@ -43,7 +43,7 @@ func generateSessionID() (string, string, error) {
 
 	raw := base64.RawURLEncoding.EncodeToString(b)
 
-	h := sha256.Sum256([]byte(b))
+	h := sha256.Sum256([]byte(raw))
 	hash := base64.RawURLEncoding.EncodeToString(h[:])
 
 	return raw, hash, nil
@@ -141,7 +141,7 @@ func GetSessionUserID(r *http.Request) (string, error) {
 		return "", err
 	}
 
-	u, err := GetSessionFromId(hashSessionID(c.Value))
+	u, err := GetSessionFromId(c.Value)
 	if err != nil || u == nil {
 		if err == nil {
 			err = fmt.Errorf("no user in session")
@@ -159,7 +159,7 @@ func GetSession(r *http.Request) (*DiscordUser, error) {
 		return nil, err
 	}
 
-	user, err := GetSessionFromId(hashSessionID(c.Value))
+	user, err := GetSessionFromId(c.Value)
 	if err != nil {
 		return nil, err
 	}
@@ -413,7 +413,7 @@ func init() {
 	http.HandleFunc("/logout", func(w http.ResponseWriter, r *http.Request) {
 		cookie, err := r.Cookie("session_id")
 		if err == nil {
-			sessionCache.Delete(cookie.Value)
+			sessionCache.Delete(hashSessionID(cookie.Value))
 			log.Info("User %s logged out", cookie.Value)
 		}
 
