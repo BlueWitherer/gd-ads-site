@@ -81,12 +81,33 @@ func ValidateArgonUser(user utils.ArgonUser) (bool, error) {
 
 	log.Debug("Sending request to Argon server: %s", u.String())
 	client := &http.Client{Timeout: 15 * time.Second}
-	resp, err := client.Do(req)
-	if err != nil {
-		return false, err
-	} else {
-		log.Debug("Argon status code received: %d, for account of ID %v", resp.StatusCode, user.Account)
+
+	var resp *http.Response
+	var reqErr error
+
+	// loop for rate limits (429)
+	backoff := 500 * time.Millisecond
+	for i := 0; i < 3; i++ {
+		resp, reqErr = client.Do(req)
+		if reqErr != nil {
+			return false, reqErr
+		}
+
+		if resp.StatusCode == http.StatusTooManyRequests {
+			log.Warn("Argon rate limit hit for account %d. Retrying in %v...", user.Account, backoff)
+			// close and retry if have attempts left
+			if i < 2 {
+				resp.Body.Close()
+				time.Sleep(backoff)
+				backoff *= 2
+				continue
+			}
+		}
+
+		break
 	}
+
+	log.Debug("Argon status code received: %d, for account of ID %v", resp.StatusCode, user.Account)
 	defer resp.Body.Close()
 
 	bodyBytes, err := io.ReadAll(resp.Body)
@@ -95,9 +116,13 @@ func ValidateArgonUser(user utils.ArgonUser) (bool, error) {
 	}
 	log.Debug("Argon response body: %s", string(bodyBytes))
 
+	if resp.StatusCode != http.StatusOK {
+		return false, fmt.Errorf("argon server returned status code %d: %s", resp.StatusCode, string(bodyBytes))
+	}
+
 	var valid utils.ArgonValidation
 	if err := json.Unmarshal(bodyBytes, &valid); err != nil {
-		return false, err
+		return false, fmt.Errorf("failed to parse argon response: %v, body: %s", err, string(bodyBytes))
 	} else {
 		log.Debug("Argon status of account of ID %v retrieved", user.Account)
 	}
