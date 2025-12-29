@@ -42,7 +42,7 @@ type Kofi struct {
 func boostLinkCode() (string, error) {
 	code := os.Getenv("KOFI_LINK_BOOST")
 	if code == "" {
-		return code, fmt.Errorf("direct link code for boost is not defined!")
+		return "", fmt.Errorf("direct link code for boost is not defined!")
 	} else {
 		return code, nil
 	}
@@ -52,10 +52,14 @@ func init() {
 	http.HandleFunc("/api/order", func(w http.ResponseWriter, r *http.Request) {
 		log.Debug("Ko-fi webhook called")
 
-		w.Header().Set("Access-Control-Allow-Methods", "POST")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+		header := w.Header()
+
+		header.Set("Access-Control-Allow-Methods", "POST")
+		header.Set("Access-Control-Allow-Headers", "Content-Type")
 
 		if r.Method == http.MethodPost {
+			header.Set("Content-Type", "application/json")
+
 			if err := r.ParseForm(); err != nil {
 				log.Error("Failed to parse form data: %s", err.Error())
 				http.Error(w, "Failed to parse form data", http.StatusBadRequest)
@@ -124,10 +128,12 @@ func init() {
 
 			default:
 				log.Error("Invalid payment type")
+				http.Error(w, "Invalid payment type", http.StatusBadRequest)
+				return
 			}
 
 			w.WriteHeader(http.StatusOK)
-			fmt.Fprint(w, "Ko-fi webhook received")
+			fmt.Fprint(w, "Ko-fi webhook received and processed")
 		} else {
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		}

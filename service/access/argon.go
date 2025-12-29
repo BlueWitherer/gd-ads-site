@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"os"
 	"time"
 
 	"service/log"
@@ -15,6 +16,16 @@ import (
 )
 
 var argonCache = cache.New(6*time.Hour, 10*time.Minute)
+var invalids = cache.New(1*time.Hour, 10*time.Minute)
+
+func getToken() (string, error) {
+	token := os.Getenv("ARGON")
+	if token == "" {
+		return "", fmt.Errorf("env for argon token is not defined!")
+	} else {
+		return token, nil
+	}
+}
 
 func UpsertArgonUser(user utils.ArgonUser) error {
 	argonCache.Set(fmt.Sprintf("%d", user.Account), user, cache.DefaultExpiration)
@@ -30,6 +41,10 @@ func UpsertArgonUser(user utils.ArgonUser) error {
 }
 
 func ValidateArgonUser(user utils.ArgonUser) (bool, error) {
+	if val, found := invalids.Get(fmt.Sprintf("%d", user.Account)); found {
+		return false, fmt.Errorf("Argon token %s is invalid", val.(string))
+	}
+
 	if val, found := argonCache.Get(fmt.Sprintf("%d", user.Account)); found {
 		cUser := val.(utils.ArgonUser)
 
@@ -79,36 +94,23 @@ func ValidateArgonUser(user utils.ArgonUser) (bool, error) {
 
 	req.Header.Set("User-Agent", "PlayerAdvertisements/1.0")
 
+	argon, err := getToken()
+	if err != nil {
+		log.Warn("Failed to get Argon API token: %s")
+	} else {
+		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", argon))
+	}
+
 	log.Debug("Sending request to Argon server: %s", u.String())
 	client := &http.Client{Timeout: 15 * time.Second}
 
-	var resp *http.Response
-	var reqErr error
-
-	// loop for rate limits (429)
-	backoff := 500 * time.Millisecond
-	for i := 0; i < 3; i++ {
-		resp, reqErr = client.Do(req)
-		if reqErr != nil {
-			return false, reqErr
-		}
-
-		if resp.StatusCode == http.StatusTooManyRequests {
-			log.Warn("Argon rate limit hit for account %d. Retrying in %v...", user.Account, backoff)
-			// close and retry if have attempts left
-			if i < 2 {
-				resp.Body.Close()
-				time.Sleep(backoff)
-				backoff *= 2
-				continue
-			}
-		}
-
-		break
+	resp, reqErr := client.Do(req)
+	if reqErr != nil {
+		return false, reqErr
 	}
+	defer resp.Body.Close()
 
 	log.Debug("Argon status code received: %d, for account of ID %v", resp.StatusCode, user.Account)
-	defer resp.Body.Close()
 
 	bodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
@@ -130,7 +132,10 @@ func ValidateArgonUser(user utils.ArgonUser) (bool, error) {
 	if valid.Valid {
 		log.Info("Argon status of account of ID %v is valid", user.Account)
 		UpsertArgonUser(user)
+
 		return true, nil
+	} else {
+		invalids.Set(user.Token, user.Token, cache.DefaultExpiration)
 	}
 
 	log.Error("Argon status of account of ID %v is invalid for %s", user.Account, valid.Cause)
