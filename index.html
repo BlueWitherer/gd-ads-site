@@ -1,30 +1,54 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8" />
-  <link rel="icon" type="image/png" href="/adIcon.png" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Righteous&display=swap" rel="stylesheet">
-  <title>GD Advertisement Manager</title>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="/adIcon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Righteous&display=swap" rel="stylesheet">
+
+    <title>GD Ads Manager</title>
+
+    <meta name="author" content="ArcticWoof & Cheeseworks" />
+    <meta name="description" content="Manage your Geometry Dash ads." />
+    <meta name="keywords" content="Geode, mod, ads, advertisements, Geometry Dash" />
+    <meta name="theme-color" content="#EDDB00" />
+    <meta name="robots" content="index, follow" />
+    <meta name="color-scheme" content="light dark" />
+
+    <meta property="og:site_name" content="ArcticWoof & Cheeseworks" />
+    <meta property="og:title" content="GD Ads Manager" />
+    <meta property="og:description" content="Manage your Geometry Dash ads." />
+    <meta property="og:url" content="https://ads.arcticwoof.xyz/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="./adIcon.png" />
+    <meta property="og:image:alt" content="GD Ads Manager site logo" />
+    <meta property="og:locale" content="en_US" />
+
+    <meta name="twitter:title" content="GD Ads Manager" />
+    <meta name="twitter:description" content="Manage your Geometry Dash ads." />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:image" content="./adIcon.png" />
+    <meta name="twitter:image:alt" content="GD Ads Manager site logo" />
 </head>
 
 <body>
-  <noscript>
-    <h1>Please enable JavaScript and disable your ad blocker.</h1>
-  </noscript>
-  <div id="root"></div>
-  <script type="module" src="/src/page/main.tsx"></script>
-  <script>
-    setTimeout(() => {
-      const root = document.getElementById('root');
-      if (root && root.innerHTML.trim() === '') {
-        root.innerHTML = '<h1>Please disable your ad blocker... i know ironic</h1>';
-      }
-    }, 2000);
-  </script>
+    <noscript>
+        <h1>Please enable JavaScript and disable your ad blocker.</h1>
+    </noscript>
+
+    <div id="root"></div>
+    <script type="module" src="/src/page/main.tsx"></script>
+    <script>
+        setTimeout(() => {
+            const root = document.getElementById('root');
+            if (root && root.innerHTML.trim() === '') {
+                root.innerHTML = '<h1>Please disable your ad blocker... i know ironic</h1>';
+            }
+        }, 2500);
+    </script>
 </body>
 
 </html>

@@ -200,19 +200,28 @@ func IncrementUserStats(userId string, viewsDelta int, clicksDelta int) error {
 	return err
 }
 
-func VerifyUser(id string) (*utils.User, error) {
-	stmt, err := utils.PrepareStmt(dat, "UPDATE users SET verified = TRUE WHERE id = ?")
+func VerifyUser(id string, verified bool) (*utils.User, error) {
+	stmt, err := utils.PrepareStmt(dat, "UPDATE users SET verified = ? WHERE id = ?")
 	if err != nil {
 		return nil, err
 	}
 	defer stmt.Close()
 
-	_, err = stmt.Exec(id)
+	_, err = stmt.Exec(verified, id)
 	if err != nil {
 		return nil, err
 	}
 
-	return GetUser(id)
+	user, err := GetUser(id)
+	if err != nil {
+		return nil, err
+	}
+
+	user.Verified = verified
+
+	currentUsers = setUser(user)
+
+	return user, nil
 }
 
 func StaffUser(id string) (*utils.User, error) {

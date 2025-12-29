@@ -1,4 +1,4 @@
-# GD Ads Site
+# GD Ads Manager
 Manage your Geometry Dash ads.
 
 ---
