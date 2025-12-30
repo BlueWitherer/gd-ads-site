@@ -62,6 +62,8 @@ func NewStat(event utils.AdEvent, adId int64) error {
 		log.Warn("Could not find owner for ad %d: %v", adId, ownerErr)
 	}
 
+	currentAds = setAd(ad)
+
 	log.Debug("Successfully registered %s for ad %d", event, adId)
 	return nil
 }
