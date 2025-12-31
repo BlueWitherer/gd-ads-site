@@ -2,6 +2,7 @@ import "../page/Login.css";
 import "./Dashboard.css";
 import square02 from "../assets/square02.png";
 import { useEffect, useState } from "react";
+import { SiKofi } from "react-icons/si";
 
 type Ad = {
     id: number;
@@ -13,6 +14,8 @@ type Ad = {
     views?: number;
     clicks?: number;
 };
+
+
 
 function getDaysRemaining(expirationTimestamp: number): {
     days: number;
@@ -111,6 +114,16 @@ function Manage() {
                 You can manually delete your advertisement or wait until the expiration
                 date if you want to make a new one.
             </p>
+
+            <a
+                href="https://ko-fi.com/playerads"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="kofi-button"
+            >
+                <SiKofi size={24} />
+                <span>Get More Reach!</span>
+            </a>
 
             {error && <div className="manage-error">{error}</div>}
 

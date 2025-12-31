@@ -429,8 +429,31 @@
     font-size: 0.9rem;
 }
 
-.manage-ad-boost-button:hover {
-    background-color: #2563eb;
+.kofi-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 20px;
+    margin-bottom: 16px;
+    width: fit-content;
+    font-size: 0.9rem;
+    padding: 6px 16px;
+    text-decoration: none;
+    color: white !important;
+    background-color: #29abe0;
+    border-radius: 20px;
+    border: none;
+    transition: transform 0.1s ease, background-color 0.2s;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.kofi-button:hover {
+    transform: scale(1.05);
+    background-color: #1a9bd0;
+}
+
+.kofi-button:active {
+    transform: scale(0.95);
 }
 
 /* Statistics Component */
@@ -488,4 +511,10 @@
     gap: 24px;
     flex-wrap: wrap;
     justify-content: center;
+}
+
+@media (max-width: 1200px) {
+    .kofi-button {
+        align-self: center;
+    }
 }
