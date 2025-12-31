@@ -196,6 +196,16 @@ func IncrementUserStats(userId string, viewsDelta int, clicksDelta int) error {
 	}
 	defer stmt.Close()
 
+	user, err := GetUser(userId)
+	if err != nil {
+		return err
+	}
+
+	user.TotalViews += uint64(viewsDelta)
+	user.TotalClicks += uint64(clicksDelta)
+
+	currentUsers = setUser(user)
+
 	_, err = stmt.Exec(viewsDelta, clicksDelta, userId)
 	return err
 }

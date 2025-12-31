@@ -524,6 +524,15 @@ func BoostAd(adId int64, boosts uint, user string) error {
 	}
 	defer stmt.Close()
 
+	ad, err := GetAdvertisement(adId)
+	if err != nil {
+		return err
+	}
+
+	ad.BoostCount += boosts
+
+	currentAds = setAd(ad)
+
 	_, err = stmt.Exec(adId, boosts)
 	return err
 }
