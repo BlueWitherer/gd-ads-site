@@ -3,6 +3,7 @@ import "../page/Login.css";
 import "./Dashboard.css";
 import "../misc/Log.mjs";
 import { PieChart } from "@mui/x-charts/PieChart";
+import { SiKofi } from "react-icons/si";
 
 export default function Statistics() {
     console.debug("Rendering Statistics component...");
@@ -148,6 +149,18 @@ export default function Statistics() {
                         {adCount !== null ? adCount.toLocaleString() : "Loading..."}
                     </p>
                 </div>
+            </div>
+
+            <div className="stats-global-container">
+                <a
+                    href="https://ko-fi.com/playerads"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="kofi-button"
+                >
+                    <SiKofi size={24} />
+                    <span>Get More Reach!</span>
+                </a>
             </div>
         </>
     );
