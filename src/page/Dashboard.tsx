@@ -240,16 +240,7 @@ export default function Dashboard() {
               {user && (
                 <span
                   className="boost-count-span"
-                  style={{
-                    fontSize: "0.85rem",
-                    color: "#fa87f2",
-                    marginLeft: "2px",
-                    fontWeight: "bold",
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: "4px",
-                    whiteSpace: "nowrap",
-                  }}
+
                   title="Available Ad Boosts"
                 >
                   💎 {boostCount}

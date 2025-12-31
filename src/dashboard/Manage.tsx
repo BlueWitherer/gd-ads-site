@@ -13,6 +13,7 @@ type Ad = {
     pending?: boolean;
     views?: number;
     clicks?: number;
+    boost_count?: number;
 };
 
 
@@ -68,6 +69,7 @@ function Manage() {
                         pending: a.pending,
                         views: a.views || 0,
                         clicks: a.clicks || 0,
+                        boost_count: a.boost_count || 0,
                     }))
                 );
             } catch (err: any) {
@@ -99,6 +101,25 @@ function Manage() {
 
             alert("Ad boosted successfully!");
             setBoostAmounts((prev) => ({ ...prev, [id]: "" }));
+            const refreshRes = await fetch("/ads/get", { credentials: "include" });
+            if (refreshRes.ok) {
+                const data = await refreshRes.json();
+                if (data) {
+                    setAdverts(
+                        data.map((a: any) => ({
+                            id: a.ad_id,
+                            type: a.type,
+                            level_id: a.level_id,
+                            image: a.image_url,
+                            expiration: a.expiry,
+                            pending: a.pending,
+                            views: a.views || 0,
+                            clicks: a.clicks || 0,
+                            boost_count: a.boost_count || 0,
+                        }))
+                    );
+                }
+            }
         } catch (err: any) {
             alert(`Error: ${err.message || String(err)}`);
         }
@@ -185,6 +206,9 @@ function Manage() {
                                         </div>
                                         <div className="stat-item">
                                             <strong>Clicks: {advert.clicks || 0}</strong>
+                                        </div>
+                                        <div className="stat-item">
+                                            <strong>Boosts: {advert.boost_count || 0}</strong>
                                         </div>
                                         <div className="stat-item">
                                             <strong>
