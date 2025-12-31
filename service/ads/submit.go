@@ -52,7 +52,7 @@ func init() {
 				return
 			}
 
-			maxAllowed := 10
+			maxAllowed := 8
 			if user.IsAdmin || user.IsStaff || user.Verified {
 				maxAllowed = 20
 			}

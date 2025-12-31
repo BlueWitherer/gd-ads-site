@@ -26,7 +26,7 @@ export default function Create() {
     const [levelName, setLevelName] = useState<string>("");
     const [checkingLevel, setCheckingLevel] = useState<boolean>(false);
     const [activeAdCount, setActiveAdCount] = useState<number | null>(0);
-    const [maxAdCount, setMaxAdCount] = useState<number | null>(10);
+    const [maxAdCount, setMaxAdCount] = useState<number | null>(8);
 
     const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
@@ -60,7 +60,7 @@ export default function Create() {
             .then((data) => {
                 if (data?.verified || data?.is_staff || data?.is_admin) setMaxAdCount(20);
             })
-            .catch(() => { setMaxAdCount(10) });
+            .catch(() => { setMaxAdCount(8) });
     }, []);
 
     useEffect(() => {
