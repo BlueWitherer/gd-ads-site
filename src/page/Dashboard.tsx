@@ -33,6 +33,7 @@ export default function Dashboard() {
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
   const [isStaff, setIsStaff] = useState<boolean>(false);
   const [verified, setVerified] = useState<boolean>(false);
+  const [boostCount, setBoostCount] = useState<number>(0);
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
   const [sidebarClosing, setSidebarClosing] = useState<boolean>(false);
 
@@ -67,6 +68,7 @@ export default function Dashboard() {
                   setIsAdmin(userData.is_admin);
                   setIsStaff(userData.is_staff);
                   setVerified(userData.verified);
+                  setBoostCount(userData.boost_count || 0);
                 });
               }
             })
@@ -155,9 +157,8 @@ export default function Dashboard() {
         </button>
 
         <div
-          className={`sidebar-container sidebar-wrapper ${
-            sidebarClosing ? "closing" : sidebarOpen ? "open" : ""
-          }`}
+          className={`sidebar-container sidebar-wrapper ${sidebarClosing ? "closing" : sidebarOpen ? "open" : ""
+            }`}
           id="sidebar"
         >
           <button
@@ -219,10 +220,9 @@ export default function Dashboard() {
                 user.avatar && user.id
                   ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=64`
                   : user.discriminator
-                  ? `https://cdn.discordapp.com/embed/avatars/${
-                      parseInt(user.discriminator || "0", 10) % 5
+                    ? `https://cdn.discordapp.com/embed/avatars/${parseInt(user.discriminator || "0", 10) % 5
                     }.png`
-                  : null;
+                    : null;
               return avatarUrl ? (
                 <Avatar alt={user.username} src={avatarUrl} />
               ) : null;
@@ -237,6 +237,24 @@ export default function Dashboard() {
               )) ||
                 (isStaff && <BuildIcon titleAccess="Staff" />) ||
                 (verified && <VerifiedIcon titleAccess="Verified" />)}
+              {user && (
+                <span
+                  className="boost-count-span"
+                  style={{
+                    fontSize: "0.85rem",
+                    color: "#fa87f2",
+                    marginLeft: "2px",
+                    fontWeight: "bold",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "4px",
+                    whiteSpace: "nowrap",
+                  }}
+                  title="Available Ad Boosts"
+                >
+                  💎 {boostCount}
+                </span>
+              )}
             </div>
           </div>
 

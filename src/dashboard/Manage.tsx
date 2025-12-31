@@ -35,6 +35,7 @@ function getDaysRemaining(expirationTimestamp: number): {
 
 function Manage() {
     const [adverts, setAdverts] = useState<Ad[] | null>(null);
+    const [boostAmounts, setBoostAmounts] = useState<{ [key: number]: string }>({});
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
@@ -47,6 +48,12 @@ function Manage() {
                 };
 
                 const data = await res.json();
+
+                if (!data) {
+                    setAdverts([]);
+                    return;
+                }
+
                 // Expecting array of { id, type, level_id, image, expiration }
                 setAdverts(
                     data.map((a: any) => ({
@@ -67,6 +74,32 @@ function Manage() {
 
         load();
     }, []);
+
+    const handleBoost = async (id: number) => {
+        const amount = parseInt(boostAmounts[id] || "0", 10);
+        if (isNaN(amount) || amount < 1) {
+            alert("Please enter a valid boost amount (minimum 1).");
+            return;
+        }
+
+        try {
+            const res = await fetch(`/ads/boost?id=${id}&boosts=${amount}`, {
+                method: "POST",
+                credentials: "include",
+            });
+
+            if (!res.ok) {
+                const text = await res.text();
+                alert(`Failed to boost ad: ${text}`);
+                return;
+            }
+
+            alert("Ad boosted successfully!");
+            setBoostAmounts((prev) => ({ ...prev, [id]: "" }));
+        } catch (err: any) {
+            alert(`Error: ${err.message || String(err)}`);
+        }
+    };
 
     return (
         <>
@@ -160,6 +193,27 @@ function Manage() {
                                 ) : (
                                     <div className="manage-ad-approved-badge">APPROVED</div>
                                 )}
+                            </div>
+                            <div className="manage-ad-boost-wrapper">
+                                <input
+                                    type="number"
+                                    min="1"
+                                    placeholder="Amount"
+                                    className="manage-ad-boost-input"
+                                    value={boostAmounts[advert.id] || ""}
+                                    onChange={(e) =>
+                                        setBoostAmounts((prev) => ({
+                                            ...prev,
+                                            [advert.id]: e.target.value,
+                                        }))
+                                    }
+                                />
+                                <button
+                                    className="manage-ad-boost-button"
+                                    onClick={() => handleBoost(advert.id)}
+                                >
+                                    Boost Ad
+                                </button>
                             </div>
                             <button
                                 className="ad-card-delete manage-ad-delete-button"
