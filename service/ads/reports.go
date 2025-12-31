@@ -223,6 +223,23 @@ func init() {
 				return
 			}
 
+			blacklistStr := query.Get("bl")
+			if blacklistStr != "" {
+				blacklist, err := strconv.ParseBool(blacklistStr)
+				if err != nil {
+					log.Error("Invalid boolean value for blacklist: %s", err.Error())
+					http.Error(w, "Invalid boolean value for blacklist", http.StatusBadRequest)
+					return
+				}
+
+				err = access.ReportBanArgonUser(report, blacklist)
+				if err != nil {
+					log.Error("Failed to blacklist user from reporting: %s", err.Error())
+					http.Error(w, "Failed to blacklist user from reporting", http.StatusInternalServerError)
+					return
+				}
+			}
+
 			err = database.FinishReport(report)
 			if err != nil {
 				log.Error("Failed to finish report: %s", err.Error())

@@ -251,7 +251,7 @@ func init() {
 			}
 
 			if user.Banned {
-				log.Error("Owner %s of advertisement of ID %v is banned", user.Username, ad.AdID)
+				log.Warn("Owner %s of advertisement of ID %v is banned", user.Username, ad.AdID)
 				http.Error(w, "Advertisement owner is banned", http.StatusForbidden)
 				return
 			}

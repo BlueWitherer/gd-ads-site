@@ -343,7 +343,7 @@ func init() {
 			if err != nil {
 				log.Error(err.Error())
 			} else if u.Banned {
-				log.Error("User %s is banned", u.Username)
+				log.Warn("User %s is banned", u.Username)
 				http.Error(w, "User is banned", http.StatusForbidden)
 				return
 			}
@@ -463,6 +463,7 @@ func init() {
 			}
 
 			if u.Banned {
+				log.Warn("User %s is banned", u.Username)
 				http.Error(w, "User is banned", http.StatusForbidden)
 				return
 			}

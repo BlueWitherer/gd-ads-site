@@ -40,7 +40,7 @@ func init() {
 			}
 
 			if user.Banned {
-				log.Error("User %s is banned", user.Username)
+				log.Warn("User %s is banned", user.Username)
 				http.Error(w, "User is banned", http.StatusForbidden)
 				return
 			}

@@ -183,7 +183,6 @@ func ListAllAdvertisements() ([]*utils.Ad, error) {
 		}
 
 		r.Expiry = GetAdUnixExpiry(r)
-
 		currentAds = setAd(r)
 
 		out = append(out, r)
@@ -224,7 +223,6 @@ func ListPendingAdvertisements() ([]*utils.Ad, error) {
 		}
 
 		r.Expiry = GetAdUnixExpiry(r)
-
 		currentAds = setAd(r)
 
 		out = append(out, r)
@@ -329,7 +327,6 @@ func GetAdvertisement(adId int64) (*utils.Ad, error) {
 		}
 
 		r.Expiry = GetAdUnixExpiry(r)
-
 		currentAds = setAd(r)
 
 		return r, nil
@@ -518,6 +515,14 @@ func BoostAd(adId int64, boosts uint, user string) error {
 		return err
 	}
 
+	u, err := GetUser(user)
+	if err != nil {
+		return err
+	}
+
+	u.BoostCount -= boosts
+	currentUsers = setUser(u)
+
 	stmt, err := utils.PrepareStmt(dat, "UPDATE advertisements SET boost_count = boost_count + ? WHERE ad_id = ?")
 	if err != nil {
 		return err
@@ -530,7 +535,6 @@ func BoostAd(adId int64, boosts uint, user string) error {
 	}
 
 	ad.BoostCount += boosts
-
 	currentAds = setAd(ad)
 
 	_, err = stmt.Exec(adId, boosts)
@@ -545,7 +549,19 @@ func AddBoostsToUser(userId string, boosts uint) error {
 	defer stmt.Close()
 
 	_, err = stmt.Exec(boosts, userId)
-	return err
+	if err != nil {
+		return err
+	}
+
+	user, err := GetUser(userId)
+	if err != nil {
+		return err
+	}
+
+	user.BoostCount += boosts
+	currentUsers = setUser(user)
+
+	return nil
 }
 
 func NewReport(adId int64, accountId int, description string) error {

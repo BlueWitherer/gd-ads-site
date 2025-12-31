@@ -25,7 +25,7 @@ func newStat(r *http.Request, adEvent utils.AdEvent) (int, error) {
 
 	log.Debug("Body decoded - AdID: %v", body.AdID)
 
-	user := utils.ArgonUser{Account: body.AccountID, Token: body.AuthToken}
+	user := &utils.ArgonUser{Account: body.AccountID, Token: body.AuthToken}
 	valid, err := access.ValidateArgonUser(user)
 	if err != nil {
 		log.Error("Failed to validate Argon user: %s", err.Error())
