@@ -529,7 +529,7 @@ func BoostAd(adId int64, boosts uint, user string) error {
 	}
 	defer stmt.Close()
 
-	_, err = stmt.Exec(boosts, user)
+	_, err = stmt.Exec(boosts, adId)
 	if err != nil {
 		return err
 	}
