@@ -84,7 +84,7 @@ func init() {
 			}
 
 			// Map type to number
-			typeNum, err := utils.IntFromAdType(utils.AdType(adFolder))
+			typeNum, err := utils.AdTypeToInt(utils.AdType(adFolder))
 			if err != nil {
 				log.Error("Invalid ad type: %s", err.Error())
 				http.Error(w, "Invalid ad type", http.StatusBadRequest)

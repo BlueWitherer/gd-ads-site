@@ -113,14 +113,6 @@ func init() {
 				if err != nil {
 					log.Error("Failed to get ad owner for boosting: %s", err.Error())
 				} else {
-					if u.IsAdmin {
-						w += 1
-					}
-
-					if u.IsStaff {
-						w += 2
-					}
-
 					if u.Verified {
 						w += 3
 					}
@@ -172,8 +164,6 @@ func init() {
 				err = database.UpdateAdvertisementImageURL(ad.AdID, fmt.Sprintf("%s/cdn/%s/%s?v=%d", access.GetDomain(r), adFolder, fmt.Sprintf("%s-%d.webp", ad.UserID, ad.AdID), time.Now().Unix()))
 				if err != nil {
 					log.Error("Failed to fix advertisement image URL: %s", err.Error())
-					http.Error(w, "Failed to fix advertisement image URL", http.StatusInternalServerError)
-					return
 				}
 			}
 

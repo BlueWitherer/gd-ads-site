@@ -82,7 +82,7 @@ func AdTypeFromInt(t int) (AdType, error) {
 	}
 }
 
-func IntFromAdType(t AdType) (int, error) {
+func AdTypeToInt(t AdType) (int, error) {
 	switch t {
 	case AdTypeBanner:
 		return 1, nil

@@ -80,7 +80,8 @@ func main() {
 
 	port := os.Getenv("WEB_PORT")
 	if port == "" {
-		log.Error("WEB_PORT is not set")
+		log.Warn("WEB_PORT variable is not set")
+		port = "3000"
 	}
 
 	srv := &http.Server{Addr: fmt.Sprintf(":%s", port)}
@@ -150,7 +151,7 @@ func main() {
 		log.Debug("Starting expiry routines...")
 		expiryCleanupRoutine()
 
-		log.Done("Server started successfully on host http://localhost%s", srv.Addr)
+		log.Done("Server started successfully! Serving at http://localhost%s", srv.Addr)
 		srv.Handler = rateLimitMiddleware(http.DefaultServeMux)
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Error(err.Error())

@@ -161,10 +161,8 @@ func ValidateArgonUser(user *utils.ArgonUser) (bool, error) {
 		UpsertArgonUser(user)
 
 		return true, nil
-	} else {
-		invalids.Set(user.Token, user.Token, cache.DefaultExpiration)
 	}
 
-	log.Error("Argon status of account of ID %v is invalid for %s", user.Account, valid.Cause)
+	invalids.Set(fmt.Sprintf("%d", user.Account), user.Token, cache.DefaultExpiration)
 	return false, fmt.Errorf("cause: %s", valid.Cause)
 }

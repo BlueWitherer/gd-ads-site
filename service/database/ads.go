@@ -270,7 +270,7 @@ func FilterAdsByUser(rows []*utils.Ad, userId string) ([]*utils.Ad, error) {
 }
 
 func FilterAdsByType(rows []*utils.Ad, adType utils.AdType) ([]*utils.Ad, error) {
-	typeNum, err := utils.IntFromAdType(adType)
+	typeNum, err := utils.AdTypeToInt(adType)
 	if err != nil {
 		return nil, err
 	}
