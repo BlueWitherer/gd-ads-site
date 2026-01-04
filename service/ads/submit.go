@@ -10,6 +10,7 @@ import (
 
 	"service/access"
 	"service/database"
+	"service/discord"
 	"service/log"
 	"service/utils"
 )
@@ -171,16 +172,31 @@ func init() {
 				return
 			}
 
+			log.Info("Saved ad to %s, ad_id=%v, user_id=%s", newDstPath, adID, uid)
+
+			ad, err := database.GetAdvertisement(adID)
+			if err != nil {
+				log.Warn(err.Error())
+			} else {
+				err = discord.WebhookStaffSubmit(ad)
+				if err != nil {
+					log.Warn(err.Error())
+				}
+			}
+
 			if user.IsAdmin || user.IsStaff || user.Verified {
 				newAd, err := database.ApproveAd(adID)
 				if err != nil {
 					log.Error("Failed to auto-approve new ad by verified user: %s", err.Error())
 				} else {
 					log.Info("Auto-approved ad %s (%v) by verified user %s (%s)", newAd.ImageURL, newAd.AdID, user.Username, user.ID)
+					err = discord.WebhookAccept(newAd, nil)
+					if err != nil {
+						log.Warn(err.Error())
+					}
 				}
 			}
 
-			log.Info("Saved ad to %s, ad_id=%v, user_id=%s", newDstPath, adID, uid)
 			w.Write(fmt.Appendf(nil, `{"status":"ok","ad_id":%d,"image_url":"%s"}`, adID, imageURL))
 		} else {
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
