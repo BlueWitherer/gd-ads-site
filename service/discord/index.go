@@ -81,7 +81,8 @@ func WebhookAccept(ad *utils.Ad, staff *utils.User) error {
 			AvatarURL: WebAvatar,
 			Embeds: []*discordgo.MessageEmbed{
 				{
-					Title: "✅ New Advertisement",
+					Title:       "✅ New Advertisement",
+					Description: fmt.Sprintf("**```%d```**", ad.AdID),
 					Fields: []*discordgo.MessageEmbedField{
 						{
 							Name:   "Advertiser",
@@ -138,7 +139,8 @@ func WebhookStaffSubmit(ad *utils.Ad) error {
 			AvatarURL: WebAvatar,
 			Embeds: []*discordgo.MessageEmbed{
 				{
-					Title: "🕑 Ad Submission",
+					Title:       "🕑 Ad Submission",
+					Description: fmt.Sprintf("**```%d```**", ad.AdID),
 					Fields: []*discordgo.MessageEmbedField{
 						{
 							Name:   "Advertiser",
@@ -190,7 +192,8 @@ func WebhookStaffReject(ad *utils.Ad, staff *utils.User) error {
 			AvatarURL: WebAvatar,
 			Embeds: []*discordgo.MessageEmbed{
 				{
-					Title: "❌ Advertisement Rejected",
+					Title:       "❌ Advertisement Rejected",
+					Description: fmt.Sprintf("**```%d```**", ad.AdID),
 					Fields: []*discordgo.MessageEmbedField{
 						{
 							Name:   "Advertiser",
