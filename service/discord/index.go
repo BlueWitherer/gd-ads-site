@@ -72,7 +72,7 @@ func WebhookAccept(ad *utils.Ad, staff *utils.User) error {
 	if staff != nil {
 		mod = fmt.Sprintf("<@!%s>", staff.ID)
 	} else {
-		mod = "Advertiser is verified"
+		mod = "<:ico:1325250328005967932> Advertiser is verified"
 	}
 
 	go func() {
@@ -90,7 +90,7 @@ func WebhookAccept(ad *utils.Ad, staff *utils.User) error {
 						},
 						{
 							Name:   "Level",
-							Value:  fmt.Sprintf("**[View](https://gdbrowser.com/%d)**", ad.LevelID),
+							Value:  fmt.Sprintf("**[<:ico:1325248575948587080> View on GDBrowser](https://gdbrowser.com/%d)**", ad.LevelID),
 							Inline: true,
 						},
 						{
@@ -103,6 +103,11 @@ func WebhookAccept(ad *utils.Ad, staff *utils.User) error {
 					Image: &discordgo.MessageEmbedImage{
 						URL:      ad.ImageURL,
 						ProxyURL: ad.ImageURL,
+					},
+					Footer: &discordgo.MessageEmbedFooter{
+						Text:         fmt.Sprintf("by @%s", u.Username),
+						IconURL:      u.AvatarURL,
+						ProxyIconURL: u.AvatarURL,
 					},
 				},
 			},
@@ -142,7 +147,7 @@ func WebhookStaffSubmit(ad *utils.Ad) error {
 						},
 						{
 							Name:   "Level",
-							Value:  fmt.Sprintf("**[View](https://gdbrowser.com/%d)**", ad.LevelID),
+							Value:  fmt.Sprintf("**[<:ico:1325248575948587080> View on GDBrowser](https://gdbrowser.com/%d)**", ad.LevelID),
 							Inline: true,
 						},
 					},
@@ -150,6 +155,11 @@ func WebhookStaffSubmit(ad *utils.Ad) error {
 					Image: &discordgo.MessageEmbedImage{
 						URL:      ad.ImageURL,
 						ProxyURL: ad.ImageURL,
+					},
+					Footer: &discordgo.MessageEmbedFooter{
+						Text:         fmt.Sprintf("by @%s", u.Username),
+						IconURL:      u.AvatarURL,
+						ProxyIconURL: u.AvatarURL,
 					},
 				},
 			},
@@ -174,13 +184,6 @@ func WebhookStaffReject(ad *utils.Ad, staff *utils.User) error {
 		return err
 	}
 
-	var mod string
-	if staff != nil {
-		mod = fmt.Sprintf("<@!%s>", staff.ID)
-	} else {
-		mod = "Advertiser is verified"
-	}
-
 	go func() {
 		_, err = s.WebhookExecute(id, token, false, &discordgo.WebhookParams{
 			Username:  WebName,
@@ -196,19 +199,24 @@ func WebhookStaffReject(ad *utils.Ad, staff *utils.User) error {
 						},
 						{
 							Name:   "Level",
-							Value:  fmt.Sprintf("**[View](https://gdbrowser.com/%d)**", ad.LevelID),
+							Value:  fmt.Sprintf("**[<:ico:1325248575948587080> View on GDBrowser](https://gdbrowser.com/%d)**", ad.LevelID),
 							Inline: true,
 						},
 						{
 							Name:   "Moderator",
-							Value:  mod,
+							Value:  fmt.Sprintf("<@!%s>", staff.ID),
 							Inline: true,
 						},
 					},
-					Color: colorPrimary,
+					Color: colorSecondary,
 					Image: &discordgo.MessageEmbedImage{
 						URL:      ad.ImageURL,
 						ProxyURL: ad.ImageURL,
+					},
+					Footer: &discordgo.MessageEmbedFooter{
+						Text:         fmt.Sprintf("by @%s", u.Username),
+						IconURL:      u.AvatarURL,
+						ProxyIconURL: u.AvatarURL,
 					},
 				},
 			},
