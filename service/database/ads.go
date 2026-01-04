@@ -397,17 +397,6 @@ func DeleteAdvertisement(adId int64) (*utils.Ad, error) {
 		return ad, err
 	}
 
-	adType, err := utils.AdTypeFromInt(ad.Type)
-	if err != nil {
-		return ad, err
-	}
-
-	adDir := filepath.Join("..", "ad_storage", string(adType), fmt.Sprintf("%s-%d.webp", ad.UserID, ad.AdID))
-	err = os.Remove(adDir)
-	if err != nil {
-		return ad, err
-	}
-
 	currentAds = deleteAd(adId)
 
 	return ad, nil

@@ -19,9 +19,9 @@ const (
 )
 
 const (
-	colorPrimary   = 11241556
-	colorSecondary = 11762602
-	colorTertiary  = 12368721
+	colorPrimary   = 15588096
+	colorSecondary = 14764875
+	colorTertiary  = 9868950
 )
 
 func getSession(private bool) (*discordgo.Session, string, string, error) {
@@ -84,7 +84,12 @@ func WebhookAccept(ad *utils.Ad, staff *utils.User) error {
 				Fields: []*discordgo.MessageEmbedField{
 					{
 						Name:   "Advertiser",
-						Value:  fmt.Sprintf("<@!%s>", u.ID),
+						Value:  fmt.Sprintf("**<@!%s>**", u.ID),
+						Inline: true,
+					},
+					{
+						Name:   "Level",
+						Value:  fmt.Sprintf("**[View](https://gdbrowser.com/%d)**", ad.LevelID),
 						Inline: true,
 					},
 					{
@@ -128,8 +133,66 @@ func WebhookStaffSubmit(ad *utils.Ad) error {
 						Value:  fmt.Sprintf("<@!%s>", u.ID),
 						Inline: true,
 					},
+					{
+						Name:   "Level",
+						Value:  fmt.Sprintf("**[View](https://gdbrowser.com/%d)**", ad.LevelID),
+						Inline: true,
+					},
 				},
 				Color: colorTertiary,
+				Image: &discordgo.MessageEmbedImage{
+					URL:      ad.ImageURL,
+					ProxyURL: ad.ImageURL,
+				},
+			},
+		},
+	})
+
+	return err
+}
+
+func WebhookStaffReject(ad *utils.Ad, staff *utils.User) error {
+	s, id, token, err := getSession(true)
+	if err != nil {
+		return err
+	}
+
+	u, err := database.GetUser(ad.UserID)
+	if err != nil {
+		return err
+	}
+
+	var mod string
+	if staff != nil {
+		mod = fmt.Sprintf("<@!%s>", staff.ID)
+	} else {
+		mod = "Advertiser is verified"
+	}
+
+	_, err = s.WebhookExecute(id, token, true, &discordgo.WebhookParams{
+		Username:  WebName,
+		AvatarURL: WebAvatar,
+		Embeds: []*discordgo.MessageEmbed{
+			{
+				Title: "❌ Advertisement Rejected",
+				Fields: []*discordgo.MessageEmbedField{
+					{
+						Name:   "Advertiser",
+						Value:  fmt.Sprintf("**<@!%s>**", u.ID),
+						Inline: true,
+					},
+					{
+						Name:   "Level",
+						Value:  fmt.Sprintf("**[View](https://gdbrowser.com/%d)**", ad.LevelID),
+						Inline: true,
+					},
+					{
+						Name:   "Moderator",
+						Value:  mod,
+						Inline: true,
+					},
+				},
+				Color: colorPrimary,
 				Image: &discordgo.MessageEmbedImage{
 					URL:      ad.ImageURL,
 					ProxyURL: ad.ImageURL,
