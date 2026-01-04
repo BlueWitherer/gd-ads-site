@@ -75,39 +75,45 @@ func WebhookAccept(ad *utils.Ad, staff *utils.User) error {
 		mod = "Advertiser is verified"
 	}
 
-	_, err = s.WebhookExecute(id, token, true, &discordgo.WebhookParams{
-		Username:  WebName,
-		AvatarURL: WebAvatar,
-		Embeds: []*discordgo.MessageEmbed{
-			{
-				Title: "✅ New Advertisement",
-				Fields: []*discordgo.MessageEmbedField{
-					{
-						Name:   "Advertiser",
-						Value:  fmt.Sprintf("**<@!%s>**", u.ID),
-						Inline: true,
+	go func() {
+		_, err = s.WebhookExecute(id, token, false, &discordgo.WebhookParams{
+			Username:  WebName,
+			AvatarURL: WebAvatar,
+			Embeds: []*discordgo.MessageEmbed{
+				{
+					Title: "✅ New Advertisement",
+					Fields: []*discordgo.MessageEmbedField{
+						{
+							Name:   "Advertiser",
+							Value:  fmt.Sprintf("**<@!%s>**", u.ID),
+							Inline: true,
+						},
+						{
+							Name:   "Level",
+							Value:  fmt.Sprintf("**[View](https://gdbrowser.com/%d)**", ad.LevelID),
+							Inline: true,
+						},
+						{
+							Name:   "Moderator",
+							Value:  mod,
+							Inline: true,
+						},
 					},
-					{
-						Name:   "Level",
-						Value:  fmt.Sprintf("**[View](https://gdbrowser.com/%d)**", ad.LevelID),
-						Inline: true,
+					Color: colorPrimary,
+					Image: &discordgo.MessageEmbedImage{
+						URL:      ad.ImageURL,
+						ProxyURL: ad.ImageURL,
 					},
-					{
-						Name:   "Moderator",
-						Value:  mod,
-						Inline: true,
-					},
-				},
-				Color: colorPrimary,
-				Image: &discordgo.MessageEmbedImage{
-					URL:      ad.ImageURL,
-					ProxyURL: ad.ImageURL,
 				},
 			},
-		},
-	})
+		})
 
-	return err
+		if err != nil {
+			log.Error(err.Error())
+		}
+	}()
+
+	return nil
 }
 
 func WebhookStaffSubmit(ad *utils.Ad) error {
@@ -121,34 +127,40 @@ func WebhookStaffSubmit(ad *utils.Ad) error {
 		return err
 	}
 
-	_, err = s.WebhookExecute(id, token, true, &discordgo.WebhookParams{
-		Username:  WebName,
-		AvatarURL: WebAvatar,
-		Embeds: []*discordgo.MessageEmbed{
-			{
-				Title: "🕑 Ad Submission",
-				Fields: []*discordgo.MessageEmbedField{
-					{
-						Name:   "Advertiser",
-						Value:  fmt.Sprintf("<@!%s>", u.ID),
-						Inline: true,
+	go func() {
+		_, err = s.WebhookExecute(id, token, false, &discordgo.WebhookParams{
+			Username:  WebName,
+			AvatarURL: WebAvatar,
+			Embeds: []*discordgo.MessageEmbed{
+				{
+					Title: "🕑 Ad Submission",
+					Fields: []*discordgo.MessageEmbedField{
+						{
+							Name:   "Advertiser",
+							Value:  fmt.Sprintf("<@!%s>", u.ID),
+							Inline: true,
+						},
+						{
+							Name:   "Level",
+							Value:  fmt.Sprintf("**[View](https://gdbrowser.com/%d)**", ad.LevelID),
+							Inline: true,
+						},
 					},
-					{
-						Name:   "Level",
-						Value:  fmt.Sprintf("**[View](https://gdbrowser.com/%d)**", ad.LevelID),
-						Inline: true,
+					Color: colorTertiary,
+					Image: &discordgo.MessageEmbedImage{
+						URL:      ad.ImageURL,
+						ProxyURL: ad.ImageURL,
 					},
-				},
-				Color: colorTertiary,
-				Image: &discordgo.MessageEmbedImage{
-					URL:      ad.ImageURL,
-					ProxyURL: ad.ImageURL,
 				},
 			},
-		},
-	})
+		})
 
-	return err
+		if err != nil {
+			log.Error(err.Error())
+		}
+	}()
+
+	return nil
 }
 
 func WebhookStaffReject(ad *utils.Ad, staff *utils.User) error {
@@ -169,39 +181,45 @@ func WebhookStaffReject(ad *utils.Ad, staff *utils.User) error {
 		mod = "Advertiser is verified"
 	}
 
-	_, err = s.WebhookExecute(id, token, true, &discordgo.WebhookParams{
-		Username:  WebName,
-		AvatarURL: WebAvatar,
-		Embeds: []*discordgo.MessageEmbed{
-			{
-				Title: "❌ Advertisement Rejected",
-				Fields: []*discordgo.MessageEmbedField{
-					{
-						Name:   "Advertiser",
-						Value:  fmt.Sprintf("**<@!%s>**", u.ID),
-						Inline: true,
+	go func() {
+		_, err = s.WebhookExecute(id, token, false, &discordgo.WebhookParams{
+			Username:  WebName,
+			AvatarURL: WebAvatar,
+			Embeds: []*discordgo.MessageEmbed{
+				{
+					Title: "❌ Advertisement Rejected",
+					Fields: []*discordgo.MessageEmbedField{
+						{
+							Name:   "Advertiser",
+							Value:  fmt.Sprintf("**<@!%s>**", u.ID),
+							Inline: true,
+						},
+						{
+							Name:   "Level",
+							Value:  fmt.Sprintf("**[View](https://gdbrowser.com/%d)**", ad.LevelID),
+							Inline: true,
+						},
+						{
+							Name:   "Moderator",
+							Value:  mod,
+							Inline: true,
+						},
 					},
-					{
-						Name:   "Level",
-						Value:  fmt.Sprintf("**[View](https://gdbrowser.com/%d)**", ad.LevelID),
-						Inline: true,
+					Color: colorPrimary,
+					Image: &discordgo.MessageEmbedImage{
+						URL:      ad.ImageURL,
+						ProxyURL: ad.ImageURL,
 					},
-					{
-						Name:   "Moderator",
-						Value:  mod,
-						Inline: true,
-					},
-				},
-				Color: colorPrimary,
-				Image: &discordgo.MessageEmbedImage{
-					URL:      ad.ImageURL,
-					ProxyURL: ad.ImageURL,
 				},
 			},
-		},
-	})
+		})
 
-	return err
+		if err != nil {
+			log.Error(err.Error())
+		}
+	}()
+
+	return nil
 }
 
 func init() {
