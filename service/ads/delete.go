@@ -78,11 +78,7 @@ func init() {
 						reject, err := strconv.ParseBool(rejectStr)
 						if err != nil {
 							log.Error("Invalid boolean value for reject: %s", err.Error())
-							http.Error(w, "Invalid boolean value for reject", http.StatusBadRequest)
-							return
-						}
-
-						if reject {
+						} else if reject {
 							err = discord.WebhookStaffReject(ad, user)
 							if err != nil {
 								log.Warn(err.Error())
@@ -98,6 +94,7 @@ func init() {
 			} else {
 				log.Error("Unauthorized deletion attempt for ad ID %d by user %s", id, uid)
 				http.Error(w, "Unauthorized", http.StatusUnauthorized)
+				return
 			}
 		} else {
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)

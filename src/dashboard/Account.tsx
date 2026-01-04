@@ -151,7 +151,7 @@ export default function Account() {
             return;
 
         try {
-            const res = await fetch(`/ads/delete?id=${adId}?reject=true`, {
+            const res = await fetch(`/ads/delete?id=${adId}&reject=true`, {
                 method: "DELETE",
                 credentials: "include",
             });

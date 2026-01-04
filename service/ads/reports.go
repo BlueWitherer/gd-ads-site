@@ -228,8 +228,6 @@ func init() {
 				blacklist, err := strconv.ParseBool(blacklistStr)
 				if err != nil {
 					log.Error("Invalid boolean value for blacklist: %s", err.Error())
-					http.Error(w, "Invalid boolean value for blacklist", http.StatusBadRequest)
-					return
 				}
 
 				err = access.ReportBanArgonUser(report, blacklist)
