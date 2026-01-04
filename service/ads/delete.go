@@ -7,6 +7,7 @@ import (
 
 	"service/access"
 	"service/database"
+	"service/discord"
 	"service/log"
 )
 
@@ -29,7 +30,9 @@ func init() {
 				return
 			}
 
-			idStr := r.URL.Query().Get("id")
+			query := r.URL.Query()
+
+			idStr := query.Get("id")
 			if idStr == "" {
 				http.Error(w, "Missing ad ID parameter", http.StatusBadRequest)
 				return
@@ -67,6 +70,25 @@ func init() {
 					log.Error("Failed to delete advertisement: %s", err.Error())
 					http.Error(w, "Failed to delete advertisement", http.StatusInternalServerError)
 					return
+				}
+
+				if user.IsAdmin || user.IsStaff {
+					rejectStr := query.Get("reject")
+					if ad.Pending && rejectStr != "" {
+						reject, err := strconv.ParseBool(rejectStr)
+						if err != nil {
+							log.Error("Invalid boolean value for reject: %s", err.Error())
+							http.Error(w, "Invalid boolean value for reject", http.StatusBadRequest)
+							return
+						}
+
+						if reject {
+							err = discord.WebhookStaffReject(ad, user)
+							if err != nil {
+								log.Warn(err.Error())
+							}
+						}
+					}
 				}
 
 				log.Info("Deleted advertisement of ID %d", ad.AdID)
