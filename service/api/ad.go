@@ -148,7 +148,8 @@ func init() {
 					w += p
 				}
 
-				w += float64(a.Clicks) * 0.125
+				w += float64(a.Clicks) * 0.25
+				w += float64(u.TotalClicks) * 0.125
 
 				weights[idx] = w
 				totalWeight += w

@@ -88,7 +88,7 @@ export default function RulesButton() {
                                             Enforcement of these rules is at the discretion of staff.
                                             If you are unsure about something, feel free to ask in the{" "}
                                             <a
-                                                href="https://discord.gg/gXcppxTNxC"
+                                                href="https://www.dsc.gg/cheeseworks"
                                                 target="_blank"
                                                 rel="noreferrer"
                                                 style={{
