@@ -124,6 +124,17 @@ export default function Statistics() {
                             )}
                         </div>
                     </div>
+                    <div className="stat-box">
+                        <a
+                            href="https://ko-fi.com/playerads"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="kofi-button"
+                        >
+                            <SiKofi size={24} />
+                            <span>Get More Reach!</span>
+                        </a>
+                    </div>
                 </div>
             </div>
 
@@ -149,18 +160,6 @@ export default function Statistics() {
                         {adCount !== null ? adCount.toLocaleString() : "Loading..."}
                     </p>
                 </div>
-            </div>
-
-            <div className="stats-global-container">
-                <a
-                    href="https://ko-fi.com/playerads"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="kofi-button"
-                >
-                    <SiKofi size={24} />
-                    <span>Get More Reach!</span>
-                </a>
             </div>
         </>
     );
