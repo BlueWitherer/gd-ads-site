@@ -41,11 +41,7 @@ func generateSessionID() (string, string, error) {
 		return "", "", err
 	}
 
-	raw := base64.RawURLEncoding.EncodeToString(b)
-
-	h := sha256.Sum256([]byte(raw))
-	hash := base64.RawURLEncoding.EncodeToString(h[:])
-
+	raw, hash := HashString(b)
 	return raw, hash, nil
 }
 

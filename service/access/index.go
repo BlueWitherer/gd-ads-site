@@ -1,6 +1,8 @@
 package access
 
 import (
+	"crypto/sha256"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -9,6 +11,12 @@ import (
 	"service/database"
 	"service/log"
 )
+
+func HashString(b []byte) (string, string) {
+	raw := base64.RawURLEncoding.EncodeToString(b)
+	h := sha256.Sum256([]byte(raw))
+	return raw, base64.RawURLEncoding.EncodeToString(h[:])
+}
 
 func GetDomain(r *http.Request) string {
 	scheme := "http"

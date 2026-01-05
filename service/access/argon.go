@@ -15,8 +15,8 @@ import (
 	"github.com/patrickmn/go-cache"
 )
 
-var argonCache = cache.New(6*time.Hour, 10*time.Minute)
-var invalids = cache.New(1*time.Hour, 10*time.Minute)
+var argonCache = cache.New(15*time.Minute, 10*time.Minute)
+var invalids = cache.New(5*time.Minute, 10*time.Minute)
 
 func getToken() (string, error) {
 	token := os.Getenv("ARGON")

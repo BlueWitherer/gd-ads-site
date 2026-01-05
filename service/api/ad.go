@@ -118,6 +118,16 @@ func init() {
 					}
 				}
 
+				if a.BoostCount > 15 {
+					a.Glow = 3
+				} else if u.Verified {
+					a.Glow = 2
+				} else if a.BoostCount > 0 {
+					a.Glow = 1
+				} else {
+					a.Glow = 0
+				}
+
 				if time.Since(a.Created).Hours() < 60 {
 					denom := 0.025 * float64(globalClicks)
 					if denom <= 1 {
