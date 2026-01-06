@@ -6,6 +6,7 @@ import (
 	"math"
 	"math/rand"
 	"net/http"
+	"slices"
 	"strconv"
 	"time"
 
@@ -20,6 +21,8 @@ import (
 var globalStats = cache.New(10*time.Minute, 15*time.Minute)
 
 func init() {
+	rand.Seed(time.Now().UnixNano())
+
 	http.HandleFunc("/api/ad", func(w http.ResponseWriter, r *http.Request) {
 		log.Debug("Getting random ad...")
 		header := w.Header()
@@ -148,11 +151,24 @@ func init() {
 					w += p
 				}
 
-				w += (float64(a.Clicks) / float64(a.Views)) * 10
-				w += float64(u.TotalClicks) / float64(u.TotalViews)
+				if a.Clicks > 0 && a.Views > 0 {
+					w += (float64(a.Clicks) / float64(a.Views)) * 10
+				}
+				if u.TotalClicks > 0 && u.TotalViews > 0 {
+					w += float64(u.TotalClicks) / float64(u.TotalViews)
+				}
 
 				weights[idx] = w
 				totalWeight += w
+			}
+
+			maxWeight := slices.Max(weights)
+			log.Debug("Max weight: %f", maxWeight)
+
+			if maxWeight > 0 {
+				for i := range weights {
+					weights[i] /= maxWeight
+				}
 			}
 
 			var chosenIdx int
