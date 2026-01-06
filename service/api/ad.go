@@ -163,12 +163,15 @@ func init() {
 			}
 
 			maxWeight := slices.Max(weights)
-			log.Debug("Max weight: %f", maxWeight)
-
 			if maxWeight > 0 {
 				for i := range weights {
 					weights[i] /= maxWeight
 				}
+			}
+
+			totalWeight = 0
+			for _, w := range weights {
+				totalWeight += w
 			}
 
 			var chosenIdx int
