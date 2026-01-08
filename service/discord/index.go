@@ -21,7 +21,7 @@ const (
 const (
 	colorPrimary   = 15588096
 	colorSecondary = 14764875
-	colorTertiary  = 9868950
+	colorTertiary  = 6553599
 )
 
 func getSession(private bool) (*discordgo.Session, string, string, error) {
@@ -101,6 +101,64 @@ func WebhookAccept(ad *utils.Ad, staff *utils.User) error {
 						},
 					},
 					Color: colorPrimary,
+					Image: &discordgo.MessageEmbedImage{
+						URL:      ad.ImageURL,
+						ProxyURL: ad.ImageURL,
+					},
+					Footer: &discordgo.MessageEmbedFooter{
+						Text:         fmt.Sprintf("by @%s", u.Username),
+						IconURL:      u.AvatarURL,
+						ProxyIconURL: u.AvatarURL,
+					},
+				},
+			},
+		})
+
+		if err != nil {
+			log.Error(err.Error())
+		}
+	}()
+
+	return nil
+}
+
+func WebhookBoost(ad *utils.Ad) error {
+	s, id, token, err := getSession(false)
+	if err != nil {
+		return err
+	}
+
+	u, err := database.GetUser(ad.UserID)
+	if err != nil {
+		return err
+	}
+
+	go func() {
+		_, err = s.WebhookExecute(id, token, false, &discordgo.WebhookParams{
+			Username:  WebName,
+			AvatarURL: WebAvatar,
+			Embeds: []*discordgo.MessageEmbed{
+				{
+					Title:       "💎 Advertisement Boosted",
+					Description: fmt.Sprintf("**```%d```**", ad.AdID),
+					Fields: []*discordgo.MessageEmbedField{
+						{
+							Name:   "Advertiser",
+							Value:  fmt.Sprintf("**<@!%s>**", u.ID),
+							Inline: true,
+						},
+						{
+							Name:   "Level",
+							Value:  fmt.Sprintf("**[<:ico:1325248575948587080> View on GDBrowser](https://gdbrowser.com/%d)**", ad.LevelID),
+							Inline: true,
+						},
+						{
+							Name:   "Boosts",
+							Value:  fmt.Sprintf("**%d** / 30", ad.BoostCount),
+							Inline: true,
+						},
+					},
+					Color: colorTertiary,
 					Image: &discordgo.MessageEmbedImage{
 						URL:      ad.ImageURL,
 						ProxyURL: ad.ImageURL,

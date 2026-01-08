@@ -232,25 +232,36 @@ function Manage() {
                                 )}
                             </div>
                             <div className="manage-ad-boost-wrapper">
-                                <input
-                                    type="number"
-                                    min="1"
-                                    placeholder="Amount"
-                                    className="manage-ad-boost-input"
-                                    value={boostAmounts[advert.id] || ""}
-                                    onChange={(e) =>
-                                        setBoostAmounts((prev) => ({
-                                            ...prev,
-                                            [advert.id]: e.target.value,
-                                        }))
-                                    }
-                                />
-                                <button
-                                    className="manage-ad-boost-button"
-                                    onClick={() => handleBoost(advert.id)}
-                                >
-                                    Boost Ad
-                                </button>
+                                {(() => {
+                                    return (advert.boost_count || 0) < 30 ? (
+                                        <>
+                                            <input
+                                                type="number"
+                                                min={1}
+                                                max={30 - (advert.boost_count || 0)}
+                                                placeholder="Amount"
+                                                className="manage-ad-boost-input"
+                                                value={boostAmounts[advert.id] || ""}
+                                                onChange={(e) =>
+                                                    setBoostAmounts((prev) => ({
+                                                        ...prev,
+                                                        [advert.id]: e.target.value,
+                                                    }))
+                                                }
+                                            />
+                                            <button
+                                                className="manage-ad-boost-button"
+                                                onClick={() => handleBoost(advert.id)}
+                                            >
+                                                Boost Ad
+                                            </button>
+                                        </>
+                                    ) : (
+                                        <span style={{ color: "yellow", fontWeight: "bold" }}>
+                                            You've reached the Boost limit for this ad.
+                                        </span>
+                                    );
+                                })()}
                             </div>
                             <button
                                 className="ad-card-delete manage-ad-delete-button"

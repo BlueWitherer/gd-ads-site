@@ -23,7 +23,7 @@ const (
 type KofiShopItem struct {
 	DirectLinkCode string `json:"direct_link_code"`
 	ItemName       string `json:"item_name"`
-	Quantity       int    `json:"quantity"`
+	Quantity       uint   `json:"quantity"`
 }
 
 type Kofi struct {
@@ -39,12 +39,37 @@ type Kofi struct {
 	DiscordUserID         string         `json:"discord_userid"`
 }
 
-func boostLinkCode() (string, error) {
-	code := os.Getenv("KOFI_LINK_BOOST")
+func boostCode(env string) (string, error) {
+	code := os.Getenv(env)
 	if code == "" {
-		return "", fmt.Errorf("direct link code for boost is not defined!")
+		return "", fmt.Errorf("direct link code env %s is not defined!", env)
 	} else {
 		return code, nil
+	}
+}
+
+func getBoostReward(code string) uint {
+	codeBoost, err := boostCode("KOFI_LINK_BOOST")
+	if err != nil {
+		log.Error(err.Error())
+		return 0
+	}
+
+	codeBoostOverdrive, err := boostCode("KOFI_LINK_BOOST_OVERDRIVE")
+	if err != nil {
+		log.Error(err.Error())
+		return 0
+	}
+
+	switch code {
+	case codeBoost:
+		return 5
+
+	case codeBoostOverdrive:
+		return 30
+
+	default:
+		return 0
 	}
 }
 
@@ -87,26 +112,19 @@ func init() {
 				return
 			}
 
-			boostCode, err := boostLinkCode()
-			if err != nil {
-				log.Error("Failed to get Boost product code: %s", err.Error())
-				http.Error(w, "Failed to get Boost product code", http.StatusBadRequest)
-				return
-			}
-
 			switch body.Type {
 			case KofiTypeShopOrder:
 				log.Debug("Processing Ko-fi shop order for user of ID %s...", body.DiscordUserID)
 
 				for _, item := range body.ShopItems {
-					if item.DirectLinkCode == boostCode {
-						if err := database.AddBoostsToUser(body.DiscordUserID, uint(item.Quantity)*5); err != nil {
+					if b := getBoostReward(item.DirectLinkCode); b > 0 {
+						if err := database.AddBoostsToUser(body.DiscordUserID, item.Quantity*b); err != nil {
 							log.Error("Failed to add boosts: %s", err.Error())
 							http.Error(w, "Failed to add boosts", http.StatusInternalServerError)
 							return
 						}
 
-						log.Info("Added boosts to user of ID %s", body.DiscordUserID)
+						log.Info("Added %d boosts to user of ID %s", b, body.DiscordUserID)
 					}
 				}
 
