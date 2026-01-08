@@ -169,7 +169,7 @@ export default function Leaderboard() {
                             className="kofi-button"
                         >
                             <SiKofi size={24} />
-                            <span>Get More Reach!</span>
+                            <span>Reach More Players!</span>
                         </a>
                     </div>
                 </>

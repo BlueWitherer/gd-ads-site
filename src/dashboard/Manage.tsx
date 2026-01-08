@@ -143,7 +143,7 @@ function Manage() {
                 className="kofi-button"
             >
                 <SiKofi size={24} />
-                <span>Get More Reach!</span>
+                <span>Reach More Players!</span>
             </a>
 
             {error && <div className="manage-error">{error}</div>}
