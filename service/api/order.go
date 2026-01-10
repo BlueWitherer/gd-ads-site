@@ -66,7 +66,7 @@ func getBoostReward(code string) uint {
 		return 5
 
 	case codeBoostOverdrive:
-		return 30
+		return 50
 
 	default:
 		return 0
@@ -135,6 +135,13 @@ func init() {
 				if err != nil {
 					log.Error("Failed to verify user through subscription: %s", err.Error())
 					http.Error(w, "Failed to verify user through subscription", http.StatusInternalServerError)
+					return
+				}
+
+				err = database.AddBoostsToUser(user.ID, 3)
+				if err != nil {
+					log.Error("Failed to add boosts: %s", err.Error())
+					http.Error(w, "Failed to add boosts", http.StatusInternalServerError)
 					return
 				}
 
