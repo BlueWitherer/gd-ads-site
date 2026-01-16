@@ -312,6 +312,7 @@ export default function Create() {
                     <option value="banner">Banner (1456 x 180)</option>
                     <option value="square">Square (1456 x 1456)</option>{" "}
                     {/* ill figure out the ratio  for this later */}
+                    {/* he never did btw - chris */}
                     <option value="skyscraper">Skyscraper (180 x 1456)</option>
                 </select>
             </div>
