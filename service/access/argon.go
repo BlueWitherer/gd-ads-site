@@ -55,6 +55,8 @@ func GetArgonUser(id int) (*utils.ArgonUser, error) {
 }
 
 func UpsertArgonUser(user *utils.ArgonUser) error {
+	user.Token = ""
+
 	argonCache.Set(fmt.Sprintf("%d", user.Account), user, cache.DefaultExpiration)
 	log.Debug("Argon cache entry added for account %d, total entries: %d", user.Account, argonCache.ItemCount())
 
@@ -72,12 +74,8 @@ func ValidateArgonUser(user *utils.ArgonUser) (bool, error) {
 		return false, fmt.Errorf("Argon token %s is invalid", val.(string))
 	}
 
-	if val, found := argonCache.Get(fmt.Sprintf("%d", user.Account)); found {
-		cUser := val.(*utils.ArgonUser)
-
-		if cUser.Account == user.Account && cUser.Token == user.Token {
-			return true, nil
-		}
+	if _, found := argonCache.Get(fmt.Sprintf("%d", user.Account)); found {
+		return found, nil
 	}
 
 	stmt, err := utils.PrepareStmt(utils.Db(), "SELECT * FROM argon WHERE account_id = ?")
