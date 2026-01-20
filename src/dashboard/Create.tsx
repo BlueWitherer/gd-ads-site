@@ -280,6 +280,13 @@ export default function Create() {
                 can create multiple advertisements per type. Before it can be shown in
                 game, your advertisement must first be approved by an admin.
             </p>
+            {/* remove this when mod has been imported */}
+            <div className="create-ad-limit-warning">
+                <p>
+                    <WarningIcon /> Advertisements are currently paused due to recent GD 2.208 update.
+                    Please wait until the Player Advertisements mod has been ported to the newest update.
+                </p>
+            </div>
             <RulesButton />
             {activeAdCount !== null && (
                 <div className="create-ad-limit-info">
