@@ -41,11 +41,7 @@ func generateSessionID() (string, string, error) {
 		return "", "", err
 	}
 
-	raw := base64.RawURLEncoding.EncodeToString(b)
-
-	h := sha256.Sum256([]byte(raw))
-	hash := base64.RawURLEncoding.EncodeToString(h[:])
-
+	raw, hash := HashString(b)
 	return raw, hash, nil
 }
 
@@ -343,7 +339,7 @@ func init() {
 			if err != nil {
 				log.Error(err.Error())
 			} else if u.Banned {
-				log.Error("User %s is banned", u.Username)
+				log.Warn("User %s is banned", u.Username)
 				http.Error(w, "User is banned", http.StatusForbidden)
 				return
 			}
@@ -463,6 +459,7 @@ func init() {
 			}
 
 			if u.Banned {
+				log.Warn("User %s is banned", u.Username)
 				http.Error(w, "User is banned", http.StatusForbidden)
 				return
 			}

@@ -7,6 +7,7 @@ import (
 
 	"service/access"
 	"service/database"
+	"service/discord"
 	"service/log"
 )
 
@@ -119,6 +120,11 @@ func init() {
 				log.Error("Failed to approve ad: %s", err.Error())
 				http.Error(w, "Failed to approve ad", http.StatusInternalServerError)
 				return
+			}
+
+			err = discord.WebhookAccept(ad, u)
+			if err != nil {
+				log.Warn(err.Error())
 			}
 
 			w.WriteHeader(http.StatusOK)

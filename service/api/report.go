@@ -2,7 +2,9 @@ package api
 
 import (
 	"encoding/json"
+
 	"net/http"
+
 	"service/access"
 	"service/database"
 	"service/log"
@@ -34,7 +36,7 @@ func init() {
 				return
 			}
 
-			user := utils.ArgonUser{Account: body.AccountID, Token: body.AuthToken}
+			user := &utils.ArgonUser{Account: body.AccountID, Token: body.AuthToken}
 			valid, err := access.ValidateArgonUser(user)
 			if err != nil {
 				log.Error("Failed to validate Argon user: %s", err.Error())
@@ -43,6 +45,19 @@ func init() {
 			}
 
 			if valid {
+				user, err = access.GetArgonUser(body.AccountID)
+				if err != nil {
+					log.Error("Failed to check for Argon user: %s", err.Error())
+					http.Error(w, "Failed to check for Argon user", http.StatusInternalServerError)
+					return
+				}
+
+				if user.ReportBanned {
+					log.Warn("Argon user %s attempted to report ad of ID %d while banned", user.Account, body.AdID)
+					http.Error(w, "Banned from ad reporting", http.StatusForbidden)
+					return
+				}
+
 				err = database.NewReport(body.AdID, body.AccountID, body.Description)
 				if err != nil {
 					log.Error("Failed to create report: %s", err.Error())

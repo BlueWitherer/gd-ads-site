@@ -6,6 +6,7 @@ import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
 import BuildIcon from "@mui/icons-material/Build";
 import VerifiedIcon from "@mui/icons-material/Verified";
 import Avatar from "@mui/material/Avatar";
+import { SiKofi } from "react-icons/si";
 
 interface User {
     id: string;
@@ -158,6 +159,18 @@ export default function Leaderboard() {
                         >
                             Next
                         </button>
+                    </div>
+
+                    <div className="leaderboard-tabs">
+                        <a
+                            href="https://ko-fi.com/playerads"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="kofi-button"
+                        >
+                            <SiKofi size={24} />
+                            <span>Reach More Players!</span>
+                        </a>
                     </div>
                 </>
             )}

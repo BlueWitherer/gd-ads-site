@@ -47,17 +47,18 @@ type GlobalStats struct {
 
 // Database row for advertisements listing
 type Ad struct {
-	AdID       int64     `json:"ad_id"`       // Advertisement ID
-	UserID     string    `json:"user_id"`     // Owner Discord user ID
-	LevelID    int64     `json:"level_id"`    // Geometry Dash level ID
-	Type       int       `json:"type"`        // Type of advertisement
-	Views      uint64    `json:"views"`       // Times the ad was viewed
-	Clicks     uint64    `json:"clicks"`      // Times the ad was clicked on
-	ImageURL   string    `json:"image_url"`   // URL to the advertisement image
-	Created    time.Time `json:"created_at"`  // First created
-	Expiry     int64     `json:"expiry"`      // Unix time of expiration
-	Pending    bool      `json:"pending"`     // Under review
-	BoostCount uint      `json:"boost_count"` // Available boosts
+	AdID       int64     `json:"ad_id"`          // Advertisement ID
+	UserID     string    `json:"user_id"`        // Owner Discord user ID
+	LevelID    int64     `json:"level_id"`       // Geometry Dash level ID
+	Type       int       `json:"type"`           // Type of advertisement
+	Views      uint64    `json:"views"`          // Times the ad was viewed
+	Clicks     uint64    `json:"clicks"`         // Times the ad was clicked on
+	ImageURL   string    `json:"image_url"`      // URL to the advertisement image
+	Created    time.Time `json:"created_at"`     // First created
+	Expiry     int64     `json:"expiry"`         // Unix time of expiration
+	Pending    bool      `json:"pending"`        // Under review
+	BoostCount uint      `json:"boost_count"`    // Available boosts
+	Glow       uint      `json:"glow,omitempty"` // Glow level for the client-side
 }
 
 type Report struct {
@@ -82,7 +83,7 @@ func AdTypeFromInt(t int) (AdType, error) {
 	}
 }
 
-func IntFromAdType(t AdType) (int, error) {
+func AdTypeToInt(t AdType) (int, error) {
 	switch t {
 	case AdTypeBanner:
 		return 1, nil

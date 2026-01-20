@@ -3,6 +3,7 @@ import "../page/Login.css";
 import "./Dashboard.css";
 import "../misc/Log.mjs";
 import { PieChart } from "@mui/x-charts/PieChart";
+import { SiKofi } from "react-icons/si";
 
 export default function Statistics() {
     console.debug("Rendering Statistics component...");
@@ -122,6 +123,17 @@ export default function Statistics() {
                                 <span>Click/View Ratio: N/A</span>
                             )}
                         </div>
+                    </div>
+                    <div className="stat-box">
+                        <a
+                            href="https://ko-fi.com/playerads"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="kofi-button"
+                        >
+                            <SiKofi size={24} />
+                            <span>Reach More Players!</span>
+                        </a>
                     </div>
                 </div>
             </div>

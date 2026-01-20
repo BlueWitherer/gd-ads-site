@@ -7,6 +7,7 @@ import (
 
 	"service/access"
 	"service/database"
+	"service/discord"
 	"service/log"
 )
 
@@ -29,7 +30,9 @@ func init() {
 				return
 			}
 
-			idStr := r.URL.Query().Get("id")
+			query := r.URL.Query()
+
+			idStr := query.Get("id")
 			if idStr == "" {
 				http.Error(w, "Missing ad ID parameter", http.StatusBadRequest)
 				return
@@ -69,6 +72,21 @@ func init() {
 					return
 				}
 
+				if user.IsAdmin || user.IsStaff {
+					rejectStr := query.Get("reject")
+					if ad.Pending && rejectStr != "" {
+						reject, err := strconv.ParseBool(rejectStr)
+						if err != nil {
+							log.Error("Invalid boolean value for reject: %s", err.Error())
+						} else if reject {
+							err = discord.WebhookStaffReject(ad, user)
+							if err != nil {
+								log.Warn(err.Error())
+							}
+						}
+					}
+				}
+
 				log.Info("Deleted advertisement of ID %d", ad.AdID)
 
 				w.WriteHeader(http.StatusOK)
@@ -76,6 +94,7 @@ func init() {
 			} else {
 				log.Error("Unauthorized deletion attempt for ad ID %d by user %s", id, uid)
 				http.Error(w, "Unauthorized", http.StatusUnauthorized)
+				return
 			}
 		} else {
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)

@@ -1,0 +1,302 @@
+package discord
+
+import (
+	"fmt"
+	"os"
+
+	"service/database"
+	"service/log"
+	"service/utils"
+
+	"github.com/bwmarrin/discordgo"
+)
+
+var session *discordgo.Session
+
+const (
+	WebName   = "Player Advertisements"
+	WebAvatar = "https://github.com/DumbCaveSpider/PlayerAdvertisements/blob/main/logo.png?raw=true"
+)
+
+const (
+	colorPrimary   = 15588096
+	colorSecondary = 14764875
+	colorTertiary  = 6553599
+)
+
+func getSession(private bool) (*discordgo.Session, string, string, error) {
+	if session != nil {
+		var id string
+		var token string
+
+		if private {
+			id = os.Getenv("DISCORD_WH_ID_STAFF")
+			if id == "" {
+				return nil, "", "", fmt.Errorf("discord staff webhook id variable is not defined!")
+			}
+
+			token = os.Getenv("DISCORD_WH_TOKEN_STAFF")
+			if token == "" {
+				return nil, "", "", fmt.Errorf("discord staff webhook token variable is not defined!")
+			}
+		} else {
+			id = os.Getenv("DISCORD_WH_ID")
+			if id == "" {
+				return nil, "", "", fmt.Errorf("discord webhook id variable is not defined!")
+			}
+
+			token = os.Getenv("DISCORD_WH_TOKEN")
+			if token == "" {
+				return nil, "", "", fmt.Errorf("discord webhook token variable is not defined!")
+			}
+		}
+
+		return session, id, token, nil
+	} else {
+		return nil, "", "", fmt.Errorf("no discord session found")
+	}
+}
+
+func WebhookAccept(ad *utils.Ad, staff *utils.User) error {
+	s, id, token, err := getSession(false)
+	if err != nil {
+		return err
+	}
+
+	u, err := database.GetUser(ad.UserID)
+	if err != nil {
+		return err
+	}
+
+	var mod string
+	if staff != nil {
+		mod = fmt.Sprintf("<@!%s>", staff.ID)
+	} else {
+		mod = "<:ico:1325250328005967932> Advertiser is verified"
+	}
+
+	go func() {
+		_, err = s.WebhookExecute(id, token, false, &discordgo.WebhookParams{
+			Username:  WebName,
+			AvatarURL: WebAvatar,
+			Embeds: []*discordgo.MessageEmbed{
+				{
+					Title:       "✅ New Advertisement",
+					Description: fmt.Sprintf("**```%d```**", ad.AdID),
+					Fields: []*discordgo.MessageEmbedField{
+						{
+							Name:   "Advertiser",
+							Value:  fmt.Sprintf("**<@!%s>**", u.ID),
+							Inline: true,
+						},
+						{
+							Name:   "Level",
+							Value:  fmt.Sprintf("**[<:ico:1325248575948587080> View on GDBrowser](https://gdbrowser.com/%d)**", ad.LevelID),
+							Inline: true,
+						},
+						{
+							Name:   "Moderator",
+							Value:  mod,
+							Inline: true,
+						},
+					},
+					Color: colorPrimary,
+					Image: &discordgo.MessageEmbedImage{
+						URL:      ad.ImageURL,
+						ProxyURL: ad.ImageURL,
+					},
+					Footer: &discordgo.MessageEmbedFooter{
+						Text:         fmt.Sprintf("by @%s", u.Username),
+						IconURL:      u.AvatarURL,
+						ProxyIconURL: u.AvatarURL,
+					},
+				},
+			},
+		})
+
+		if err != nil {
+			log.Error(err.Error())
+		}
+	}()
+
+	return nil
+}
+
+func WebhookBoost(ad *utils.Ad) error {
+	s, id, token, err := getSession(false)
+	if err != nil {
+		return err
+	}
+
+	u, err := database.GetUser(ad.UserID)
+	if err != nil {
+		return err
+	}
+
+	go func() {
+		_, err = s.WebhookExecute(id, token, false, &discordgo.WebhookParams{
+			Username:  WebName,
+			AvatarURL: WebAvatar,
+			Embeds: []*discordgo.MessageEmbed{
+				{
+					Title:       "💎 Advertisement Boosted",
+					Description: fmt.Sprintf("**```%d```**", ad.AdID),
+					Fields: []*discordgo.MessageEmbedField{
+						{
+							Name:   "Advertiser",
+							Value:  fmt.Sprintf("**<@!%s>**", u.ID),
+							Inline: true,
+						},
+						{
+							Name:   "Level",
+							Value:  fmt.Sprintf("**[<:ico:1325248575948587080> View on GDBrowser](https://gdbrowser.com/%d)**", ad.LevelID),
+							Inline: true,
+						},
+						{
+							Name:   "Boosts",
+							Value:  fmt.Sprintf("**%d** / 30", ad.BoostCount),
+							Inline: true,
+						},
+					},
+					Color: colorTertiary,
+					Image: &discordgo.MessageEmbedImage{
+						URL:      ad.ImageURL,
+						ProxyURL: ad.ImageURL,
+					},
+					Footer: &discordgo.MessageEmbedFooter{
+						Text:         fmt.Sprintf("by @%s", u.Username),
+						IconURL:      u.AvatarURL,
+						ProxyIconURL: u.AvatarURL,
+					},
+				},
+			},
+		})
+
+		if err != nil {
+			log.Error(err.Error())
+		}
+	}()
+
+	return nil
+}
+
+func WebhookStaffSubmit(ad *utils.Ad) error {
+	s, id, token, err := getSession(true)
+	if err != nil {
+		return err
+	}
+
+	u, err := database.GetUser(ad.UserID)
+	if err != nil {
+		return err
+	}
+
+	go func() {
+		_, err = s.WebhookExecute(id, token, false, &discordgo.WebhookParams{
+			Username:  WebName,
+			AvatarURL: WebAvatar,
+			Embeds: []*discordgo.MessageEmbed{
+				{
+					Title:       "🕑 Ad Submission",
+					Description: fmt.Sprintf("**```%d```**", ad.AdID),
+					Fields: []*discordgo.MessageEmbedField{
+						{
+							Name:   "Advertiser",
+							Value:  fmt.Sprintf("<@!%s>", u.ID),
+							Inline: true,
+						},
+						{
+							Name:   "Level",
+							Value:  fmt.Sprintf("**[<:ico:1325248575948587080> View on GDBrowser](https://gdbrowser.com/%d)**", ad.LevelID),
+							Inline: true,
+						},
+					},
+					Color: colorTertiary,
+					Image: &discordgo.MessageEmbedImage{
+						URL:      ad.ImageURL,
+						ProxyURL: ad.ImageURL,
+					},
+					Footer: &discordgo.MessageEmbedFooter{
+						Text:         fmt.Sprintf("by @%s", u.Username),
+						IconURL:      u.AvatarURL,
+						ProxyIconURL: u.AvatarURL,
+					},
+				},
+			},
+		})
+
+		if err != nil {
+			log.Error(err.Error())
+		}
+	}()
+
+	return nil
+}
+
+func WebhookStaffReject(ad *utils.Ad, staff *utils.User) error {
+	s, id, token, err := getSession(true)
+	if err != nil {
+		return err
+	}
+
+	u, err := database.GetUser(ad.UserID)
+	if err != nil {
+		return err
+	}
+
+	go func() {
+		_, err = s.WebhookExecute(id, token, false, &discordgo.WebhookParams{
+			Username:  WebName,
+			AvatarURL: WebAvatar,
+			Embeds: []*discordgo.MessageEmbed{
+				{
+					Title:       "❌ Advertisement Rejected",
+					Description: fmt.Sprintf("**```%d```**", ad.AdID),
+					Fields: []*discordgo.MessageEmbedField{
+						{
+							Name:   "Advertiser",
+							Value:  fmt.Sprintf("**<@!%s>**", u.ID),
+							Inline: true,
+						},
+						{
+							Name:   "Level",
+							Value:  fmt.Sprintf("**[<:ico:1325248575948587080> View on GDBrowser](https://gdbrowser.com/%d)**", ad.LevelID),
+							Inline: true,
+						},
+						{
+							Name:   "Moderator",
+							Value:  fmt.Sprintf("<@!%s>", staff.ID),
+							Inline: true,
+						},
+					},
+					Color: colorSecondary,
+					Image: &discordgo.MessageEmbedImage{
+						URL:      ad.ImageURL,
+						ProxyURL: ad.ImageURL,
+					},
+					Footer: &discordgo.MessageEmbedFooter{
+						Text:         fmt.Sprintf("by @%s", u.Username),
+						IconURL:      u.AvatarURL,
+						ProxyIconURL: u.AvatarURL,
+					},
+				},
+			},
+		})
+
+		if err != nil {
+			log.Error(err.Error())
+		}
+	}()
+
+	return nil
+}
+
+func init() {
+	s, err := discordgo.New("")
+	if err != nil {
+		log.Error(err.Error())
+		return
+	}
+
+	session = s
+}

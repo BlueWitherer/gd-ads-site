@@ -64,7 +64,7 @@ func NewStat(event utils.AdEvent, adId int64) error {
 
 	currentAds = setAd(ad)
 
-	log.Debug("Successfully registered %s for ad %d", event, adId)
+	log.Debug("Successfully registered stat type %s for ad %d", event, adId)
 	return nil
 }
 

@@ -7,6 +7,7 @@ import (
 
 	"service/access"
 	"service/database"
+	"service/discord"
 	"service/log"
 )
 
@@ -66,11 +67,16 @@ func init() {
 				return
 			}
 
-			err = database.BoostAd(id, uint(boosts), user.ID)
+			ad, err := database.BoostAd(id, uint(boosts), user.ID)
 			if err != nil {
 				log.Error("Failed to boost advertisement: %s", err.Error())
 				http.Error(w, "Failed to boost advertisement", http.StatusInternalServerError)
 				return
+			}
+
+			err = discord.WebhookBoost(ad)
+			if err != nil {
+				log.Warn(err.Error())
 			}
 
 			w.WriteHeader(http.StatusOK)

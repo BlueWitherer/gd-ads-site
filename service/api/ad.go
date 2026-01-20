@@ -6,6 +6,7 @@ import (
 	"math"
 	"math/rand"
 	"net/http"
+	"slices"
 	"strconv"
 	"time"
 
@@ -20,6 +21,8 @@ import (
 var globalStats = cache.New(10*time.Minute, 15*time.Minute)
 
 func init() {
+	rand.Seed(time.Now().UnixNano())
+
 	http.HandleFunc("/api/ad", func(w http.ResponseWriter, r *http.Request) {
 		log.Debug("Getting random ad...")
 		header := w.Header()
@@ -113,17 +116,19 @@ func init() {
 				if err != nil {
 					log.Error("Failed to get ad owner for boosting: %s", err.Error())
 				} else {
-					if u.IsAdmin {
-						w += 1
-					}
-
-					if u.IsStaff {
-						w += 2
-					}
-
 					if u.Verified {
 						w += 3
 					}
+				}
+
+				if a.BoostCount > 15 {
+					a.Glow = 3
+				} else if u.Verified {
+					a.Glow = 2
+				} else if a.BoostCount > 0 {
+					a.Glow = 1
+				} else {
+					a.Glow = 0
 				}
 
 				if time.Since(a.Created).Hours() < 60 {
@@ -146,9 +151,26 @@ func init() {
 					w += p
 				}
 
-				w += float64(a.Clicks) * 0.125
+				if a.Clicks > 0 && a.Views > 0 {
+					w += (float64(a.Clicks) / float64(a.Views)) * 10
+				}
+				if u.TotalClicks > 0 && u.TotalViews > 0 {
+					w += float64(u.TotalClicks) / float64(u.TotalViews)
+				}
 
 				weights[idx] = w
+				totalWeight += w
+			}
+
+			maxWeight := slices.Max(weights)
+			if maxWeight > 0 {
+				for i := range weights {
+					weights[i] /= maxWeight
+				}
+			}
+
+			totalWeight = 0
+			for _, w := range weights {
 				totalWeight += w
 			}
 
@@ -172,8 +194,6 @@ func init() {
 				err = database.UpdateAdvertisementImageURL(ad.AdID, fmt.Sprintf("%s/cdn/%s/%s?v=%d", access.GetDomain(r), adFolder, fmt.Sprintf("%s-%d.webp", ad.UserID, ad.AdID), time.Now().Unix()))
 				if err != nil {
 					log.Error("Failed to fix advertisement image URL: %s", err.Error())
-					http.Error(w, "Failed to fix advertisement image URL", http.StatusInternalServerError)
-					return
 				}
 			}
 
@@ -251,7 +271,7 @@ func init() {
 			}
 
 			if user.Banned {
-				log.Error("Owner %s of advertisement of ID %v is banned", user.Username, ad.AdID)
+				log.Warn("Owner %s of advertisement of ID %v is banned", user.Username, ad.AdID)
 				http.Error(w, "Advertisement owner is banned", http.StatusForbidden)
 				return
 			}

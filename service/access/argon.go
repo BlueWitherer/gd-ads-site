@@ -15,8 +15,8 @@ import (
 	"github.com/patrickmn/go-cache"
 )
 
-var argonCache = cache.New(6*time.Hour, 10*time.Minute)
-var invalids = cache.New(1*time.Hour, 10*time.Minute)
+var argonCache = cache.New(15*time.Minute, 10*time.Minute)
+var invalids = cache.New(5*time.Minute, 10*time.Minute)
 
 func getToken() (string, error) {
 	token := os.Getenv("ARGON")
@@ -27,7 +27,36 @@ func getToken() (string, error) {
 	}
 }
 
-func UpsertArgonUser(user utils.ArgonUser) error {
+func ReportBanArgonUser(report *utils.Report, banned bool) error {
+	stmt, err := utils.PrepareStmt(utils.Db(), "UPDATE argon SET report_banned = ? WHERE account_id = ?")
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(banned, report.AccountID)
+	return err
+}
+
+func GetArgonUser(id int) (*utils.ArgonUser, error) {
+	stmt, err := utils.PrepareStmt(utils.Db(), "SELECT * FROM argon WHERE account_id = ?")
+	if err != nil {
+		return nil, err
+	}
+	defer stmt.Close()
+
+	user := new(utils.ArgonUser)
+	err = stmt.QueryRow(id).Scan(&user.Account, &user.Token, &user.ReportBanned, &user.ValidAt)
+	if err != nil {
+		return nil, err
+	}
+
+	return user, nil
+}
+
+func UpsertArgonUser(user *utils.ArgonUser) error {
+	user.Token = ""
+
 	argonCache.Set(fmt.Sprintf("%d", user.Account), user, cache.DefaultExpiration)
 	log.Debug("Argon cache entry added for account %d, total entries: %d", user.Account, argonCache.ItemCount())
 
@@ -40,32 +69,28 @@ func UpsertArgonUser(user utils.ArgonUser) error {
 	return err
 }
 
-func ValidateArgonUser(user utils.ArgonUser) (bool, error) {
+func ValidateArgonUser(user *utils.ArgonUser) (bool, error) {
 	if val, found := invalids.Get(fmt.Sprintf("%d", user.Account)); found {
 		return false, fmt.Errorf("Argon token %s is invalid", val.(string))
 	}
 
-	if val, found := argonCache.Get(fmt.Sprintf("%d", user.Account)); found {
-		cUser := val.(utils.ArgonUser)
-
-		if cUser.Account == user.Account && cUser.Token == user.Token {
-			return true, nil
-		}
+	if _, found := argonCache.Get(fmt.Sprintf("%d", user.Account)); found {
+		return found, nil
 	}
 
-	stmt, err := utils.PrepareStmt(utils.Db(), "SELECT account_id, authtoken, valid_at FROM argon WHERE account_id = ?")
+	stmt, err := utils.PrepareStmt(utils.Db(), "SELECT * FROM argon WHERE account_id = ?")
 	if err != nil {
 		return false, err
 	} else {
 		log.Debug("Prepared argon database statement for account of ID %v", user.Account)
 	}
+	defer stmt.Close()
 
-	var dbUser utils.ArgonUser
-	var validAt time.Time
+	dbUser := new(utils.ArgonUser)
 	if row := stmt.QueryRow(user.Account); row != nil {
-		if err := row.Scan(&dbUser.Account, &dbUser.Token, &validAt); err != nil {
+		if err := row.Scan(&dbUser.Account, &dbUser.Token, &dbUser.ReportBanned, &dbUser.ValidAt); err != nil {
 			log.Error(err.Error())
-		} else if time.Since(validAt) < 24*time.Hour && dbUser.Account == user.Account && dbUser.Token == user.Token {
+		} else if time.Since(dbUser.ValidAt) < 24*time.Hour && dbUser.Account == user.Account && dbUser.Token == user.Token {
 			return true, nil
 		}
 	}
@@ -96,7 +121,7 @@ func ValidateArgonUser(user utils.ArgonUser) (bool, error) {
 
 	argon, err := getToken()
 	if err != nil {
-		log.Warn("Failed to get Argon API token: %s")
+		log.Warn("Failed to get Argon API token: %s", err.Error())
 	} else {
 		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", argon))
 	}
@@ -134,14 +159,8 @@ func ValidateArgonUser(user utils.ArgonUser) (bool, error) {
 		UpsertArgonUser(user)
 
 		return true, nil
-	} else {
-		invalids.Set(user.Token, user.Token, cache.DefaultExpiration)
 	}
 
-	log.Error("Argon status of account of ID %v is invalid for %s", user.Account, valid.Cause)
+	invalids.Set(fmt.Sprintf("%d", user.Account), user.Token, cache.DefaultExpiration)
 	return false, fmt.Errorf("cause: %s", valid.Cause)
-}
-
-func DeleteArgonUser(accountID int) {
-	argonCache.Delete(fmt.Sprintf("%d", accountID))
 }
